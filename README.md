@@ -2,4 +2,4 @@ Script Optimize LEMP Stack
 
 Copyright: Sanvv
 
-License: Private
+License: Private - No share
