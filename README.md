@@ -1,4 +1,3 @@
-Script Optimize  LEMP Stack
-
+Script Optimize LEMP Stack
 Copyright: Sanvv
 License: Private
