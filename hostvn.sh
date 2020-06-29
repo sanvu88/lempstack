@@ -53,6 +53,7 @@ NGINX_NOT_WORKING="Nginx không hoạt động."
 MARIADB_NOT_WORKING="MariaDB không hoạt động."
 PUREFTP_NOT_WORKING="Pure-ftp không hoạt động."
 PHP_NOT_WORKING="PHP-FPM không hoạt động."
+LFD_NOT_WORKING="CSF không hoạt động."
 LFD_NOT_WORKING="LFD không hoạt động."
 
 # Service Version
@@ -353,6 +354,85 @@ install_composer(){
 }
 
 ############################################
+# Dynamic calculation
+############################################
+memory_calculation(){
+    if [[ "${PHP_MEM}" -le '262144' ]]; then
+        OPCACHE_MEM='32'
+        MAX_MEMORY='48M'
+        PHP_REALPATHLIMIT='512k'
+        PHP_REALPATHTTL='14400'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
+        OPCACHE_MEM='80'
+        MAX_MEMORY='96M'
+        PHP_REALPATHLIMIT='640k'
+        PHP_REALPATHTTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
+        OPCACHE_MEM='112'
+        MAX_MEMORY='128M'
+        PHP_REALPATHLIMIT='768k'
+        PHP_REALPATHTTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
+        OPCACHE_MEM='144'
+        MAX_MEMORY='160M'
+        PHP_REALPATHLIMIT='768k'
+        PHP_REALPATHTTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
+        OPCACHE_MEM='160'
+        MAX_MEMORY='320M'
+        PHP_REALPATHLIMIT='1536k'
+        PHP_REALPATHTTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
+        OPCACHE_MEM='192'
+        MAX_MEMORY='384M'
+        PHP_REALPATHLIMIT='2048k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
+        OPCACHE_MEM='224'
+        MAX_MEMORY='512M'
+        PHP_REALPATHLIMIT='3072k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
+        OPCACHE_MEM='288'
+        MAX_MEMORY='640M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
+        OPCACHE_MEM='320'
+        MAX_MEMORY='800M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
+        OPCACHE_MEM='480'
+        MAX_MEMORY='1024M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
+        OPCACHE_MEM='600'
+        MAX_MEMORY='1280M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
+        OPCACHE_MEM='800'
+        MAX_MEMORY='2048M'
+        PHP_REALPATHLIMIT='8192k'
+        PHP_REALPATHTTL='86400'
+        MAX_INPUT_VARS="10000"
+    fi
+}
+
+############################################
 # Install Cache
 ############################################
 
@@ -365,7 +445,7 @@ install_memcached(){
 PORT="11211"
 USER="memcached"
 MAXCONN="${MAX_CLIENT}"
-CACHESIZE="256mb"
+CACHESIZE="${MAX_MEMORY}mb"
 OPTIONS="-l 127.0.0.1 -U 0"
 EOMEMCACHED
     fi
@@ -376,7 +456,7 @@ install_redis(){
     yum --enablerepo=remi install redis -y
     mv /etc/redis.conf /etc/redis.conf.bak
 cat >> "/etc/redis.conf" << EOFREDIS
-maxmemory 256mb
+maxmemory ${MAX_MEMORY}mb
 maxmemory-policy allkeys-lru
 save ""
 EOFREDIS
@@ -416,8 +496,7 @@ install_php_memcached(){
         tar -xvf memcached-2.2.0.tgz
         cd_dir "${DIR}/memcached-2.2.0"
         /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
+        make && make install
         cd_dir "${DIR}"
         rm -rf memcached-2.2.0.tgz memcached-2.2.0
     else
@@ -425,8 +504,7 @@ install_php_memcached(){
         tar -xvf memcached-${PHP_MEMCACHED_VERSION}.tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
         /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
+        make && make install
         cd "${DIR}" && rm -rf memcached-${PHP_MEMCACHED_VERSION}.tgz memcached-${PHP_MEMCACHED_VERSION}
     fi
 
@@ -446,16 +524,14 @@ install_php_redis(){
         tar -xvf redis-4.3.0.tgz
         cd_dir "${DIR}/redis-4.3.0"
         /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
+        make && make install
         cd "${DIR}" && rm -rf redis-4.3.0.tgz redis-4.3.0
     else
         cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-${PHP_REDIS_VERSION}.tgz
         tar -xvf redis-${PHP_REDIS_VERSION}.tgz
         cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
         /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
+        make && make install
         cd "${DIR}" && rm -rf redis-${PHP_REDIS_VERSION}.tgz redis-${PHP_REDIS_VERSION}
     fi
 
@@ -471,10 +547,8 @@ EOF
 
 install_cache(){
     echo ""
-
     install_memcached
     install_redis
-
     install_igbinary
 
     if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
@@ -486,6 +560,7 @@ install_cache(){
 ############################################
 # Config Nginx
 ############################################
+# dynamic SSL cache size calculation
 cal_ssl_cache_size(){
     if [[ "${RAM_TOTAL}" -gt '500000' && "${RAM_TOTAL}" -le '800000' ]]; then
         SSL_CACHE_SIZE=20
@@ -552,7 +627,7 @@ http {
     types_hash_max_size 2048;
     server_names_hash_bucket_size 128;
     server_names_hash_max_size 10240;
-    client_max_body_size 64m;
+    client_max_body_size ${MAX_MEMORY}m;
     client_body_buffer_size 128k;
     client_body_in_file_only off;
     client_body_timeout 60s;
@@ -767,6 +842,18 @@ set_real_ip_from 199.27.128.0/21;
 #set_real_ip_from 2606:4700::/32;
 #set_real_ip_from 2803:f800::/32;
 real_ip_header CF-Connecting-IP;
+EOCF
+
+cat >> "/etc/nginx/extra/nginx_limits.conf" << EOCF
+fastcgi_connect_timeout 60;
+fastcgi_buffer_size 128k;
+fastcgi_buffers 256 16k;
+fastcgi_busy_buffers_size 256k;
+fastcgi_temp_file_write_size 256k;
+fastcgi_send_timeout 600;
+fastcgi_read_timeout 600;
+fastcgi_intercept_errors on;
+fastcgi_param HTTP_PROXY "";
 EOCF
 
     # Include Server block
@@ -1323,15 +1410,8 @@ server {
             try_files \$uri =404;
             fastcgi_split_path_info ^(.+\.php)(/.+)\$;
             fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_connect_timeout 1000;
-            fastcgi_send_timeout 1000;
-            fastcgi_read_timeout 1000;
-            fastcgi_buffer_size 256k;
-            fastcgi_buffers 4 256k;
-            fastcgi_busy_buffers_size 256k;
-            fastcgi_temp_file_write_size 256k;
-            fastcgi_intercept_errors on;
+            include /etc/nginx/fastcgi_params;
+            include /etc/nginx/extra/nginx_limits.conf;
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
             if (-f \$request_filename)
             {
@@ -1354,15 +1434,8 @@ server {
             try_files \$uri =404;
             fastcgi_split_path_info ^(.+\.php)(/.+)\$;
             fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_connect_timeout 1000;
-            fastcgi_send_timeout 1000;
-            fastcgi_read_timeout 1000;
-            fastcgi_buffer_size 256k;
-            fastcgi_buffers 4 256k;
-            fastcgi_busy_buffers_size 256k;
-            fastcgi_temp_file_write_size 256k;
-            fastcgi_intercept_errors on;
+            include /etc/nginx/fastcgi_params;
+            include /etc/nginx/extra/nginx_limits.conf;
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
             if (-f \$request_filename)
             {
@@ -1385,15 +1458,8 @@ server {
             try_files \$uri =404;
             fastcgi_split_path_info ^(.+\.php)(/.+)\$;
             fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_connect_timeout 1000;
-            fastcgi_send_timeout 1000;
-            fastcgi_read_timeout 1000;
-            fastcgi_buffer_size 256k;
-            fastcgi_buffers 4 256k;
-            fastcgi_busy_buffers_size 256k;
-            fastcgi_temp_file_write_size 256k;
-            fastcgi_intercept_errors on;
+            include /etc/nginx/fastcgi_params;
+            include /etc/nginx/extra/nginx_limits.conf;
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
             if (-f \$request_filename)
             {
@@ -1470,6 +1536,7 @@ server {
         deny all;
     }
 
+    include /etc/nginx/extra/security.conf;
     include /etc/nginx/extra/staticfiles.conf;
 }
 EOdefault_vhost
@@ -1683,95 +1750,6 @@ EOwww_conf
     chown -R nginx:nginx /var/log/php-fpm
 }
 
-# dynamic PHP memory_limit calculation
-memory_limit_calculation(){
-    if [[ "${PHP_MEM}" -le '262144' ]]; then
-        OPCACHE_MEM='32'
-        PHP_MEMORYLIMIT='48M'
-        PHP_UPLOADLIMIT='48M'
-        PHP_REALPATHLIMIT='512k'
-        PHP_REALPATHTTL='14400'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
-        OPCACHE_MEM='80'
-        PHP_MEMORYLIMIT='96M'
-        PHP_UPLOADLIMIT='96M'
-        PHP_REALPATHLIMIT='640k'
-        PHP_REALPATHTTL='21600'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
-        OPCACHE_MEM='112'
-        PHP_MEMORYLIMIT='128M'
-        PHP_UPLOADLIMIT='128M'
-        PHP_REALPATHLIMIT='768k'
-        PHP_REALPATHTTL='21600'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
-        OPCACHE_MEM='144'
-        PHP_MEMORYLIMIT='160M'
-        PHP_UPLOADLIMIT='160M'
-        PHP_REALPATHLIMIT='768k'
-        PHP_REALPATHTTL='28800'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
-        OPCACHE_MEM='160'
-        PHP_MEMORYLIMIT='320M'
-        PHP_UPLOADLIMIT='320M'
-        PHP_REALPATHLIMIT='1536k'
-        PHP_REALPATHTTL='28800'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
-        OPCACHE_MEM='192'
-        PHP_MEMORYLIMIT='384M'
-        PHP_UPLOADLIMIT='384M'
-        PHP_REALPATHLIMIT='2048k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
-        OPCACHE_MEM='224'
-        PHP_MEMORYLIMIT='512M'
-        PHP_UPLOADLIMIT='512M'
-        PHP_REALPATHLIMIT='3072k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
-        OPCACHE_MEM='288'
-        PHP_MEMORYLIMIT='640M'
-        PHP_UPLOADLIMIT='640M'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="10000"
-    elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
-        OPCACHE_MEM='320'
-        PHP_MEMORYLIMIT='800M'
-        PHP_UPLOADLIMIT='800M'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="10000"
-    elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
-        OPCACHE_MEM='480'
-        PHP_MEMORYLIMIT='1024M'
-        PHP_UPLOADLIMIT='1024M'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="10000"
-    elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
-        OPCACHE_MEM='600'
-        PHP_MEMORYLIMIT='1280M'
-        PHP_UPLOADLIMIT='1280M'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
-        MAX_INPUT_VARS="10000"
-    elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
-        OPCACHE_MEM='800'
-        PHP_MEMORYLIMIT='2048M'
-        PHP_UPLOADLIMIT='2048M'
-        PHP_REALPATHLIMIT='8192k'
-        PHP_REALPATHTTL='86400'
-        MAX_INPUT_VARS="10000"
-    fi
-}
-
 # Custom PHP Ini
 hostvn_custom_ini(){
     memory_limit_calculation
@@ -1782,9 +1760,9 @@ max_input_time = 90
 short_open_tag = On
 realpath_cache_size = ${PHP_REALPATHLIMIT}
 realpath_cache_ttl = ${PHP_REALPATHTTL}
-memory_limit = ${PHP_MEMORYLIMIT}
-upload_max_filesize = ${PHP_UPLOADLIMIT}
-post_max_size = ${PHP_UPLOADLIMIT}
+memory_limit = ${MAX_MEMORY}
+upload_max_filesize = ${MAX_MEMORY}
+post_max_size = ${MAX_MEMORY}
 expose_php = Off
 mail.add_x_header = Off
 max_input_nesting_level = 128
@@ -2773,7 +2751,7 @@ opcache_dashboard(){
     mkdir -p ${DEFAULT_DIR_WEB}/opcache
     wget -q ${GITHUB_RAW_LINK}/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_WEB}/opcache/op.php
     chown -R nginx:nginx ${DEFAULT_DIR_WEB}/opcache
-    htpasswd -b -c ${USR_DIR}/nginx/auth/.htpasswd "${ADMIN_TOOL_PWD}"
+    htpasswd -b -c ${USR_DIR}/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx ${USR_DIR}/nginx/auth
 }
 
@@ -2838,28 +2816,33 @@ start_service() {
 
 check_service_status(){
     echo ""
-    NGINX_STATUS=$(pgrep nginx | wc -l)
-    if [[ "${NGINX_STATUS}" == "0" ]]; then
+    NGINX_STATUS=$(systemctl is-active nginx)
+    if [[ "${NGINX_STATUS}" == "inactive" ]]; then
         echo "${NGINX_NOT_WORKING}" >> ${LOG}
     fi
 
-    MARIADB_STATUS=$(pgrep mariadb | wc -l)
-    if [[ "${MARIADB_STATUS}" == "0" ]]; then
+    MARIADB_STATUS=$(systemctl is-active mariadb)
+    if [[ "${MARIADB_STATUS}" == "inactive" ]]; then
         echo "${MARIADB_NOT_WORKING}" >> ${LOG}
     fi
 
-    PURE_STATUS=$(pgrep pure-ftpd | wc -l)
-    if [[ "${PURE_STATUS}" == "0" ]]; then
+    PURE_STATUS=$(systemctl is-active pure-ftpd)
+    if [[ "${PURE_STATUS}" == "inactive" ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
     fi
 
-    PHP_STATUS=$(pgrep php-fpm | wc -l)
-    if [[ "${PHP_STATUS}" == "0" ]]; then
+    PHP_STATUS=$(systemctl is-active php-fpm)
+    if [[ "${PHP_STATUS}" == "inactive" ]]; then
         echo "${PHP_NOT_WORKING}" >> ${LOG}
     fi
 
-    LFD_STATUS=$(pgrep lfd | wc -l)
-    if [[ "${LFD_STATUS}" == "0" ]]; then
+    CSF_STATUS=$(systemctl is-active csf)
+    if [[ "${CSF_STATUS}" == "inactive" ]]; then
+        echo "${CSF_NOT_WORKING}" >> ${LOG}
+    fi
+
+    LFD_STATUS=$(systemctl is-active lfd)
+    if [[ "${LFD_STATUS}" == "inactive" ]]; then
         echo "${LFD_NOT_WORKING}" >> ${LOG}
     fi
 }
@@ -2871,6 +2854,10 @@ add_menu(){
     echo ""
     mkdir -p "${BASH_DIR}"
     cd_dir "${BASH_DIR}"
+    #wget ${EXT_LINK}/menu.zip
+    #unzip menu.zip
+    mkdir -p users
+    #chmod 711 menu && chmod 711 users
 }
 
 ############################################
@@ -2901,6 +2888,7 @@ run_(){
     prepare_install
     install_lemp
     install_composer
+    memory_calculation
     install_cache
     config_nginx
     config_php
