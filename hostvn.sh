@@ -359,73 +359,73 @@ install_composer(){
 memory_calculation(){
     if [[ "${PHP_MEM}" -le '262144' ]]; then
         OPCACHE_MEM='32'
-        MAX_MEMORY='48M'
+        MAX_MEMORY='48'
         PHP_REALPATHLIMIT='512k'
         PHP_REALPATHTTL='14400'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
         OPCACHE_MEM='80'
-        MAX_MEMORY='96M'
+        MAX_MEMORY='96'
         PHP_REALPATHLIMIT='640k'
         PHP_REALPATHTTL='21600'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
         OPCACHE_MEM='112'
-        MAX_MEMORY='128M'
+        MAX_MEMORY='128'
         PHP_REALPATHLIMIT='768k'
         PHP_REALPATHTTL='21600'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
         OPCACHE_MEM='144'
-        MAX_MEMORY='160M'
+        MAX_MEMORY='160'
         PHP_REALPATHLIMIT='768k'
         PHP_REALPATHTTL='28800'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
         OPCACHE_MEM='160'
-        MAX_MEMORY='320M'
+        MAX_MEMORY='320'
         PHP_REALPATHLIMIT='1536k'
         PHP_REALPATHTTL='28800'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
         OPCACHE_MEM='192'
-        MAX_MEMORY='384M'
+        MAX_MEMORY='384'
         PHP_REALPATHLIMIT='2048k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
         OPCACHE_MEM='224'
-        MAX_MEMORY='512M'
+        MAX_MEMORY='512'
         PHP_REALPATHLIMIT='3072k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
         OPCACHE_MEM='288'
-        MAX_MEMORY='640M'
+        MAX_MEMORY='640'
         PHP_REALPATHLIMIT='4096k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
         OPCACHE_MEM='320'
-        MAX_MEMORY='800M'
+        MAX_MEMORY='800'
         PHP_REALPATHLIMIT='4096k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
         OPCACHE_MEM='480'
-        MAX_MEMORY='1024M'
+        MAX_MEMORY='1024'
         PHP_REALPATHLIMIT='4096k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
         OPCACHE_MEM='600'
-        MAX_MEMORY='1280M'
+        MAX_MEMORY='1280'
         PHP_REALPATHLIMIT='4096k'
         PHP_REALPATHTTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
         OPCACHE_MEM='800'
-        MAX_MEMORY='2048M'
+        MAX_MEMORY='2048'
         PHP_REALPATHLIMIT='8192k'
         PHP_REALPATHTTL='86400'
         MAX_INPUT_VARS="10000"
@@ -1760,9 +1760,9 @@ max_input_time = 90
 short_open_tag = On
 realpath_cache_size = ${PHP_REALPATHLIMIT}
 realpath_cache_ttl = ${PHP_REALPATHTTL}
-memory_limit = ${MAX_MEMORY}
-upload_max_filesize = ${MAX_MEMORY}
-post_max_size = ${MAX_MEMORY}
+memory_limit = ${MAX_MEMORY}M
+upload_max_filesize = ${MAX_MEMORY}M
+post_max_size = ${MAX_MEMORY}M
 expose_php = Off
 mail.add_x_header = Off
 max_input_nesting_level = 128
@@ -2618,8 +2618,13 @@ config_phpmyadmin(){
     rm -rf ${USR_DIR}/phpmyadmin/setup
     mkdir -p ${USR_DIR}/phpmyadmin/tmp
 
+    if [[ "${PHP_VERSION}" != "56" ]]; then
+        DECLARE="declare(strict_types=1);"
+    fi
+
     cat > "${USR_DIR}/phpmyadmin/config.inc.php" <<EOCONFIGINC
 <?php
+${DECLARE}
 \$cfg['blowfish_secret'] = '${BLOWFISH_SECRET}';
 \$i = 0;
 \$i++;
@@ -2635,6 +2640,7 @@ config_phpmyadmin(){
 \$cfg['TempDir'] = '${USR_DIR}/phpmyadmin/tmp';
 \$cfg['CaptchaLoginPublicKey'] = '';
 \$cfg['CaptchaLoginPrivateKey'] = '';
+\$cfg['ExecTimeLimit'] = 600;
 EOCONFIGINC
 
     chown -R nginx:nginx ${USR_DIR}/phpmyadmin
@@ -2657,7 +2663,7 @@ EOphpmyadmin_temp
 install_phpmyadmin(){
     echo ""
     PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
-    if [[ ${PHP_VERSION} -eq "56" ]]; then
+    if [[ ${PHP_VERSION} == "56" ]]; then
         wget -O ${USR_DIR}/phpmyadmin.zip ${PMA_LINK}/${PHPMYADMIN_FOUR}/phpMyAdmin-${PHPMYADMIN_FOUR}-english.zip
         unzip_phpmyadmin
         mv phpMyAdmin-${PHPMYADMIN_FOUR}-english phpmyadmin
@@ -2749,7 +2755,7 @@ opcache_dashboard(){
     echo ""
     ADMIN_TOOL_PWD=$(date |md5sum |cut -c '14-30')
     mkdir -p ${DEFAULT_DIR_WEB}/opcache
-    wget -q ${GITHUB_RAW_LINK}/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_WEB}/opcache/op.php
+    wget -q ${GITHUB_RAW_LINK}/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_WEB}/opcache/index.php
     chown -R nginx:nginx ${DEFAULT_DIR_WEB}/opcache
     htpasswd -b -c ${USR_DIR}/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx ${USR_DIR}/nginx/auth
@@ -2817,32 +2823,32 @@ start_service() {
 check_service_status(){
     echo ""
     NGINX_STATUS=$(systemctl is-active nginx)
-    if [[ "${NGINX_STATUS}" == "inactive" ]]; then
+    if [[ "${NGINX_STATUS}" != "active" ]]; then
         echo "${NGINX_NOT_WORKING}" >> ${LOG}
     fi
 
     MARIADB_STATUS=$(systemctl is-active mariadb)
-    if [[ "${MARIADB_STATUS}" == "inactive" ]]; then
+    if [[ "${MARIADB_STATUS}" != "active" ]]; then
         echo "${MARIADB_NOT_WORKING}" >> ${LOG}
     fi
 
     PURE_STATUS=$(systemctl is-active pure-ftpd)
-    if [[ "${PURE_STATUS}" == "inactive" ]]; then
+    if [[ "${PURE_STATUS}" != "active" ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
     fi
 
     PHP_STATUS=$(systemctl is-active php-fpm)
-    if [[ "${PHP_STATUS}" == "inactive" ]]; then
+    if [[ "${PHP_STATUS}" != "active" ]]; then
         echo "${PHP_NOT_WORKING}" >> ${LOG}
     fi
 
     CSF_STATUS=$(systemctl is-active csf)
-    if [[ "${CSF_STATUS}" == "inactive" ]]; then
+    if [[ "${CSF_STATUS}" != "active" ]]; then
         echo "${CSF_NOT_WORKING}" >> ${LOG}
     fi
 
     LFD_STATUS=$(systemctl is-active lfd)
-    if [[ "${LFD_STATUS}" == "inactive" ]]; then
+    if [[ "${LFD_STATUS}" != "active" ]]; then
         echo "${LFD_NOT_WORKING}" >> ${LOG}
     fi
 }
