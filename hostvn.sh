@@ -24,12 +24,14 @@ OS_ARCH=$(uname -m)
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 DIR=$(pwd)
 BASH_DIR="/var/hostvn/script"
+PHP_MODULES_DIR="/usr/lib64/php/modules"
 GITHUB_RAW_LINK="https://raw.githubusercontent.com"
+EXT_LINK="https://scripts.sanvu88.net/lemp"
 GITHUB_URL="https://github.com"
 PECL_PHP_LINK="https://pecl.php.net/get"
 
 # Copyright
-AUTHOR="HOSTVN Technical Team!"
+AUTHOR="HOSTVN"
 AUTHOR_CONTACT="kythuat@hostvn.net"
 
 # Set Lang
@@ -39,9 +41,8 @@ OS_WROG="Script chỉ hoạt động trên \"CentOS 7\"!\n"
 RAM_NOT_ENOUGH="Cảnh báo: Dung lượng RAM quá thấp để cài Script. (Ít nhất 512MB)\n"
 OTHER_CP_EXISTS="Máy chủ của bạn đã cài đặt Control Panel khác. Vui lòng rebuild để cài đặt Script"
 ENTER_OPTION="Nhập vào lựa chọn của bạn [1-6]: "
-SELECT_PHP="Hãy lựa chọn phiên bản PHP muốn cài đặt:\n"
-INST_PHP_NOTIFY1="\nHệ thống sẽ cài đặt PHP 7.4\n"
-INST_PHP_NOTIFY2="Bạn nhập sai, hệ thống sẽ cài đặt PHP 7.4\n"
+SELECT_PHP="Hãy lựa chọn phiên bản PHP muốn cài đặt:"
+WRONG_OPTION="Lựa chọn của bạn không chính xác, hệ thống sẽ cài đặt PHP 7.4"
 INST_MARIADB_ERR="Cài đặt MariaDB thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_NGINX_ERR="Cài đặt Nginx thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_PHP_ERR="Cài đặt PHP thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
@@ -55,12 +56,12 @@ PHP_NOT_WORKING="PHP-FPM không hoạt động."
 LFD_NOT_WORKING="LFD không hoạt động."
 
 # Service Version
-IGBINARY_VERSION="3.1.2"
-PHP_MEMCACHED_VERSION="3.1.5"
 PHPMYADMIN_FOUR="4.9.5"
 PHPMYADMIN_FIVE="5.0.2"
-PHP_REDIS_VERSION="5.2.2"
 PHP_SYS_INFO_VERSION="3.3.2"
+IGBINARY_VERSION="3.1.2"
+PHP_MEMCACHED_VERSION="3.1.5"
+PHP_REDIS_VERSION="5.2.2"
 
 # Select Service Version
 MARIADB_VERSION="10.5"
@@ -102,8 +103,7 @@ PHP_MEM=${RAM_TOTAL}+${SWAP_TOTAL}
 RAM_MB=$(echo "scale=0;${RAM_TOTAL}/1024" | bc)
 LOW_RAM='524288'
 NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
-MAX_CLIENT=$((1024 * "${NGINX_PROCESSES}"))
-#MAX_CLIENT=$(expr 1024 \* "${NGINX_PROCESSES}" )
+MAX_CLIENT=$((NGINX_PROCESSES * 1024))
 
 rm -rf "${DIR}"/install
 
@@ -259,6 +259,21 @@ EONGINXREPO
     yum -y install nginx
 }
 
+nginx_brotli(){
+    COMMAND="nginx -v"
+    NGINXV=$( ${COMMAND} 2>&1 )
+    NGINXLOCAL=$(echo "${NGINXV}" | grep -o '[0-9.]*$')
+    MODULES_PATH="/etc/nginx/modules"
+    wget -q ${EXT_LINK}/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_filter_module.so -O  ${MODULES_PATH}/ngx_http_brotli_filter_module.so
+    wget -q ${EXT_LINK}/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_static_module.so -O  ${MODULES_PATH}/ngx_http_brotli_static_module.so
+
+    if [[ -f "${MODULES_PATH}/ngx_http_brotli_filter_module.so" && -f "${MODULES_PATH}/ngx_http_brotli_static_module.so" ]]; then
+        LOAD_BROTLI_FILTER="load_module modules/ngx_http_brotli_filter_module.so;"
+        LOAD_BROTLI_STATIC="load_module modules/ngx_http_brotli_static_module.so;"
+        BROTLI_STATIC_OFF="brotli_static off;"
+    fi
+}
+
 #Install Mariadb
 install_mariadb(){
     cat >> "/etc/yum.repos.d/mariadb.repo" << EOMARIADBREPO
@@ -275,20 +290,15 @@ EOMARIADBREPO
 # Install php-fpm
 select_php_ver(){
     echo "${SELECT_PHP}"
-    prompt=${ENTER_OPTION}
-    options=("PHP 7.4" "PHP 7.3" "PHP 7.2" "PHP 7.1" "PHP 7.0" "PHP 5.6")
-    PS3="$prompt"
-    select opt in "${options[@]}"; do
-        case "$opt" in
-        1) PHP_VERSION="74"; break;;
-        2) PHP_VERSION="73"; break;;
-        3) PHP_VERSION="72"; break;;
-        4) PHP_VERSION="71"; break;;
-        5) PHP_VERSION="70"; break;;
-        6) PHP_VERSION="56"; break;;
-        $(( ${#options[@]}+1 )) ) echo "${INST_PHP_NOTIFY1}"; break;;
-        *) echo "${INST_PHP_NOTIFY2}"; break;;
-        esac
+    echo "${ENTER_OPTION}"
+    select PHP_LIST in "7.4" "7.3" "7.2" "7.1" "7.0" "5.6"
+    do
+        PHP_VERSION=${PHP_LIST//./}
+        REGEX_NUMBER='^[0-9]+$'
+        if ! [[ ${PHP_VERSION} =~ ${REGEX_NUMBER} ]]; then
+            echo "${WRONG_OPTION}"
+        fi
+        break
     done
 }
 
@@ -303,29 +313,6 @@ install_php(){
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
 }
 
-install_php_ext() {
-    if [[ ${PHP_VERSION} != "56" ]]; then
-        cd "${DIR}" && wget ${GITHUB_URL}/php/pecl-text-wddx/archive/master.zip -O wddx.zip
-        unzip wddx.zip
-        cd_dir "${DIR}/pecl-text-wddx-master"
-        /usr/bin/phpize && ./configure
-        make && make install
-        cd "${DIR}" && rm -rf pecl-text-wddx-master wddx.zip
-        cat >> "/etc/php.d/40-wddx.ini" << EOwddx_ext
-        extension=wddx.so
-EOwddx_ext
-
-        git clone --recursive --depth=1 ${GITHUB_URL}/kjdev/php-ext-brotli.git
-        cd_dir "${DIR}/php-ext-brotli"
-        /usr/bin/phpize && ./configure
-        make && make install
-        cat >> "/etc/php.d/40-brotli.ini" << EObrotli_ext
-        extension=brotli.so
-EObrotli_ext
-        cd "${DIR}" && rm -rf php-ext-brotli
-    fi
-}
-
 install_lemp(){
     echo ""
     install_nginx
@@ -336,6 +323,7 @@ install_lemp(){
         exit
     fi
 
+    nginx_brotli
     install_mariadb
 
     if [[ ! -f "/usr/lib/systemd/system/mariadb.service" ]]; then
@@ -347,9 +335,7 @@ install_lemp(){
 
     install_php
 
-    if [[ -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
-        install_php_ext
-    else
+    if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
         clear
         echo "${INST_PHP_ERR}"
         sleep 3
@@ -370,63 +356,6 @@ install_composer(){
 # Install Cache
 ############################################
 
-# Install igbinary
-install_igbinary(){
-    if [[ "${PHP_VERSION}" -eq "56" ]]; then
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-2.0.8.tgz
-        tar -xvf igbinary-2.0.8.tgz
-        cd_dir "${DIR}/igbinary-2.0.8"
-        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf igbinary-2.0.8.tgz igbinary-2.0.8
-    else
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-${IGBINARY_VERSION}.tgz
-        tar -xvf igbinary-${IGBINARY_VERSION}.tgz
-        cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
-        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf igbinary-${IGBINARY_VERSION} igbinary-${IGBINARY_VERSION}.tgz
-    fi
-
-    if [[ -f "/usr/lib64/php/modules/igbinary.so" ]]; then
-        cat >> "/etc/php.d/40-igbinary.ini" << EOF
-extension=igbinary.so
-EOF
-    else
-        echo "${INST_IGBINARY_ERR}" >> ${LOG}
-    fi
-}
-
-# Install Php memcached extension
-install_php_memcached(){
-    if [[ "${PHP_VERSION}" -eq "56" ]]; then
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-2.2.0.tgz
-        tar -xvf memcached-2.2.0.tgz
-        cd_dir "${DIR}/memcached-2.2.0"
-        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
-        cd_dir "${DIR}"
-        #rm -rf memcached-2.2.0.tgz memcached-2.2.0
-    else
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-${PHP_MEMCACHED_VERSION}.tgz
-        tar -xvf memcached-${PHP_MEMCACHED_VERSION}.tgz
-        cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
-        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
-        make
-        make install
-        cd "${DIR}" && rm -rf memcached-${PHP_MEMCACHED_VERSION}.tgz memcached-${PHP_MEMCACHED_VERSION}
-    fi
-
-    if [[ -f "/usr/lib64/php/modules/memcached.so" ]]; then
-        cat >> "/etc/php.d/50-memcached.ini" << EOF
-extension=memcached.so
-EOF
-    else
-        echo "${INST_MEMEXT_ERR}" >> ${LOG}
-    fi
-}
-
 # Install Memcached
 install_memcached(){
     yum -y install memcached libmemcached libmemcached-devel -y
@@ -442,9 +371,77 @@ EOMEMCACHED
     fi
 }
 
+# Install Redis
+install_redis(){
+    yum --enablerepo=remi install redis -y
+    mv /etc/redis.conf /etc/redis.conf.bak
+cat >> "/etc/redis.conf" << EOFREDIS
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+save ""
+EOFREDIS
+}
+
+# Install igbinary
+install_igbinary(){
+    if [[ "${PHP_VERSION}" == "56" ]]; then
+        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-2.0.8.tgz
+        tar -xvf igbinary-2.0.8.tgz
+        cd_dir "${DIR}/igbinary-2.0.8"
+        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
+        make && make install
+        cd "${DIR}" && rm -rf igbinary-2.0.8.tgz igbinary-2.0.8
+    else
+        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-${IGBINARY_VERSION}.tgz
+        tar -xvf igbinary-${IGBINARY_VERSION}.tgz
+        cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
+        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
+        make && make install
+        cd "${DIR}" && rm -rf igbinary-${IGBINARY_VERSION} igbinary-${IGBINARY_VERSION}.tgz
+    fi
+
+    if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
+        cat >> "/etc/php.d/40-igbinary.ini" << EOF
+extension=igbinary.so
+EOF
+    else
+        echo "${INST_IGBINARY_ERR}" >> ${LOG}
+    fi
+}
+
+# Install Php memcached extension
+install_php_memcached(){
+    if [[ "${PHP_VERSION}" == "56" ]]; then
+        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-2.2.0.tgz
+        tar -xvf memcached-2.2.0.tgz
+        cd_dir "${DIR}/memcached-2.2.0"
+        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
+        make
+        make install
+        cd_dir "${DIR}"
+        rm -rf memcached-2.2.0.tgz memcached-2.2.0
+    else
+        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-${PHP_MEMCACHED_VERSION}.tgz
+        tar -xvf memcached-${PHP_MEMCACHED_VERSION}.tgz
+        cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
+        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
+        make
+        make install
+        cd "${DIR}" && rm -rf memcached-${PHP_MEMCACHED_VERSION}.tgz memcached-${PHP_MEMCACHED_VERSION}
+    fi
+
+    if [[ -f "${PHP_MODULES_DIR}/memcached.so" ]]; then
+        cat >> "/etc/php.d/50-memcached.ini" << EOF
+extension=memcached.so
+EOF
+    else
+        echo "${INST_MEMEXT_ERR}" >> ${LOG}
+    fi
+}
+
 # Install Phpredis
 install_php_redis(){
-    if [[ "${PHP_VERSION}" -eq "56" ]]; then
+    if [[ "${PHP_VERSION}" == "56" ]]; then
         cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-4.3.0.tgz
         tar -xvf redis-4.3.0.tgz
         cd_dir "${DIR}/redis-4.3.0"
@@ -462,7 +459,7 @@ install_php_redis(){
         cd "${DIR}" && rm -rf redis-${PHP_REDIS_VERSION}.tgz redis-${PHP_REDIS_VERSION}
     fi
 
-    if [[ -f "/usr/lib64/php/modules/redis.so" ]]; then
+    if [[ -f "${PHP_MODULES_DIR}/redis.so" ]]; then
         cat >> "/etc/php.d/50-redis.ini" << EOF
 extension=redis.so
 EOF
@@ -472,28 +469,18 @@ EOF
 
 }
 
-# Install Redis
-install_redis(){
-    yum --enablerepo=remi install redis -y
-    mv /etc/redis.conf /etc/redis.conf.bak
-cat >> "/etc/redis.conf" << EOFREDIS
-maxmemory 256mb
-maxmemory-policy allkeys-lru
-save ""
-EOFREDIS
-}
-
 install_cache(){
     echo ""
-    install_igbinary
-
-    if [[ -f "/usr/lib64/php/modules/igbinary.so" ]]; then
-        install_php_memcached
-        install_php_redis
-    fi
 
     install_memcached
     install_redis
+
+    install_igbinary
+
+    if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
+        install_php_memcached
+        install_php_redis
+    fi
 }
 
 ############################################
@@ -532,6 +519,9 @@ worker_rlimit_nofile 260000;
 
 error_log  /var/log/nginx/error.log warn;
 pid        /var/run/nginx.pid;
+
+${LOAD_BROTLI_FILTER}
+${LOAD_BROTLI_STATIC}
 
 events {
     worker_connections  ${MAX_CLIENT};
@@ -596,7 +586,7 @@ http {
     add_header X-Download-Options noopen;
 
     include /etc/nginx/extra/gzip.conf;
-    #include /etc/nginx/extra/brotli.conf
+    include /etc/nginx/extra/brotli.conf;
     include /etc/nginx/extra/ssl.conf;
     include /etc/nginx/extra/cloudflare.conf;
     include /etc/nginx/extra/webp.conf;
@@ -792,6 +782,7 @@ location = /robots.txt {
 }
 location ~* \.(gif|jpg|jpeg|png|ico|webp)\$ {
     gzip_static off;
+    ${BROTLI_STATIC_OFF}
     add_header Access-Control-Allow-Origin *;
     add_header Cache-Control "public, must-revalidate, proxy-revalidate, immutable, stale-while-revalidate=86400, stale-if-error=604800";
     access_log off;
@@ -800,6 +791,7 @@ location ~* \.(gif|jpg|jpeg|png|ico|webp)\$ {
 }
 location ~* \.(3gp|wmv|avi|asf|asx|mpg|mpeg|mp4|pls|mp3|mid|wav|swf|flv|exe|zip|tar|rar|gz|tgz|bz2|uha|7z|doc|docx|xls|xlsx|pdf|iso)\$ {
     gzip_static off;
+    ${BROTLI_STATIC_OFF}
     sendfile off;
     sendfile_max_chunk 1m;
     add_header Access-Control-Allow-Origin *;
@@ -1506,7 +1498,7 @@ default_index(){
             <div>
                 <p>Sorry for the inconvenience but we're performing some maintenance at the moment. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p>${AUTHOR}</p>
+                <p>${AUTHOR} Team!</p>
             </div>
         </article>
     </body>
@@ -1538,7 +1530,7 @@ default_error_page(){
             <div>
                 <p>Sorry, the page you are looking for is currently unavailable. Please try again later. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p>${AUTHOR}</p>
+                <p>${AUTHOR} Team!</p>
             </div>
         </article>
     </body>
@@ -1563,60 +1555,60 @@ config_nginx(){
 # PHP Parameter
 php_parameter(){
     if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '2097152' && "${RAM_TOTAL}" -le '3145728' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '12' && "${RAM_TOTAL}" -gt '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '13' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*6"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*6"
+        PM_MAX_CHILDREN=$((CPU_CORES * 6))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
     elif [[ "${CPU_CORES}" -ge '17' && "${RAM_TOTAL}" -gt '4194304' ]]; then
-        PM_MAX_CHILDREN="${CPU_CORES}*5"
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*5"
+        PM_MAX_CHILDREN=$((CPU_CORES * 5))
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 5))
     else
         PM_MAX_CHILDREN=$(echo "scale=0;${RAM_MB}*0.4/30" | bc)
-        PM_START_SERVERS="${CPU_CORES}*4"
-        PM_MIN_SPARE_SERVER="${CPU_CORES}*2"
-        PM_MAX_SPARE_SERVER="${CPU_CORES}*4"
+        PM_START_SERVERS=$((CPU_CORES * 4))
+        PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
+        PM_MAX_SPARE_SERVER=$((CPU_CORES * 4))
     fi
 }
 
@@ -2679,7 +2671,7 @@ EOphpmyadmin_temp
     mysql -u root -p"${SQLPASS}" < /tmp/phpmyadmin.temp
     rm -f /tmp/phpmyadmin.temp
 
-    curl -o phpmyadmin.sql ${GITHUB_RAW_LINK}/sanvu88/pma/master/phpmyadmin.sql
+    curl -o phpmyadmin.sql ${EXT_LINK}/phpmyadmin.sql
     mysql -u root -p"${SQLPASS}" phpmyadmin < phpmyadmin.sql
     rm -rf phpmyadmin.sql
 }
@@ -2781,11 +2773,7 @@ opcache_dashboard(){
     mkdir -p ${DEFAULT_DIR_WEB}/opcache
     wget -q ${GITHUB_RAW_LINK}/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_WEB}/opcache/op.php
     chown -R nginx:nginx ${DEFAULT_DIR_WEB}/opcache
-    #printf "admin:$(openssl passwd -1 "${ADMIN_TOOL_PWD}")\n" >> ${USR_DIR}/nginx/auth/.htpasswd
-    htpasswd -c ${USR_DIR}/nginx/auth/.htpasswd admin << EOF
-    ${ADMIN_TOOL_PWD}
-    ${ADMIN_TOOL_PWD}
-EOF
+    htpasswd -b -c ${USR_DIR}/nginx/auth/.htpasswd "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx ${USR_DIR}/nginx/auth
 }
 
@@ -2851,27 +2839,27 @@ start_service() {
 check_service_status(){
     echo ""
     NGINX_STATUS=$(pgrep nginx | wc -l)
-    if [[ "${NGINX_STATUS}" -eq "0" ]]; then
+    if [[ "${NGINX_STATUS}" == "0" ]]; then
         echo "${NGINX_NOT_WORKING}" >> ${LOG}
     fi
 
     MARIADB_STATUS=$(pgrep mariadb | wc -l)
-    if [[ "${MARIADB_STATUS}" -eq "0" ]]; then
+    if [[ "${MARIADB_STATUS}" == "0" ]]; then
         echo "${MARIADB_NOT_WORKING}" >> ${LOG}
     fi
 
     PURE_STATUS=$(pgrep pure-ftpd | wc -l)
-    if [[ "${PURE_STATUS}" -eq "0" ]]; then
+    if [[ "${PURE_STATUS}" == "0" ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
     fi
 
     PHP_STATUS=$(pgrep php-fpm | wc -l)
-    if [[ "${PHP_STATUS}" -eq "0" ]]; then
+    if [[ "${PHP_STATUS}" == "0" ]]; then
         echo "${PHP_NOT_WORKING}" >> ${LOG}
     fi
 
     LFD_STATUS=$(pgrep lfd | wc -l)
-    if [[ "${LFD_STATUS}" -eq "0" ]]; then
+    if [[ "${LFD_STATUS}" == "0" ]]; then
         echo "${LFD_NOT_WORKING}" >> ${LOG}
     fi
 }
@@ -2891,7 +2879,6 @@ add_menu(){
 write_info(){
     FILE_INFO="${BASH_DIR}/hostvn.txt"
     touch "${FILE_INFO}"
-    chmod 600 "${FILE_INFO}"
     {
         echo "SSH  Port: 8282"
         echo "Link phpMyAdmin: http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
@@ -2901,6 +2888,8 @@ write_info(){
         echo "User Admin Tool    : admin"
         echo "Password Admin Tool : ${ADMIN_TOOL_PWD}"
     } >> "${FILE_INFO}"
+
+    chmod 400 "${FILE_INFO}"
 }
 
 
