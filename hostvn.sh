@@ -118,6 +118,14 @@ cd_dir(){
 ############################################
 # Prepare install
 ############################################
+create_bash_dir(){
+    chmod 711 /home
+    mkdir -p "${BASH_DIR}"
+    mkdir -p "${BASH_DIR}"/menu/helpers
+    mkdir -p "${BASH_DIR}"/users
+    chmod 711 users
+    echo "SERVERIP=${IPADDRESS}" >> "${BASH_DIR}"/menu/helpers/variable
+}
 
 # Disable Selinux
 disable_selinux(){
@@ -304,6 +312,24 @@ select_php_ver(){
     done
 }
 
+select_php_ver(){
+    echo "${SELECT_PHP}"
+    PS3="${ENTER_OPTION}"
+    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "7.4") PHP_VERSION="74"; break;;
+            "7.3") PHP_VERSION="73"; break;;
+            "7.2") PHP_VERSION="72"; break;;
+            "7.1") PHP_VERSION="71"; break;;
+            "7.0") PHP_VERSION="70"; break;;
+            "5.6") PHP_VERSION="56"; break;;
+            *) printf "Bạn nhập sai, hệ thống sẽ cài đặt PHP 7.4.\n"; break;;
+        esac
+    done
+}
+
 install_php(){
     select_php_ver
     yum-config-manager --enable remi-php${PHP_VERSION}
@@ -361,74 +387,74 @@ memory_calculation(){
     if [[ "${PHP_MEM}" -le '262144' ]]; then
         OPCACHE_MEM='32'
         MAX_MEMORY='48'
-        PHP_REALPATHLIMIT='512k'
-        PHP_REALPATHTTL='14400'
+        PHP_REAL_PATH_LIMIT='512k'
+        PHP_REAL_PATH_TTL='14400'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
         OPCACHE_MEM='80'
         MAX_MEMORY='96'
-        PHP_REALPATHLIMIT='640k'
-        PHP_REALPATHTTL='21600'
+        PHP_REAL_PATH_LIMIT='640k'
+        PHP_REAL_PATH_TTL='21600'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
         OPCACHE_MEM='112'
         MAX_MEMORY='128'
-        PHP_REALPATHLIMIT='768k'
-        PHP_REALPATHTTL='21600'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='21600'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
         OPCACHE_MEM='144'
         MAX_MEMORY='160'
-        PHP_REALPATHLIMIT='768k'
-        PHP_REALPATHTTL='28800'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='28800'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
         OPCACHE_MEM='160'
         MAX_MEMORY='320'
-        PHP_REALPATHLIMIT='1536k'
-        PHP_REALPATHTTL='28800'
+        PHP_REAL_PATH_LIMIT='1536k'
+        PHP_REAL_PATH_TTL='28800'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
         OPCACHE_MEM='192'
         MAX_MEMORY='384'
-        PHP_REALPATHLIMIT='2048k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='2048k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
         OPCACHE_MEM='224'
         MAX_MEMORY='512'
-        PHP_REALPATHLIMIT='3072k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='3072k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="6000"
     elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
         OPCACHE_MEM='288'
         MAX_MEMORY='640'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
         OPCACHE_MEM='320'
         MAX_MEMORY='800'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
         OPCACHE_MEM='480'
         MAX_MEMORY='1024'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
         OPCACHE_MEM='600'
         MAX_MEMORY='1280'
-        PHP_REALPATHLIMIT='4096k'
-        PHP_REALPATHTTL='43200'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
         MAX_INPUT_VARS="10000"
     elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
         OPCACHE_MEM='800'
         MAX_MEMORY='2048'
-        PHP_REALPATHLIMIT='8192k'
-        PHP_REALPATHTTL='86400'
+        PHP_REAL_PATH_LIMIT='8192k'
+        PHP_REAL_PATH_TTL='86400'
         MAX_INPUT_VARS="10000"
     fi
 }
@@ -964,7 +990,7 @@ vhost_custom(){
     mkdir -p ${REWRITE_CONFIG_PATH}
 cat >> "${REWRITE_CONFIG_PATH}/default.conf" << EOrewrite_default
 location / {
-    try_files \$uri \$uri/ /index.php?\$args;
+    try_files \$uri \$uri/ /index.php?\$query_string;
 }
 EOrewrite_default
 
@@ -1621,63 +1647,86 @@ config_nginx(){
 # Config PHP-FPM
 ############################################
 # PHP Parameter
+save_php_parameter(){
+    {
+        echo PM_MAX_CHILDREN="${PM_MAX_CHILDREN}"
+        echo PM_START_SERVERS="${PM_START_SERVERS}"
+        echo PM_MIN_SPARE_SERVER="${PM_MIN_SPARE_SERVER}"
+        echo PM_MAX_SPARE_SERVER="${PM_MAX_SPARE_SERVER}"
+        echo PM_MAX_REQUEST="${PM_MAX_REQUEST}"
+    } >> "${BASH_DIR}"/menu/helpers/variable.conf
+}
+
 php_parameter(){
     if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '2097152' && "${RAM_TOTAL}" -le '3145728' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '12' && "${RAM_TOTAL}" -gt '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '13' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
+        PM_MAX_REQUEST=2000
     elif [[ "${CPU_CORES}" -ge '17' && "${RAM_TOTAL}" -gt '4194304' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 5))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 5))
+        PM_MAX_REQUEST=2000
     else
         PM_MAX_CHILDREN=$(echo "scale=0;${RAM_MB}*0.4/30" | bc)
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 4))
+        PM_MAX_REQUEST=500
     fi
+
+    save_php_parameter
 }
 
 php_global_config(){
@@ -1723,7 +1772,7 @@ pm.max_children = ${PM_MAX_CHILDREN}
 pm.start_servers = ${PM_START_SERVERS}
 pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
 pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
-pm.max_requests = 2000
+pm.max_requests = ${PM_MAX_REQUEST}
 request_terminate_timeout = 300
 rlimit_files = 65536
 rlimit_core = 0
@@ -1746,6 +1795,9 @@ EOwww_conf
     if [[ ! -d "/var/lib/php/wsdlcache" ]]; then
         mkdir -p /var/lib/php/wsdlcache
     fi
+    if [[ ! -d "/var/log/php-fpm" ]]; then
+        mkdir -p /var/log/php-fpm
+    fi
     chown -R nginx:nginx /var/lib/php/session
     chown -R nginx:nginx /var/lib/php/wsdlcache
     chown -R nginx:nginx /var/log/php-fpm
@@ -1759,8 +1811,8 @@ date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
 max_input_time = 90
 short_open_tag = On
-realpath_cache_size = ${PHP_REALPATHLIMIT}
-realpath_cache_ttl = ${PHP_REALPATHTTL}
+realpath_cache_size = ${PHP_REAL_PATH_LIMIT}
+realpath_cache_ttl = ${PHP_REAL_PATH_TTL}
 memory_limit = ${MAX_MEMORY}M
 upload_max_filesize = ${MAX_MEMORY}M
 post_max_size = ${MAX_MEMORY}M
@@ -2829,22 +2881,22 @@ check_service_status(){
     fi
 
     MARIADB_STATUS=$(systemctl is-active mariadb)
-    if [[ "${MARIADB_STATUS}" != "active" ]]; then
+    if [[ "${MARIADB_STATUS}" != 'active' ]]; then
         echo "${MARIADB_NOT_WORKING}" >> ${LOG}
     fi
 
     PURE_STATUS=$(systemctl is-active pure-ftpd)
-    if [[ "${PURE_STATUS}" != "active" ]]; then
+    if [[ "${PURE_STATUS}" != 'active' ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
     fi
 
     PHP_STATUS=$(systemctl is-active php-fpm)
-    if [[ "${PHP_STATUS}" != "active" ]]; then
+    if [[ "${PHP_STATUS}" != 'active' ]]; then
         echo "${PHP_NOT_WORKING}" >> ${LOG}
     fi
 
     CSF_STATUS=$(systemctl is-active csf)
-    if [[ "${CSF_STATUS}" != "active" ]]; then
+    if [[ "${CSF_STATUS}" != 'active' ]]; then
         echo "${CSF_NOT_WORKING}" >> ${LOG}
     fi
 
@@ -2859,11 +2911,10 @@ check_service_status(){
 ############################################
 add_menu(){
     echo ""
-    mkdir -p "${BASH_DIR}"
     cd_dir "${BASH_DIR}"
     #wget ${EXT_LINK}/menu.zip
     #unzip menu.zip
-    mkdir -p users
+
     #chmod 711 menu && chmod 711 users
 }
 
@@ -2893,6 +2944,7 @@ write_info(){
 run_(){
     check_before_install
     prepare_install
+    create_bash_dir
     install_lemp
     install_composer
     memory_calculation
@@ -2939,7 +2991,7 @@ echo "3.  User                       : admin                                   "
 echo "4.  Password                   : ${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
 echo "========================================================================="
-echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không."
+echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không. "
 echo "-------------------------------------------------------------------------"
 
 sleep 3
