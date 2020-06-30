@@ -298,6 +298,7 @@ select_php_ver(){
         REGEX_NUMBER='^[0-9]+$'
         if ! [[ ${PHP_VERSION} =~ ${REGEX_NUMBER} ]]; then
             echo "${WRONG_OPTION}"
+            PHP_VERSION="74"
         fi
         break
     done
