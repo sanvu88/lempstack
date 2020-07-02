@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "========================================================================="
+echo "Phân quyền Chown/Chmod"
+echo "========================================================================="
+echo
+
+action(){
+   read -r -p "Xác nhận phân lại quyền cho domain: ${domain}? (y/n): " confirm
+
+    if [[ "$confirm" =~ ^([yY])$ ]]; then
+        username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
+        path="/home/${username}"
+        if [[ -d "${path}" ]]; then
+            chmod 710 /home/"${username}"
+            chmod 711 /home/"${username}"/"${domain}"
+            chmod 711 /home/"${username}"/"${domain}"/logs
+            chmod 755 /home/"${username}"/"${domain}"/public_html
+            chown -R "${username}":"${username}" /home/"${username}"
+            echo "-------------------------------------------------------------------------"
+            echo "Đã phân lại quyền cho domain: ${domain}"
+            sleep 2
+            echo "Đang quay lại menu..."
+            sleep 2
+            hvn
+        else
+            echo
+            echo "Domain không tồn tại trên VPS"
+            controller_permission
+        fi
+    else
+        echo
+        controller_permission
+    fi
+}
+
+select_domain
+check_domain_exists
+action

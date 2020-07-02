@@ -1,0 +1,161 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "-------------------------------------------------------------------------"
+echo "Thêm SSL - Let's Encrypt"
+echo "-------------------------------------------------------------------------"
+echo
+
+set_variable(){
+    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+    username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
+    source=$(grep "source" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
+    cache=$(grep "plugin_cache" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
+    brute=""
+    wordpress_conf=""
+    wp_secure=""
+}
+
+check_nginx_status(){
+    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+    if [[ "$nginx" != "active" ]]; then
+        clear
+        echo "Nginx hiện tại không hoạt động. Vui lòng kiểm tra lại."
+        echo
+        controller_lets_encrypt
+    fi
+}
+
+check_dns(){
+    a_record=$(dig -4 +nocomments @8.8.8.8 +short A "${domain}")
+    if [[ "${a_record}" != "${server_ip}" ]]; then
+        echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại."
+        sleep 2
+        echo
+        controller_lets_encrypt
+    fi
+}
+
+backup_vhost(){
+    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+}
+
+sign_ssl(){
+    /usr/local/bin/certbot-auto --nginx --no-bootstrap << EOF
+${domain}
+EOF
+}
+
+browser_cache(){
+    if [[ "${plugins_cache}" == "w3c" ]]; then
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+        rewrite="include /etc/nginx/rewrite/${source}.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    elif [[ "${plugins_cache}" == "wpfc" ]]; then
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wprocket" ]]; then
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wpsc" ]]; then
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "enabler" ]]; then
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    else
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+        rewrite="include /etc/nginx/rewrite/${source}.conf;"
+    fi
+}
+
+create_ssl_vhost(){
+    backup_vhost
+
+    if [[ "${source}" == "wordpress" ]]; then
+        browser_cache
+        brute_force_wp
+        wordpress_config
+    fi
+
+    cat >> "/etc/nginx/conf.d/$domain.conf" << END
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${domain} www.${domain};
+
+    root /home/${username}/${domain}/public_html/;
+    if (\$http_x_forwarded_proto != 'https') {
+        return 301 https://\$host\$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${domain} www.${domain};
+
+    access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    log_not_found off;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+
+    root /home/${username}/${domain}/public_html/;
+    index index.php index.html index.htm;
+
+    ${rewrite}
+    ${cache}
+
+    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;
+
+    location ~ \.php\$
+    {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm/${username}.sock;
+        }
+    }
+
+    ${brute}
+    ${wordpress_conf}
+    ${wp_secure}
+    include /etc/nginx/extra/security.conf;
+}
+END
+}
+
+restart_nginx(){
+    systemctl restart nginx.service
+}
+
+run(){
+    check_nginx_status
+    select_domain
+    set_variable
+    check_dns
+    check_domain_exists
+    sign_ssl
+    create_ssl_vhost
+    restart_nginx
+}
+
+run
+
+echo ""
+echo "Tạo SSL Let's Encrypt thành công"
+sleep 2
+controller_lets_encrypt

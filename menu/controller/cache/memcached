@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "-------------------------------------------------------------------------"
+echo "Quản lý Memcached"
+echo "-------------------------------------------------------------------------"
+status=$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
+echo "Trạng thái: ${status}"
+echo "-------------------------------------------------------------------------"
+PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
+options=("Mở Memcached" "Tắt Memcached")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Mở Memcached")
+            echo "Đang tiến hành mở Memcached..."
+            sleep 1
+            systemctl start memcached
+            systemctl enable memcached
+            clear
+            echo "Đã bật Memcached"
+            echo
+            controller_cache
+            ;;
+        "Tắt Memcached")
+            echo "Đang tiến hành tắt Memcached..."
+            sleep 1
+            systemctl stop memcached
+            systemctl disable memcached
+            clear
+            echo "Đã tắt Memcached"
+            echo
+            controller_cache
+            ;;
+        *) controller_cache;;
+    esac
+done

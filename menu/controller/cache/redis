@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "-------------------------------------------------------------------------"
+echo "Quản lý Redis Cache"
+echo "-------------------------------------------------------------------------"
+status=$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
+echo "Trạng thái: ${status}"
+echo "-------------------------------------------------------------------------"
+PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
+options=("Bật Redis Cache" "Tắt Redis Cache")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Bật Redis Cache")
+            echo "Đang tiến hành mở Redis Cache..."
+            sleep 1
+            systemctl enable redis.service
+            systemctl start redis.service
+            clear
+            echo "Đã bật Redis Cache"
+            echo
+            action_cache
+            ;;
+        "Tắt Redis Cache")
+            echo "Đang tiến hành tắt Redis Cache..."
+            sleep 1
+            systemctl stop redis.service
+            systemctl disable redis.service
+            clear
+            echo "Đã tắt Redis Cache"
+            echo
+            action_cache
+            ;;
+        *) controller_cache;;
+    esac
+done

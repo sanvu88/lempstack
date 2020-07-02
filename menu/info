@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+totalRam=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+memAvailable=$(grep 'MemAvailable' /proc/meminfo |cut -f2 -d':' | xargs | cut -f1 -d' ')
+totalSwap=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+freeSwap=$(grep 'SwapFree' /proc/meminfo |cut -f2 -d':' | xargs | cut -f1 -d' ')
+disk=$(fdisk -l | grep 'Disk' | cut -f1 -d',' | tr '\n' ' ')
+
+clear
+printf "=========================================================================\n"
+printf "                       Info VPS - IP: %s\n" "$(ip route get 1 | awk '{print $NF;exit}')"
+printf "=========================================================================\n"
+echo ""
+echo ""
+echo "Active"
+printf '%s\n' "$(uptime | xargs)"
+echo ""
+
+echo "CPU loading  : $(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')"
+echo "Ram          : $(convert_to_mb "$totalRam") (available: $(convert_to_mb "$memAvailable"))"
+echo "Swap         : $(convert_to_mb "$totalSwap") (available: $(convert_to_mb "$freeSwap") )"
+echo "HDD          : $disk"
+echo
+echo "CPU"
+echo "-------------------------------------------------------------------------"
+echo "Total Core   : $(grep -c 'processor' /proc/cpuinfo)"
+echo "CPU Model    : $(grep 'name' /proc/cpuinfo | uniq | cut -f2 -d':' | xargs)"
+echo "CPU MHz      : $(grep 'cpu MHz' /proc/cpuinfo | cut -f2 -d':' | xargs)"
+echo "Cache Size   : $(grep 'cache size' /proc/cpuinfo | cut -f2 -d':' | xargs)"
+echo ""
+
+echo "Manager Service"
+echo "-------------------------------------------------------------------------"
+echo "Nginx        : $(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "Php-FPM      : $(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "Mysql        : $(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "SSH          : $(systemctl status sshd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "CSF Firewall : $(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "Pure-ftpd    : $(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "Memcached    : $(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "Redis        : $(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+echo "Other"
+echo "-------------------------------------------------------------------------"
+echo "PHP          : $(rpm -qa php-fpm | cut -f3 -d'-')"
+echo "MariaDB      : $(mysql --version | cut -f6 -d' ' | cut -f1 -d'-')"
+printf "%s\n" "$(nginx -v)"
+echo "System"
+echo "-------------------------------------------------------------------------"
+echo "Virtualization: $(hostnamectl | grep "Virtualization" | cut -f2 -d":" | cut -f2 -d" ")"
+echo "System OS     : $(hostnamectl | grep "Operating System" | cut -f2 -d":" | xargs)"
+echo "Kernel        : $(hostnamectl | grep "Kernel" | cut -f2 -d":" | xargs)"
+
+hvn 1

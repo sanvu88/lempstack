@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+# shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
+
+echo "-------------------------------------------------------------------------"
+echo "Thay đổi port SSH hiện tại"
+echo "-------------------------------------------------------------------------"
+
+set_var(){
+	current_port=$(grep "Port " /etc/ssh/sshd_config | cut -f2 -d" ")
+}
+
+input(){
+	read -r -p "Nhập vào port bạn muốn đổi: " port_new
+}
+
+check(){
+	set_var
+	if [ "$port_new" = '' ]; then
+	    clear
+	    echo "Bạn chưa nhập Port."
+	    echo
+	    controller_ssh
+	fi
+
+	if [[ ! $port_new =~ ^-?[0-9]+$ ]]; then
+	    clear
+	    echo "Port không đúng định dạng, vui lòng nhập lại"
+	    echo
+	    controller_ssh
+	fi
+
+	if [[ "${port_new}" == "${current_port}" ]]; then
+		clear
+	    echo "Port bạn nhập trùng với Port SSH hiện tại."
+	    echo
+	    controller_ssh
+	fi
+
+	if [[ "${port_new}" == "${admin_port}" ]]; then
+		clear
+	    echo "Port bạn nhập trùng với Port Admin tool."
+	    echo
+	    controller_ssh
+	fi
+}
+
+change_port(){
+	echo "Đang tiến hành thay đổi port SSH..."
+   	echo ""
+   	sleep 1
+    sed -i 's/Port '${port_open}'/Port '${port_new}'/g' /etc/ssh/sshd_config
+    sed -i 's/,'${port_open}',/,'${port_new}',/g' /etc/csf/csf.conf
+    sed -i 's/PORTS_sshd = "22, '${port_open}'"/PORTS_sshd = "22, '${port_new}'"/g' /etc/csf/csf.conf
+    sed -i 's/ssh_port='${port_open}'/ssh_port='${port_new}'/g' /var/hostvn/script/hostvn.conf
+    systemctl reload sshd.service
+    csf -x
+    csf -e
+    systemctl restart csf
+    systemctl restart lfd
+}
+
+run(){
+	input
+	check
+	change_port
+}
+
+run
+
+echo "Đã thay đổi Port SSH sang $port_new thành công"
+echo ""
+controller_ssh

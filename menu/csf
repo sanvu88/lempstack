@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "========================================================================="
+echo "Quản lý CSF Firewall"
+echo "========================================================================="
+echo "-------------------------------------------------------------------------"
+echo "Hướng dẫn: https://hostvn.net"
+echo "-------------------------------------------------------------------------"
+echo
+PS3='Nhập lựa chọn của bạn (1-7) [0=Exit]: '
+options=("Kiểm tra Block IP" "Block IP" "Gỡ Block IP" "Gỡ block toàn bộ IP" "Allow IP" "Restart CSF" "Tắt CSF" "Bật CSF")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Kiểm tra Block IP")
+            read -r -p "Nhập vào IP muốn kiểm tra: " ip
+            csf -g "${ip}"
+            echo ""
+            controller_csf
+            ;;
+        "Block IP")
+            read -r -p "Nhập vào IP muốn block: " ip
+            csf -d "${ip}"
+            echo ""
+            controller_csf
+            ;;
+        "Gỡ Block IP")
+            read -r -p "Nhập vào IP muốn gỡ block: " ip
+            csf -dr "${ip}"
+            echo ""
+            controller_csf
+            ;;
+        "Gỡ block toàn bộ IP")
+        	csf -tf
+    		csf -df
+            systemctl restart csf
+            systemctl restart lfd
+            echo ""
+            controller_csf
+            ;;
+        "Allow IP")
+            read -r -p "Nhập vào IP muốn allow: " ip
+            csf -a "${ip}"
+            echo ""
+            controller_csf
+            ;;
+        "Restart CSF")
+            csf -r
+            systemctl restart csf
+            systemctl restart lfd
+            echo ""
+            controller_csf
+            ;;
+        "Tắt CSF")
+            csf -x
+            systemctl stop csf
+            systemctl stop lfd
+            systemctl disable csf
+            systemctl disable lfd
+            echo ""
+            controller_csf
+            ;;
+        "Bật CSF")
+            csf -e
+            systemctl start csf
+            systemctl start lfd
+            systemctl enable csf
+            systemctl enable lfd
+            echo ""
+            controller_csf
+            ;;
+        *) hvn;;
+    esac
+done

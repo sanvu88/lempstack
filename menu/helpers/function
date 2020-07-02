@@ -1,0 +1,125 @@
+#!/bin/bash
+
+cd_dir(){
+    cd "$1" || return
+}
+
+valid_number(){
+	REGEX_NUMBER='^[0-9]+$'
+    if ! [[ $1 =~ ${REGEX_NUMBER} ]]; then
+        return 0
+    else
+       	return 1
+    fi
+}
+
+convert_to_mb(){
+    local -i bytes=$1;
+    if [[ $bytes -lt 1024 ]]; then
+        echo "${bytes} B"
+    elif [[ $bytes -lt 1048576 ]]; then
+        echo "$(( (bytes + 1023)/1024 )) MB"
+    else
+        echo "$(( (bytes + 1048575)/1048576 )) GB"
+    fi
+}
+
+php_parameter(){
+
+}
+
+select_domain(){
+	domain=""
+	if [ "$(ls -At /var/hostvn/script/users)" ]; then
+		echo "Danh sách domain"
+		selects=()
+		cd_dir "/var/hostvn/script/users"
+		for entry in .*.conf; do
+		    domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
+		    if [ "$domain" != "${domain/.}" ]; then
+		        selects+=("${domain}")
+		    fi
+		done
+		PS3="Nhập lựa chọn của bạn [0=Exit]: "
+		select select in "${selects[@]}"
+		do
+			domain=$select
+			break
+		done
+	else
+	clear
+	echo "Không có Domain nào tồn tại trên hệ thống"
+	hvn
+	fi
+}
+
+check_domain_exists(){
+	if [ "${domain}" = '' ]; then
+	    clear
+	    echo "Bạn chưa chọn Domain."
+	    echo
+	    hvn
+	fi
+
+	if [ "${domain}" = "${domain/.}" ]; then
+	    clear
+	    echo "Domain bạn chọn không đúng định dạng."
+	    echo
+	    hvn
+	fi
+
+	path="/var/hostvn/script/users/.${domain}.conf"
+	if [[ ! -f "${path}" ]]; then
+	    clear
+	    echo "Domain không tồn tại trên VPS."
+	    echo
+	    hvn
+	fi
+}
+
+brute_force_wp(){
+    brute="location = /wp-login.php {
+        limit_req zone=two burst=1 nodelay;
+        include /etc/nginx/fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_pass unix:/var/run/php-fpm/${username}.sock;
+    }"
+}
+
+wordpress_config(){
+	wordpress_conf="include /etc/nginx/rewrite/wordpress.conf;"
+}
+
+restart_service(){
+	systemctl restart nginx.service
+    systemctl restart php-fpm.service
+}
+
+controller_domain(){
+	. /var/hostvn/script/domain
+}
+
+
+controller_csf(){
+	. /var/hostvn/script/csf
+}
+
+controller_permission(){
+	. /var/hostvn/script/permission
+}
+
+controller_ssh(){
+	. /var/hostvn/script/ssh
+}
+
+controller_cache(){
+	. /var/hostvn/script/cache
+}
+
+controller_nginx(){
+	. /var/hostvn/script/nginx
+}
+
+controller_lets_encrypt(){
+	. /var/hostvn/script/letencrypt
+}

@@ -1,0 +1,534 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /root/.my.cnf
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+# shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
+# shellcheck disable=SC1091
+source /var/hostvn/script/php_parameter.conf
+
+echo "-------------------------------------------------------------------------"
+echo "Thêm domain mới"
+echo "-------------------------------------------------------------------------"
+echo ""
+
+check_service(){
+    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    phpfpm="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    mariadb="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+    if [[ "${nginx}" != 'active' ]] || [[ "${phpfpm}" != 'active' ]] || [[ "${mariadb}" != 'active' || "${pureftpd}" != 'active' ]]; then
+        clear
+        echo "-------------------------------------------------------------------------"
+        echo "Có lỗi xảy ra:"
+        echo "-------------------------------------------------------------------------"
+        echo "Vui lòng kiểm tra lại các service trước khi thêm tên miền:"
+        echo "-------------------------------------------------------------------------"
+        echo "Nginx: ${nginx}"
+        echo "PHP-FPM: ${phpfpm}"
+        echo "MariaDB: ${mariadb}"
+        echo "Pure-ftp: ${pureftpd}"
+        echo "-------------------------------------------------------------------------"
+        echo
+        controller_domain
+    fi
+}
+
+# Set variables
+prepare(){
+	read -r -p "Nhập domain (Không có www) [ENTER]: " domain
+    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+	username=${domain//[-._]/}
+	user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-24}";echo;)
+    prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+    SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
+    wp_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+    db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
+    db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
+    db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-24}";echo;)
+    plugin_cache="other"
+    php_use="1"
+    brute=""
+    wordpress_conf=""
+    wp_secure=""
+}
+
+# Check Conditions
+check_domain(){
+	if [ "$domain" = '' ]; then
+	    clear
+	    echo "Bạn chưa nhập Domain."
+	    echo
+	    controller_domain
+	fi
+
+	if [ "$domain" = "${domain/.}" ]; then
+	    clear
+	    echo "Domain bạn nhập không đúng định dạng."
+	    echo
+	    controller_domain
+	fi
+
+	if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "/var/hostvn/script/users/.${domain}.conf" ]]; then
+	    clear
+	    echo "Domain đã tồn tại trên VPS."
+	    echo
+	    controller_domain
+	fi
+}
+
+check_user(){
+    RESULT_USER=$(grep -c "^${username}:" /etc/passwd)
+    if [[ ${RESULT_USER} != 0 ]]; then
+        echo "User đã tồn tại trên VPS."
+        echo ""
+        controller_domain
+    fi
+}
+
+check_database(){
+    RESULT_DB=$(mysqlshow "${db_name}" | grep -v Wildcard | grep -o "${db_name}")
+    if [ "$RESULT_DB" == "${db_name}" ]; then
+        echo "Database đã tồn tại trên VPS."
+        echo ""
+        controller_domain
+    fi
+}
+
+check_mysql_user(){
+    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$db_user')")"
+    if [ "${RESULT_VARIABLE}" = 1 ]; then
+        echo "Mysql User đã tồn tại trên VPS."
+        echo ""
+        controller_domain
+    fi
+}
+
+# Select Source
+select_source(){
+	SOURCE="Other"
+    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
+    PS3='Nhập lựa chọn của bạn (1-14): '
+	options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
+	select opt in "${options[@]}"
+	do
+	    case $opt in
+	        "WordPress") SOURCE="wordpress"; break;;
+         	"Laravel") SOURCE="laravel"; break;;
+            "CodeIgniter") SOURCE="codeigniter"; break;;
+            "Xenforo") SOURCE="xenforo"; break;;
+            "Joomla") SOURCE="joomla"; break;;
+            "Drupal") SOURCE="drupal"; break;;
+            "OpenCart") SOURCE="opencart"; break;;
+            "WHMCS") SOURCE="whmcs"; break;;
+            "PrestaShop") SOURCE="prestashop"; break;;
+            "Yii") SOURCE="yii"; break;;
+            "NextCloud") SOURCE="nextcloud"; break;;
+            "Discuz") SOURCE="discuz"; break;;
+            "Ecshop") SOURCE="ecshop"; break;;
+            "Other") SOURCE="default"; break;;
+	        *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
+	    esac
+	done
+}
+
+set_php_version(){
+    php1="php${php1_version}"
+    php2=${php2_version}
+}
+
+select_php(){
+    set_php_version
+
+    echo "Lựa chọn phiên bản PHP bạn muốn sử dụng"
+    PS3='Nhập lựa chọn của bạn (1-2): '
+    options=("${php1}" "${php2}")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "${php1}") php_use="1"; break;;
+            "${php2}") php_use="2"; break;;
+            *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
+        esac
+    done
+}
+
+plugin_cache(){
+    plugins_cache="n"
+    echo "Lựa chọn Plugins cache mà bạn sẽ sử dụng ?"
+    PS3='Nhập lựa chọn của bạn (1-2): '
+    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "W3 Total Cache") plugins_cache="w3c"; break;;
+            "WP Fastest Cache") plugins_cache="wpfc"; break;;
+            "WP Rocket") plugins_cache="wprocket"; break;;
+            "WP Super Cache") plugins_cache="wpsc"; break;;
+            "Cache Enabler") plugins_cache="enabler"; break;;
+            "Other") plugins_cache="other"; break;;
+            *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
+        esac
+    done
+}
+
+auto_install_wp(){
+    auto_inst_wp="n"
+    echo "Bạn có muốn tự động cài đặt WordPress mới không ?"
+    PS3='Nhập lựa chọn của bạn (1-2): '
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") auto_inst_wp="y"; break;;
+            "No") auto_inst_wp="n"; break;;
+            *) printf "Bạn nhập sai, huỷ tự động cài đặt WordPress.\n"; break;;
+        esac
+    done
+
+    if [[ "${auto_inst_wp}" == "y" ]]; then
+        cd_dir "/home/${username}/${domain}/public_html"
+        wget https://wordpress.org/latest.tar.gz
+        tar -xvf latest.tar.gz
+        cd wordpress && mv ./* ../
+        cd_dir "/home/${username}/${domain}/public_html"
+        rm -rf wordpress license.txt readme.html latest.tar.gz
+
+        #create wwp-config.php
+        cat >> "/home/${username}/${domain}/public_html/wp-config.php" << END
+<?php
+define( 'DB_NAME', '${db_name}' );
+define( 'DB_USER', '${db_user}' );
+define( 'DB_PASSWORD', '${db_pass}' );
+define( 'DB_HOST', 'localhost' );
+define( 'DB_CHARSET', 'utf8' );
+define( 'DB_COLLATE', '' );
+${SALT}
+\$table_prefix = '${wp_prefix}_';
+define( 'WP_DEBUG', false );
+
+if ( ! defined( 'ABSPATH' ) ) {
+    define( 'ABSPATH', __DIR__ . '/' );
+}
+
+require_once ABSPATH . 'wp-settings.php';
+END
+        #create robots
+        cat > "/home/$username/$domain/public_html/robots.txt" <<END
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /search?q=*
+Disallow: *?replytocom
+Disallow: */attachment/*
+Disallow: /images/
+Allow: /wp-admin/admin-ajax.php
+Allow: /*.js$
+Allow: /*.css$
+END
+        chown -R "${username}":"${username}" ./*
+    fi
+}
+
+# Create
+create_user(){
+    check_user
+    useradd --shell /sbin/nologin "${username}"
+}
+
+create_ftp(){
+    pure-pw useradd "${username}" -u "${username}" -d /home/"${username}"
+    pure-pw mkdb
+}
+
+create_db(){
+    check_database
+    check_mysql_user
+
+	MYSQL=$(which mysql)
+    Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
+    Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
+    Q3="FLUSH PRIVILEGES;"
+    SQL="${Q1}${Q2}${Q3}"
+
+    ${MYSQL} -uroot -e "${SQL}"
+}
+
+create_docrot(){
+	mkdir -p /home/"${username}"/"${domain}"/public_html
+	mkdir -p /home/"${username}"/"${domain}"/logs
+	chmod 710 /home/"${username}"
+	chmod 711 /home/"${username}"/"${domain}"
+	chmod 711 /home/"${username}"/"${domain}"/logs
+	chmod 755 /home/"${username}"/"${domain}"/public_html
+	chown -R "${username}":"${username}" /home/"${username}"
+}
+
+disable_functions(){
+    dis_functions="exec,system,passthru,shell_exec,proc_close,proc_open,popen,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname"
+    if [[ "${SOURCE}" == "laravel" || "${SOURCE}" == "yii" || "${SOURCE}" == "codeigniter" ]]; then
+        dis_functions="exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname"
+    fi
+}
+
+set_phpconf_var(){
+    php_conf_file="/etc/php-fpm.d/${domain}.conf"
+    listen="/var/run/php-fpm/${username}.sock;"
+    slowlog="/var/log/php-fpm/${domain}-slow.log"
+    error_log="/var/log/php-fpm/${domain}-error.log"
+    session_path="/var/lib/php/user/${username}/session"
+    wsdl_cache_dir="/var/lib/php/user/${username}/wsdlcache"
+    open_basedir="/home/${username}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/"
+
+    if [[ "${php2_release}" == "yes" && "${php_use}" == "2" ]]; then
+        php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
+        slowlog="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-slow.log"
+        error_log="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-error.log"
+        session_path="/opt/remi/${php2_version}/root/var/lib/php/user/${username}/session"
+        wsdl_cache_dir="/opt/remi/${php2_version}/root/var/lib/php/user/${username}/wsdlcache"
+        open_basedir="/home/${username}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm:/var/lib/php/sessions/:/opt/remi/${php2_version}/root/var/lib/php/sessions/"
+    fi
+
+    mkdir -p "${session_path}"
+    mkdir -p "${wsdl_cache_dir}"
+    chown -R "${username}":"${username}" "${session_path}"
+    chown -R "${username}":"${username}" "${wsdl_cache_dir}"
+    chmod 700 "${session_path}"
+}
+
+create_phpconfig(){
+    set_phpconf_var
+	cat > "${php_conf_file}" << END
+[${username}]
+listen = ${listen};
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = ${username}
+listen.group = nginx
+listen.mode = 0660
+user = ${username}
+group = ${username}
+pm = dynamic
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.start_servers = ${PM_START_SERVERS}
+pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
+pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.max_requests = ${PM_MAX_REQUEST}
+request_terminate_timeout = 300
+rlimit_files = 65536
+rlimit_core = 0
+;slowlog = ${slowlog}
+chdir = /
+php_admin_value[error_log] = ${error_log}
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = ${session_path}
+php_value[soap.wsdl_cache_dir]  = ${wsdl_cache_dir}
+php_admin_value[disable_functions] = ${dis_functions}
+php_admin_value[open_basedir] = ${open_basedir}
+security.limit_extensions = .php
+END
+}
+
+set_rewrite(){
+    if [ "${SOURCE}" == "wordpress" ]; then
+        rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    elif [ "${SOURCE}" == "laravel" ]; then
+        rewrite="include /etc/nginx/rewrite/laravel.conf;"
+    elif [ "${SOURCE}" == "codeigniter" ]; then
+        rewrite="include /etc/nginx/rewrite/codeigniter.conf;"
+    elif [ "${SOURCE}" == "xenforo" ]; then
+        rewrite="include /etc/nginx/rewrite/xenforo.conf;"
+    elif [ "${SOURCE}" == "joomla" ]; then
+        rewrite="include /etc/nginx/rewrite/joomla.conf;"
+    elif [ "${SOURCE}" == "drupal" ]; then
+        rewrite="include /etc/nginx/rewrite/drupal.conf;"
+    elif [ "${SOURCE}" == "opencart" ]; then
+        rewrite="include /etc/nginx/rewrite/opencart.conf;"
+    elif [ "${SOURCE}" == "whmcs" ]; then
+        rewrite="include /etc/nginx/rewrite/whmcs.conf;"
+    elif [ "${SOURCE}" == "prestashop" ]; then
+        rewrite="include /etc/nginx/rewrite/prestashop.conf;"
+    elif [ "${SOURCE}" == "yii" ]; then
+        rewrite="include /etc/nginx/rewrite/yii.conf;"
+    elif [ "${SOURCE}" == "nextcloud" ]; then
+        rewrite="include /etc/nginx/rewrite/nextcloud.conf;"
+    elif [ "${SOURCE}" == "discuz" ]; then
+        rewrite="include /etc/nginx/rewrite/discuz.conf;"
+    elif [ "${SOURCE}" == "ecshop" ]; then
+        rewrite="include /etc/nginx/rewrite/ecshop.conf;"
+    else
+        rewrite="include /etc/nginx/rewrite/default.conf;"
+    fi
+}
+
+browser_cache(){
+    if [[ "${plugins_cache}" == "w3c" ]]; then
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+        plugin_cache="w3c"
+    elif [[ "${plugins_cache}" == "wpfc" ]]; then
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+        plugin_cache="wpfc"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wprocket" ]]; then
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        plugin_cache="wprocket"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wpsc" ]]; then
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+        plugin_cache="wpsc"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "enabler" ]]; then
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+        plugin_cache="enabler"
+        rewrite=""
+    else
+        plugin_cache="other"
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+    fi
+}
+
+set_docroot(){
+    if [[ "${SOURCE}" == "laravel" ]]; then
+        root="root /home/${username}/${domain}/public_html/public;"
+    else
+        root="root /home/${username}/${domain}/public_html;"
+    fi
+}
+
+fastcgi(){
+    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
+
+    if [[ "${php_use}" == "2" ]]; then
+        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
+    fi
+}
+
+create_vhost(){
+    set_rewrite
+    fastcgi
+
+    if [[ "${SOURCE}" == "wordpress" ]]; then
+        browser_cache
+        brute_force_wp
+        wordpress_config
+    fi
+
+    set_docroot
+
+    cat >> "/etc/nginx/conf.d/${domain}.conf" << END
+server {
+    listen ${server_ip}:80;
+    #listen [::]:80
+    server_name ${domain} www.${domain};
+
+    #access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+    ${root}
+    index index.php index.html index.htm;
+
+    ${rewrite}
+    ${cache}
+
+    location ~ \.php$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            ${fastcgi_pass}
+        }
+    }
+
+    ${brute}
+    ${wordpress_conf}
+    ${wp_secure}
+	include /etc/nginx/extra/security.conf;
+}
+END
+}
+
+save_user_config(){
+    php_ver=${php1_version}
+    php_release="1"
+    if [[ "${php_use}" == "2" ]]; then
+        php_ver="${php2_version}"
+        php_release="2"
+    fi
+
+	cat > "/var/hostvn/script/users/.${domain}.conf" <<END
+[${domain}]
+username=${username}
+user_pass=${user_pass}
+domain=${domain}
+db_name=${db_name}
+db_user=${db_user}
+db_password=${db_pass}
+public_html=/home/${username}/${domain}/public_html
+source=${SOURCE}
+plugin_cache=${plugin_cache}
+php_release=${php_release}
+php_version=${php_ver}
+END
+	chmod 600 /var/hostvn/script/users/."${domain}".conf
+}
+
+restart_service(){
+	systemctl restart nginx.service
+	systemctl restart php-fpm.service
+}
+
+run(){
+    check_service
+	prepare "$@"
+	check_domain
+	select_source
+
+    if [[ "${php2_release}" == "yes" ]]; then
+        select_php
+    fi
+
+	create_user
+	create_ftp
+	create_db
+	create_docrot
+	create_phpconfig
+
+    if [[ "${SOURCE}" == "wordpress" ]]; then
+        auto_install_wp "$@"
+        plugin_cache
+    fi
+
+    create_vhost
+    save_user_config
+	restart_service
+}
+
+run "$@"
+
+clear
+echo
+echo "Bạn đã thêm domain thành công. Hãy lưu lại thông tin để sử dụng"
+echo "-------------------------------------------------------------------------"
+echo "1.  Domain                : ${domain}"
+echo "2.  DB_Name               : ${db_name}"
+echo "3.  DB_User               : ${db_user}"
+echo "4.  DB_Password           : ${db_pass}"
+echo "5.  Username (FTP)        : ${username}"
+echo "6.  Password (FTP)        : $user_pass"
+echo "7.  FTP Host              : ${server_ip}"
+echo "8.  FTP Port              : 21"
+echo "9.  Public_html           : /home/${username}/${domain}/public_html"
+echo "-------------------------------------------------------------------------"
+echo
+controller_domain

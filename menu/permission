@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "========================================================================="
+echo "Phân quyền Chown/Chmod"
+echo "========================================================================="
+echo
+
+PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
+options=(
+    "Phân quyền website"
+    "Phân quyền toàn bộ website")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Phân quyền website")
+            '/var/hostvn/script/menu/controller/permission/one'
+            ;;
+        "Phân quyền toàn bộ website")
+            '/var/hostvn/script/menu/controller/permission/all'
+            ;;
+        *) exit;;
+    esac
+done

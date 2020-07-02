@@ -29,6 +29,10 @@ GITHUB_RAW_LINK="https://raw.githubusercontent.com"
 EXT_LINK="https://scripts.sanvu88.net/lemp"
 GITHUB_URL="https://github.com"
 PECL_PHP_LINK="https://pecl.php.net/get"
+PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
+FILE_INFO="${BASH_DIR}/hostvn.conf"
+HOSTNAME=$(hostname)
+PHP2_RELEASE="no"
 
 # Copyright
 AUTHOR="HOSTVN"
@@ -42,7 +46,12 @@ RAM_NOT_ENOUGH="Cảnh báo: Dung lượng RAM quá thấp để cài Script. (�
 OTHER_CP_EXISTS="Máy chủ của bạn đã cài đặt Control Panel khác. Vui lòng rebuild để cài đặt Script"
 ENTER_OPTION="Nhập vào lựa chọn của bạn [1-6]: "
 SELECT_PHP="Hãy lựa chọn phiên bản PHP muốn cài đặt:"
-WRONG_OPTION="Lựa chọn của bạn không chính xác, hệ thống sẽ cài đặt PHP 7.4"
+WRONG_PHP_OPTION="Lựa chọn của bạn không chính xác, hệ thống sẽ cài đặt PHP 7.4"
+SELECT_INST_PHP_2="Bạn có muốn cài đặt phiên bản PHP thứ hai không - Multiple PHP ?"
+ENTER_OPTION_PHP_2="Nhập vào lựa chọn của bạn [1-2]: "
+WRONG_PHP_SELECT_2="Bạn nhập sai. Hệ thống sẽ cài một phiên bản PHP."
+WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6\n"
+SELECT_PHP_2="Lựa chọn phiên bản PHP thứ hai bạn muốn sử dụng:\n"
 INST_MARIADB_ERR="Cài đặt MariaDB thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_NGINX_ERR="Cài đặt Nginx thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_PHP_ERR="Cài đặt PHP thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
@@ -57,8 +66,7 @@ LFD_NOT_WORKING="CSF không hoạt động."
 LFD_NOT_WORKING="LFD không hoạt động."
 
 # Service Version
-PHPMYADMIN_FOUR="4.9.5"
-PHPMYADMIN_FIVE="5.0.2"
+PHPMYADMIN_VERSION="5.0.2"
 PHP_SYS_INFO_VERSION="3.3.2"
 IGBINARY_VERSION="3.1.2"
 PHP_MEMCACHED_VERSION="3.1.5"
@@ -67,6 +75,7 @@ PHP_REDIS_VERSION="5.2.2"
 # Select Service Version
 MARIADB_VERSION="10.5"
 PHP_VERSION="74"
+PHP_VERSION_2="56"
 
 # Random Admin Port
 RANDOM_ADMIN_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
@@ -121,10 +130,6 @@ cd_dir(){
 create_bash_dir(){
     chmod 711 /home
     mkdir -p "${BASH_DIR}"
-    mkdir -p "${BASH_DIR}"/menu/helpers
-    mkdir -p "${BASH_DIR}"/users
-    chmod 711 users
-    echo "SERVERIP=${IPADDRESS}" >> "${BASH_DIR}"/menu/helpers/variable
 }
 
 # Disable Selinux
@@ -178,6 +183,11 @@ instell_service(){
     yum -y install syslog-ng syslog-ng-libdbi cronie ntpdate
 }
 
+# Admin Email
+set_email(){
+    read -r -p "Nhập vào email của bạn: " ADMIN_EMAIL
+}
+
 # Create log file
 create_log(){
     LOG="/var/log/install.log"
@@ -193,6 +203,7 @@ prepare_install(){
     remove_service
     instell_service
     create_log
+    set_email
 }
 
 ############################################
@@ -228,7 +239,7 @@ check_low_ram(){
 
 # Check if other Control Panel has installed before
 check_control_panel(){
-    if [[ -f ${CPANEL} ]] || [[ -f ${DIRECTADMIN} ]] || [[ -f ${PLESK} || -f ${WEBMIN} || -f ${SENTORA} || -f ${HOCVPS} ]]; then
+    if [[ -f ${CPANEL} || -f ${DIRECTADMIN} || -f ${PLESK} || -f ${WEBMIN} || -f ${SENTORA} || -f ${HOCVPS} ]]; then
         echo -e "${OTHER_CP_EXISTS}"
         echo "${CANCEL_INSTALL}"
         exit
@@ -299,21 +310,6 @@ EOMARIADBREPO
 # Install php-fpm
 select_php_ver(){
     echo "${SELECT_PHP}"
-    echo "${ENTER_OPTION}"
-    select PHP_LIST in "7.4" "7.3" "7.2" "7.1" "7.0" "5.6"
-    do
-        PHP_VERSION=${PHP_LIST//./}
-        REGEX_NUMBER='^[0-9]+$'
-        if ! [[ ${PHP_VERSION} =~ ${REGEX_NUMBER} ]]; then
-            echo "${WRONG_OPTION}"
-            PHP_VERSION="74"
-        fi
-        break
-    done
-}
-
-select_php_ver(){
-    echo "${SELECT_PHP}"
     PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
     select opt in "${options[@]}"
@@ -325,13 +321,12 @@ select_php_ver(){
             "7.1") PHP_VERSION="71"; break;;
             "7.0") PHP_VERSION="70"; break;;
             "5.6") PHP_VERSION="56"; break;;
-            *) printf "Bạn nhập sai, hệ thống sẽ cài đặt PHP 7.4.\n"; break;;
+            *) printf "%s\n" "${WRONG_PHP_OPTION}"; break;;
         esac
     done
 }
 
 install_php(){
-    select_php_ver
     yum-config-manager --enable remi-php${PHP_VERSION}
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
@@ -341,9 +336,69 @@ install_php(){
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
 }
 
+select_php_multi(){
+    echo "${SELECT_INST_PHP_2}"
+    PS3="${ENTER_OPTION_PHP_2}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") MULTI_PHP="y"; break;;
+            "No") MULTI_PHP="n"; break;;
+            *) printf "%s\n" "${WRONG_PHP_SELECT_2}"; break;;
+        esac
+    done
+}
+
+select_php_ver_2(){
+    echo "${SELECT_PHP_2}"
+    PS3="${ENTER_OPTION_PHP_2}"
+    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "7.4") PHP_VERSION_2="php74"; break;;
+            "7.3") PHP_VERSION_2="php73"; break;;
+            "7.2") PHP_VERSION_2="php72"; break;;
+            "7.1") PHP_VERSION_2="php71"; break;;
+            "7.0") PHP_VERSION_2="php70"; break;;
+            "5.6") PHP_VERSION_2="php56"; break;;
+            *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; break;;
+        esac
+    done
+}
+
+install_php_2(){
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        yum -y install ${PHP_VERSION_2} ${PHP_VERSION_2}-php-fpm ${PHP_VERSION_2}-php-ldap ${PHP_VERSION_2}-php-zip ${PHP_VERSION_2}-php-embedded ${PHP_VERSION_2}-php-cli ${PHP_VERSION_2}-php-mysql ${PHP_VERSION_2}-php-common ${PHP_VERSION_2}-php-gd ${PHP_VERSION_2}-php-xml ${PHP_VERSION_2}-php-mbstring \
+        ${PHP_VERSION_2}-php-mcrypt ${PHP_VERSION_2}-php-pdo ${PHP_VERSION_2}-php-soap ${PHP_VERSION_2}-php-json ${PHP_VERSION_2}-php-simplexml ${PHP_VERSION_2}-php-process ${PHP_VERSION_2}-php-curl ${PHP_VERSION_2}-php-bcmath ${PHP_VERSION_2}-php-snmp ${PHP_VERSION_2}-php-pspell ${PHP_VERSION_2}-php-gmp \
+        ${PHP_VERSION_2}-php-intl ${PHP_VERSION_2}-php-imap perl-LWP-Protocol-https ${PHP_VERSION_2}-php-pear-Net-SMTP ${PHP_VERSION_2}-php-enchant ${PHP_VERSION_2}-php-pear ${PHP_VERSION_2}-php-devel ${PHP_VERSION_2}-php-zlib ${PHP_VERSION_2}-php-xmlrpc \
+        ${PHP_VERSION_2}-php-tidy ${PHP_VERSION_2}-php-opcache ${PHP_VERSION_2}-php-cli ${PHP_VERSION_2}-php-pecl-zip ${PHP_VERSION_2}-php-dom ${PHP_VERSION_2}-php-ssh2 ${PHP_VERSION_2}-php-xmlreader ${PHP_VERSION_2}-php-date ${PHP_VERSION_2}-php-exif ${PHP_VERSION_2}-php-filter ${PHP_VERSION_2}-php-ftp \
+        ${PHP_VERSION_2}-php-hash ${PHP_VERSION_2}-php-iconv ${PHP_VERSION_2}-php-libxml ${PHP_VERSION_2}-php-pecl-imagick ${PHP_VERSION_2}-php-mysqlnd ${PHP_VERSION_2}-php-openssl ${PHP_VERSION_2}-php-pcre ${PHP_VERSION_2}-php-posix ${PHP_VERSION_2}-php-sockets ${PHP_VERSION_2}-php-spl \
+        ${PHP_VERSION_2}-php-tokenizer ${PHP_VERSION_2}-php-bz2 ${PHP_VERSION_2}-php-pgsql ${PHP_VERSION_2}-php-sqlite3 ${PHP_VERSION_2}-php-fileinfo
+
+        PHP2_PATH="/opt/remi/${PHP_VERSION_2}/root"
+        PHP_MODULES_DIR_2="${PHP2_PATH}/usr/lib64/php/modules"
+        PHP2_INI_PATH="${PHP2_PATH}/etc/php.d"
+        PHP2_RELEASE="yes"
+    fi
+}
+
+check_duplicate_php(){
+    if [[ "$PHP_VERSION_2" == "$PHP_VERSION" ]]; then
+        MULTI_PHP="n"
+        echo "Phiên bản PHP thứ 2 trùng với phiên bản mặc định. Hệ thống sẽ cài đặt một phiên bản PHP."
+    fi
+}
+
 install_lemp(){
     echo ""
+
+    select_php_ver
+    select_php_multi
+
     install_nginx
+
     if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
         clear
         echo "${INST_NGINX_ERR}"
@@ -362,6 +417,12 @@ install_lemp(){
     fi
 
     install_php
+
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        select_php_ver_2
+        check_duplicate_php
+        install_php_2
+    fi
 
     if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
         clear
@@ -492,20 +553,15 @@ EOFREDIS
 # Install igbinary
 install_igbinary(){
     if [[ "${PHP_VERSION}" == "56" ]]; then
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-2.0.8.tgz
-        tar -xvf igbinary-2.0.8.tgz
-        cd_dir "${DIR}/igbinary-2.0.8"
-        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf igbinary-2.0.8.tgz igbinary-2.0.8
-    else
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/igbinary-${IGBINARY_VERSION}.tgz
-        tar -xvf igbinary-${IGBINARY_VERSION}.tgz
-        cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
-        /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf igbinary-${IGBINARY_VERSION} igbinary-${IGBINARY_VERSION}.tgz
+        IGBINARY_VERSION="2.0.8"
     fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
+    tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
+    cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
+    /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
+    make && make install
+    cd "${DIR}" && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
     if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
         cat >> "/etc/php.d/40-igbinary.ini" << EOF
@@ -516,24 +572,39 @@ EOF
     fi
 }
 
+install_igbinary_2(){
+    if [[ "${PHP_VERSION_2}" == "56" ]]; then
+        IGBINARY_VERSION="2.0.8"
+    fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
+    tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
+    cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
+    /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
+    make && make install
+    cd "${DIR}" && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
+
+    if [[ -f "${PHP_MODULES_DIR_2}/igbinary.so" ]]; then
+        cat >> "${PHP2_INI_PATH}/40-igbinary.ini" << EOF
+extension=igbinary.so
+EOF
+    else
+        echo "${INST_IGBINARY_ERR}" >> ${LOG}
+    fi
+}
+
 # Install Php memcached extension
 install_php_memcached(){
     if [[ "${PHP_VERSION}" == "56" ]]; then
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-2.2.0.tgz
-        tar -xvf memcached-2.2.0.tgz
-        cd_dir "${DIR}/memcached-2.2.0"
-        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
-        make && make install
-        cd_dir "${DIR}"
-        rm -rf memcached-2.2.0.tgz memcached-2.2.0
-    else
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/memcached-${PHP_MEMCACHED_VERSION}.tgz
-        tar -xvf memcached-${PHP_MEMCACHED_VERSION}.tgz
+        PHP_MEMCACHED_VERSION="2.2.0"
+    fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
         /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
         make && make install
-        cd "${DIR}" && rm -rf memcached-${PHP_MEMCACHED_VERSION}.tgz memcached-${PHP_MEMCACHED_VERSION}
-    fi
+        cd "${DIR}" && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
     if [[ -f "${PHP_MODULES_DIR}/memcached.so" ]]; then
         cat >> "/etc/php.d/50-memcached.ini" << EOF
@@ -544,26 +615,64 @@ EOF
     fi
 }
 
+install_php_memcached_2(){
+    if [[ "${PHP_VERSION}" == "56" ]]; then
+        PHP_MEMCACHED_VERSION="2.2.0"
+    fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
+        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
+        make && make install
+        cd "${DIR}" && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
+
+    if [[ -f "${PHP_MODULES_DIR_2}/memcached.so" ]]; then
+        cat >> "${PHP2_INI_PATH}/50-memcached.ini" << EOF
+extension=memcached.so
+EOF
+    else
+        echo "${INST_MEMEXT_ERR}" >> ${LOG}
+    fi
+}
+
 # Install Phpredis
 install_php_redis(){
     if [[ "${PHP_VERSION}" == "56" ]]; then
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-4.3.0.tgz
-        tar -xvf redis-4.3.0.tgz
-        cd_dir "${DIR}/redis-4.3.0"
-        /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf redis-4.3.0.tgz redis-4.3.0
-    else
-        cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-${PHP_REDIS_VERSION}.tgz
-        tar -xvf redis-${PHP_REDIS_VERSION}.tgz
-        cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
-        /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
-        make && make install
-        cd "${DIR}" && rm -rf redis-${PHP_REDIS_VERSION}.tgz redis-${PHP_REDIS_VERSION}
+        PHP_REDIS_VERSION="4.3.0"
     fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
+    tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
+    cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
+    /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
+    make && make install
+    cd "${DIR}" && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
     if [[ -f "${PHP_MODULES_DIR}/redis.so" ]]; then
         cat >> "/etc/php.d/50-redis.ini" << EOF
+extension=redis.so
+EOF
+    else
+        echo "${INST_PHPREDIS_ERR}" >> ${LOG}
+    fi
+
+}
+
+install_php_redis_2(){
+    if [[ "${PHP_VERSION}" == "56" ]]; then
+        PHP_REDIS_VERSION="4.3.0"
+    fi
+
+    cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-"${PHP_REDIS_VERSION}".tgz
+    tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
+    cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
+    /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
+    make && make install
+    cd "${DIR}" && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
+
+    if [[ -f "${PHP_MODULES_DIR_2}/redis.so" ]]; then
+        cat >> "${PHP2_INI_PATH}/50-redis.ini" << EOF
 extension=redis.so
 EOF
     else
@@ -578,9 +687,18 @@ install_cache(){
     install_redis
     install_igbinary
 
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        install_igbinary_2
+    fi
+
     if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
         install_php_memcached
         install_php_redis
+    fi
+
+    if [[ -f "${PHP_MODULES_DIR_2}/igbinary.so" ]]; then
+        install_php_memcached_2
+        install_php_redis_2
     fi
 }
 
@@ -613,6 +731,8 @@ cal_ssl_cache_size(){
 }
 
 create_nginx_conf(){
+    mkdir -p /etc/nginx/backup_vhost
+    mkdir -p /etc/nginx/ssl
     mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
     cat >> "/etc/nginx/nginx.conf" << EONGINXCONF
 user nginx;
@@ -681,11 +801,11 @@ http {
 
     # Custom Response Headers
     add_header X-Powered-By ${AUTHOR};
-    add_header X-Frame-Options SAMEORIGIN;
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
     add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options nosniff;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
-    add_header X-Download-Options noopen;
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
 
     include /etc/nginx/extra/gzip.conf;
     include /etc/nginx/extra/brotli.conf;
@@ -695,6 +815,409 @@ http {
     include /etc/nginx/conf.d/*.conf;
 }
 EONGINXCONF
+}
+
+create_wp_cache_conf(){
+    mkdir -p /etc/nginx/wordpress
+
+    cat >> "/etc/nginx/wordpress/wordpress_secure.conf" << EOwpsecure
+rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
+
+# Disable XML-RPC
+location ~ xmlrpc.php { deny all; access_log off; log_not_found off; }
+
+# Reduce Comment Spam
+location = /wp-comments-post.php {
+    limit_except POST { deny all; access_log off; }
+    if (\$http_user_agent ~ "^\$") { return 403; }
+    valid_referers server_names jetpack.wordpress.com/jetpack-comment/;
+    if (\$invalid_referer) { return 403; }
+}
+
+# Protect System Files
+location = /wp-admin/install.php { deny all; access_log off; log_not_found off; }
+location ~ ^/wp-admin/includes/ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp-includes/[^/]+\.php\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp-includes/js/tinymce/langs/.+\.php\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp-includes/theme-compat/ { deny all; access_log off; log_not_found off; }
+
+#Deny access to wp-content folders for suspicious files
+location ~* ^/(wp-content)/(.*?)\.(gz|tar|bzip2|7z|php|php5|php7|log|error|py|pl|kid|love)\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp-content/updraft { deny all; access_log off; log_not_found off; }
+location ~* /wp-content/uploads/nginx-helper/ { deny all; access_log off; log_not_found off; }
+
+# Disable PHP in Uploads
+location ~ ^/wp\-content/uploads/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+
+# Disable PHP in Plugins
+location ~ ^/wp\-content/plugins/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+
+# Disable PHP in Themes
+location ~ ^/wp\-content/themes/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+
+# WordPress: deny general stuff
+location ~* ^/(?:xmlrpc\.php|wp-links-opml\.php|wp-config\.php|wp-config-sample\.php|wp-comments-post\.php|readme\.html|license\.txt)\$ {
+    deny all;
+}
+
+#Block API User
+location ~* /wp-json/wp/v2/users {
+    allow 127.0.0.1;
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# webp rewrite rules for EWWW testing image
+location /wp-content/plugins/ewww-image-optimizer/images {
+    location ~ \.(png|jpe?g)\$ {
+        add_header Vary "Accept-Encoding";
+        more_set_headers 'Access-Control-Allow-Origin : *';
+        more_set_headers  "Cache-Control : public, no-transform";
+        access_log off;
+        log_not_found off;
+        expires max;
+        try_files \$uri\$webp_suffix \$uri =404;
+    }
+    location ~ \.php\$ {
+        #Prevent Direct Access Of PHP Files From Web Browsers
+        deny all;
+    }
+}
+
+# enable gzip on static assets - php files are forbidden
+location /wp-content/cache {
+# Cache css & js files
+    location ~* \.(?:css(\.map)?|js(\.map)?|.html)\$ {
+        more_set_headers 'Access-Control-Allow-Origin : *';
+        access_log off;
+        log_not_found off;
+        expires 30d;
+    }
+    location ~ \.php\$ {
+        #Prevent Direct Access Of PHP Files From Web Browsers
+        deny all;
+    }
+}
+
+# Protect Easy Digital Download files from being accessed directly.
+location ~ ^/wp-content/uploads/edd/(.*?)\.zip\$ {
+    rewrite / permanent;
+}
+
+#Yoast SEO Sitemaps
+location ~* ^/wp-content/plugins/wordpress-seo(?:-premium)?/css/main-sitemap\.xsl\$ {}
+location ~ ([^/]*)sitemap(.*).x(m|s)l\$ {
+    ## this rewrites sitemap.xml to /sitemap_index.xml
+    rewrite ^/sitemap.xml\$ /sitemap_index.xml permanent;
+    ## this makes the XML sitemaps work
+    rewrite ^/([a-z]+)?-?sitemap.xsl\$ /index.php?yoast-sitemap-xsl=\$1 last;
+    rewrite ^/sitemap_index.xml\$ /index.php?sitemap=1 last;
+    rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml\$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
+    ## The following lines are optional for the premium extensions
+    ## News SEO
+    rewrite ^/news-sitemap.xml\$ /index.php?sitemap=wpseo_news last;
+    ## Local SEO
+    rewrite ^/locations.kml\$ /index.php?sitemap=wpseo_local_kml last;
+    rewrite ^/geo-sitemap.xml\$ /index.php?sitemap=wpseo_local last;
+    ## Video SEO
+    rewrite ^/video-sitemap.xsl\$ /index.php?yoast-sitemap-xsl=video last;
+}
+
+# RANK MATH SEO plugin
+rewrite ^/sitemap_index.xml\$ /index.php?sitemap=1 last;
+rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml\$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
+
+# webp extension
+location ~ ^/wp-content/uploads/ {
+    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
+        expires 30d;
+        add_header Vary "Accept";
+        add_header Cache-Control "public, no-transform";
+        try_files \$uri\$webp_extension \$uri =404;
+    }
+}
+EOwpsecure
+
+    cat >> "/etc/nginx/wordpress/w3c.conf" << EOw3c
+location ~ /wp-content/cache/minify/.*js_gzip\$ {
+    gzip off;
+    types {}
+    default_type application/x-javascript;
+    add_header Content-Encoding gzip;
+    expires 31536000s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+    add_header Vary "Accept-Encoding";
+}
+location ~ /wp-content/cache/minify/.*css_gzip\$ {
+    gzip off;
+    types {}
+    default_type text/css;
+    add_header Content-Encoding gzip;
+    expires 31536000s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+    add_header Vary "Accept-Encoding";
+}
+location ~ /wp-content/cache/page_enhanced.*gzip\$ {
+    gzip off;
+    types {}
+    default_type text/html;
+    add_header Content-Encoding gzip;
+    expires 3600s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+}
+location ~ \.(css|htc|less|js|js2|js3|js4)\$ {
+    expires 31536000s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+    try_files \$uri \$uri/ /index.php?\$args;
+}
+location ~ \.(html|htm|rtf|rtx|txt|xsd|xsl|xml)\$ {
+    expires 3600s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+    try_files \$uri \$uri/ /index.php?\$args;
+}
+location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|webp|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|webm|mpp|_otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|_ttf|wav|wma|wri|xla|xls|xlsx|xlt|xlw|zip)\$ {
+    expires 31536000s;
+    etag on;
+    if_modified_since exact;
+    add_header Pragma "public";
+    add_header Cache-Control "public";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+    try_files \$uri \$uri/ /index.php?\$args;
+}
+set \$w3tc_enc "";
+if (\$http_accept_encoding ~ gzip) {
+    set \$w3tc_enc _gzip;
+}
+if (-f \$request_filename\$w3tc_enc) {
+    rewrite (.*) \$1\$w3tc_enc break;
+}
+rewrite ^/wp-content/cache/minify/ /index.php last;
+set \$w3tc_rewrite 1;
+if (\$request_method = POST) {
+    set \$w3tc_rewrite 0;
+}
+if (\$query_string != "") {
+    set \$w3tc_rewrite 0;
+}
+if (\$request_uri !~ \/\$) {
+    set \$w3tc_rewrite 0;
+}
+if (\$http_cookie ~* "(comment_author|wp\-postpass|w3tc_logged_out|wordpress_logged_in|wptouch_switch_toggle)") {
+    set \$w3tc_rewrite 0;
+}
+set \$w3tc_preview "";
+if (\$http_cookie ~* "(w3tc_preview)") {
+    set \$w3tc_preview _preview;
+}
+set \$w3tc_ssl "";
+if (\$scheme = https) {
+    set \$w3tc_ssl _ssl;
+}
+if (\$http_x_forwarded_proto = 'https') {
+    set \$w3tc_ssl _ssl;
+}
+set \$w3tc_enc "";
+if (\$http_accept_encoding ~ gzip) {
+    set \$w3tc_enc _gzip;
+}
+if (!-f "\$document_root/wp-content/cache/page_enhanced/\$http_host/\$request_uri/_index\$w3tc_ssl\$w3tc_preview.html\$w3tc_enc") {
+  set \$w3tc_rewrite 0;
+}
+if (\$w3tc_rewrite = 1) {
+    rewrite .* "/wp-content/cache/page_enhanced/\$http_host/\$request_uri/_index\$w3tc_ssl\$w3tc_preview.html\$w3tc_enc" last;
+}
+EOw3c
+
+    cat >> "/etc/nginx/wordpress/wpfc.conf" << EOwpfc
+location / {
+    try_files \$uri \$uri/ /index.php?\$args;
+    error_page 418 = @cachemiss;
+    error_page 419 = @mobileaccess;
+    recursive_error_pages on;
+    if (\$request_method = POST) { return 418; }
+    if (\$arg_s != "") { return 418; }
+    if (\$arg_p != "") { return 418; }
+    if (\$args ~ "amp") { return 418; }
+    if (\$arg_preview = "true") { return 418; }
+    if (\$arg_ao_noptimize != "") { return 418; }
+    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
+    if (\$http_cookie ~* "comment_author_") { return 418; }
+    if (\$http_cookie ~* "wp_postpass_") { return 418; }
+    if (\$http_user_agent = "Amazon CloudFront" ) { return 403; access_log off; }
+    if (\$http_x_pull = "KeyCDN") { return 403; access_log off; }
+    try_files "/wp-content/cache/all/\${uri}index.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    add_header "Vary" "Cookie";
+}
+location @mobileaccess {
+    try_files "/wp-content/cache/wpfc-mobile-cache/\${uri}index.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    add_header "Vary" "User-Agent, Cookie";
+    expires 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+location @cachemiss {
+    try_files \$uri \$uri/ /index.php\$is_args\$args;
+}
+
+include /etc/nginx/extra/staticfiles.conf;
+EOwpfc
+
+    cat >> "/etc/nginx/wordpress/wprocket.conf" << EOwprocket
+location / {
+    try_files \$uri \$uri/ /index.php?\$args;
+    if (\$http_user_agent ~ wprocketbot) { return 403; access_log off; }
+    error_page 418 = @cachemiss;
+    error_page 419 = @mobileaccess;
+    recursive_error_pages on;
+    if (\$request_method = POST) { return 418; }
+    if (\$arg_s != "") { return 418; }
+    if (\$arg_p != "") { return 418; }
+    if (\$args ~ "amp") { return 418; }
+    if (\$arg_preview = "true") { return 418; }
+    if (\$arg_ao_noptimize != "") { return 418; }
+    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
+    if (\$http_cookie ~* "comment_author_") { return 418; }
+    if (\$http_cookie ~* "wp_postpass_") { return 418; }
+    if (\$http_user_agent = "Amazon CloudFront" ) { return 403; access_log off; }
+    if (\$http_x_pull = "KeyCDN") { return 403; access_log off; }
+    try_files "/wp-content/cache/wp-rocket/\$host\${uri}\$is_args\$args/index\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    add_header "Vary" "Cookie";
+    expires modified 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+location @mobileaccess {
+    try_files "/wp-content/cache/wp-rocket/\$host\${uri}\$is_args\$args/index-mobile\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
+
+    add_header "X-Cache" "HIT";
+    add_header "Vary" "User-Agent, Cookie";
+    expires modified 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+
+location @cachemiss {
+    try_files \$uri \$uri/ /index.php\$is_args\$args;
+}
+
+include /etc/nginx/extra/staticfiles.conf;
+EOwprocket
+
+    cat >> "/etc/nginx/wordpress/wpsc.conf" << EOwpsc
+location / {
+    try_files \$uri \$uri/ /index.php?\$args;
+    error_page 418 = @cachemiss;
+    error_page 419 = @mobileaccess;
+    recursive_error_pages on;
+    if (\$request_method = POST) { return 418; }
+    if (\$arg_s != "") { return 418; }
+    if (\$arg_p != "") { return 418; }
+    if (\$args ~ "amp") { return 418; }
+    if (\$arg_preview = "true") { return 418; }
+    if (\$arg_ao_noptimize != "") { return 418; }
+    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
+    if (\$http_cookie ~* "comment_author_") { return 418; }
+    if (\$http_cookie ~* "wp_postpass_") { return 418; }
+    if (\$http_user_agent = "Amazon CloudFront" ) { return 403; access_log off; }
+    if (\$http_x_pull = "KeyCDN") { return 403; access_log off; }
+    try_files "/wp-content/cache/supercache/\$host\${uri}index\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    expires 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+location @mobileaccess {
+    try_files "/wp-content/cache/supercache/\$host\${uri}index\$https_suffix-mobile.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    expires 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+
+location @cachemiss {
+    try_files \$uri \$uri/ /index.php\$is_args\$args;
+}
+
+include /etc/nginx/extra/staticfiles.conf;
+EOwpsc
+
+cat >> "/etc/nginx/wordpress/enabler.conf" << EOenabler
+location / {
+    try_files \$uri \$uri/ /index.php?\$args;
+    error_page 418 = @cachemiss;
+    error_page 419 = @mobileaccess;
+    recursive_error_pages on;
+    if (\$request_method = POST) { return 418; }
+    if (\$arg_s != "") { return 418; }
+    if (\$arg_p != "") { return 418; }
+    if (\$args ~ "amp") { return 418; }
+    if (\$arg_preview = "true") { return 418; }
+    if (\$arg_ao_noptimize != "") { return 418; }
+    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
+    if (\$http_cookie ~* "comment_author_") { return 418; }
+    if (\$http_cookie ~* "wp_postpass_") { return 418; }
+    try_files "/wp-content/cache/cache-enabler/\$host\${uri}index.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    expires 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+location @mobileaccess {
+    try_files "/wp-content/cache/supercache/\$host\${uri}index\$https_suffix-mobile.html" \$uri \$uri/ /index.php\$is_args\$args;
+    add_header "X-Cache" "HIT";
+    expires 30m;
+    add_header "Cache-Control" "must-revalidate";
+}
+
+location @cachemiss {
+    try_files \$uri \$uri/ /index.php\$is_args\$args;
+}
+
+include /etc/nginx/extra/staticfiles.conf;
+EOenabler
+
 }
 
 # Extra config
@@ -1224,122 +1747,6 @@ cat >> "${REWRITE_CONFIG_PATH}/wordpress.conf" << EOwordpress
 location / {
     try_files \$uri \$uri/ /index.php?\$args;
 }
-rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
-
-# Disable XML-RPC
-location ~ xmlrpc.php { deny all; access_log off; log_not_found off; }
-
-# Reduce Comment Spam
-location = /wp-comments-post.php {
-    limit_except POST { deny all; access_log off; }
-    if (\$http_user_agent ~ "^\$") { return 403; }
-    valid_referers server_names jetpack.wordpress.com/jetpack-comment/;
-    if (\$invalid_referer) { return 403; }
-}
-
-# Protect System Files
-location = /wp-admin/install.php { deny all; access_log off; log_not_found off; }
-location ~ ^/wp-admin/includes/ { deny all; access_log off; log_not_found off; }
-location ~ ^/wp-includes/[^/]+\.php\$ { deny all; access_log off; log_not_found off; }
-location ~ ^/wp-includes/js/tinymce/langs/.+\.php\$ { deny all; access_log off; log_not_found off; }
-location ~ ^/wp-includes/theme-compat/ { deny all; access_log off; log_not_found off; }
-
-#Deny access to wp-content folders for suspicious files
-location ~* ^/(wp-content)/(.*?)\.(gz|tar|bzip2|7z|php|php5|php7|log|error|py|pl|kid|love)\$ { deny all; access_log off; log_not_found off; }
-location ~ ^/wp-content/updraft { deny all; access_log off; log_not_found off; }
-location ~* /wp-content/uploads/nginx-helper/ { deny all; access_log off; log_not_found off; }
-
-# Disable PHP in Uploads
-location ~ ^/wp\-content/uploads/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
-
-# Disable PHP in Plugins
-location ~ ^/wp\-content/plugins/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
-
-# Disable PHP in Themes
-location ~ ^/wp\-content/themes/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
-
-# WordPress: deny general stuff
-location ~* ^/(?:xmlrpc\.php|wp-links-opml\.php|wp-config\.php|wp-config-sample\.php|wp-comments-post\.php|readme\.html|license\.txt)\$ {
-    deny all;
-}
-
-#Block API User
-location ~* /wp-json/wp/v2/users {
-    allow 127.0.0.1;
-    deny all;
-    access_log off;
-    log_not_found off;
-}
-
-# webp rewrite rules for EWWW testing image
-location /wp-content/plugins/ewww-image-optimizer/images {
-    location ~ \.(png|jpe?g)\$ {
-        add_header Vary "Accept-Encoding";
-        more_set_headers 'Access-Control-Allow-Origin : *';
-        more_set_headers  "Cache-Control : public, no-transform";
-        access_log off;
-        log_not_found off;
-        expires max;
-        try_files \$uri\$webp_suffix \$uri =404;
-    }
-    location ~ \.php\$ {
-        #Prevent Direct Access Of PHP Files From Web Browsers
-        deny all;
-    }
-}
-
-# enable gzip on static assets - php files are forbidden
-location /wp-content/cache {
-# Cache css & js files
-    location ~* \.(?:css(\.map)?|js(\.map)?|.html)\$ {
-        more_set_headers 'Access-Control-Allow-Origin : *';
-        access_log off;
-        log_not_found off;
-        expires 30d;
-    }
-    location ~ \.php\$ {
-        #Prevent Direct Access Of PHP Files From Web Browsers
-        deny all;
-    }
-}
-
-# Protect Easy Digital Download files from being accessed directly.
-location ~ ^/wp-content/uploads/edd/(.*?)\.zip\$ {
-    rewrite / permanent;
-}
-
-#Yoast SEO Sitemaps
-location ~* ^/wp-content/plugins/wordpress-seo(?:-premium)?/css/main-sitemap\.xsl\$ {}
-location ~ ([^/]*)sitemap(.*).x(m|s)l\$ {
-    ## this rewrites sitemap.xml to /sitemap_index.xml
-    rewrite ^/sitemap.xml\$ /sitemap_index.xml permanent;
-    ## this makes the XML sitemaps work
-    rewrite ^/([a-z]+)?-?sitemap.xsl\$ /index.php?yoast-sitemap-xsl=\$1 last;
-    rewrite ^/sitemap_index.xml\$ /index.php?sitemap=1 last;
-    rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml\$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
-    ## The following lines are optional for the premium extensions
-    ## News SEO
-    rewrite ^/news-sitemap.xml\$ /index.php?sitemap=wpseo_news last;
-    ## Local SEO
-    rewrite ^/locations.kml\$ /index.php?sitemap=wpseo_local_kml last;
-    rewrite ^/geo-sitemap.xml\$ /index.php?sitemap=wpseo_local last;
-    ## Video SEO
-    rewrite ^/video-sitemap.xsl\$ /index.php?yoast-sitemap-xsl=video last;
-}
-
-# RANK MATH SEO plugin
-rewrite ^/sitemap_index.xml\$ /index.php?sitemap=1 last;
-rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml\$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
-
-# webp extension
-location ~ ^/wp-content/uploads/ {
-    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
-        expires 30d;
-        add_header Vary "Accept";
-        add_header Cache-Control "public, no-transform";
-        try_files \$uri\$webp_extension \$uri =404;
-    }
-}
 EOwordpress
 
 cat >> "${REWRITE_CONFIG_PATH}/prestashop.conf" << EOprestashop
@@ -1654,7 +2061,7 @@ save_php_parameter(){
         echo PM_MIN_SPARE_SERVER="${PM_MIN_SPARE_SERVER}"
         echo PM_MAX_SPARE_SERVER="${PM_MAX_SPARE_SERVER}"
         echo PM_MAX_REQUEST="${PM_MAX_REQUEST}"
-    } >> "${BASH_DIR}"/menu/helpers/variable.conf
+    } >> "${BASH_DIR}"/menu/helpers/php_parameter.conf
 }
 
 php_parameter(){
@@ -1801,12 +2208,111 @@ EOwww_conf
     chown -R nginx:nginx /var/lib/php/session
     chown -R nginx:nginx /var/lib/php/wsdlcache
     chown -R nginx:nginx /var/log/php-fpm
+    chmod 700 /var/lib/php/session
+}
+
+php_global_config_2(){
+    if [[ -f "${PHP2_PATH}/etc/php-fpm.conf" ]]; then
+        mv "${PHP2_PATH}"/etc/php-fpm.conf "${PHP2_PATH}"/etc/php-fpm.conf.orig
+    fi
+    if [[ ! -d "${PHP2_PATH}/var/run/php-fpm" ]]; then
+        mkdir -p "${PHP2_PATH}"/var/run/php-fpm
+    fi
+    cat >> "${PHP2_PATH}/etc/php-fpm.conf" << EOphp_fpm_2_conf
+;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+include=${PHP2_PATH}/etc/php-fpm.d/*.conf
+
+[global]
+pid = ${PHP2_PATH}/var/run/php-fpm/php-fpm.pid
+error_log = ${PHP2_PATH}/var/log/php-fpm/error.log
+log_level = warning
+emergency_restart_threshold = 10
+emergency_restart_interval = 1m
+process_control_timeout = 10s
+daemonize = yes
+EOphp_fpm_2_conf
+
+    if [[ -f "${PHP2_PATH}/etc/php-fpm.d/www.conf" ]]; then
+        mv "${PHP2_PATH}"/etc/php-fpm.d/www.conf "${PHP2_PATH}"/etc/php-fpm.d/www.conf.orig
+    fi
+cat >> "/etc/php-fpm.d/www.conf" << EOwww_2_conf
+[www]
+listen = ${PHP2_PATH}/var/run/php-fpm.sock;
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660
+user = nginx
+group = nginx
+pm = dynamic
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.start_servers = ${PM_START_SERVERS}
+pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
+pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.max_requests = ${PM_MAX_REQUEST}
+request_terminate_timeout = 300
+rlimit_files = 65536
+rlimit_core = 0
+;slowlog = ${PHP2_PATH}/var/log/php-fpm/www-slow.log
+chdir = /
+php_admin_value[error_log] = ${PHP2_PATH}/var/log/php-fpm/www-error.log
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = ${PHP2_PATH}/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = ${PHP2_PATH}/var/lib/php/wsdlcache
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
+security.limit_extensions = .php
+EOwww_2_conf
+
+    if [[ ! -d "${PHP2_PATH}/var/lib/php/session" ]]; then
+        mkdir -p "${PHP2_PATH}"/var/lib/php/session
+    fi
+    if [[ ! -d "${PHP2_PATH}/var/lib/php/wsdlcache" ]]; then
+        mkdir -p "${PHP2_PATH}"/var/lib/php/wsdlcache
+    fi
+    if [[ ! -d "${PHP2_PATH}/var/log/php-fpm" ]]; then
+        mkdir -p ${PHP2_PATH}/var/log/php-fpm
+    fi
+    chown -R nginx:nginx "${PHP2_PATH}"/var/lib/php/session
+    chown -R nginx:nginx "${PHP2_PATH}"/var/lib/php/wsdlcache
+    chown -R nginx:nginx "${PHP2_PATH}"/var/log/php-fpm
+    chmod 700 "${PHP2_PATH}"/var/lib/php/session
 }
 
 # Custom PHP Ini
 hostvn_custom_ini(){
     memory_limit_calculation
     cat > "/etc/php.d/00-hostvn-custom.ini" <<EOhostvn_custom_ini
+date.timezone = Asia/Ho_Chi_Minh
+max_execution_time = 90
+max_input_time = 90
+short_open_tag = On
+realpath_cache_size = ${PHP_REAL_PATH_LIMIT}
+realpath_cache_ttl = ${PHP_REAL_PATH_TTL}
+memory_limit = ${MAX_MEMORY}M
+upload_max_filesize = ${MAX_MEMORY}M
+post_max_size = ${MAX_MEMORY}M
+expose_php = Off
+mail.add_x_header = Off
+max_input_nesting_level = 128
+max_input_vars = ${MAX_INPUT_VARS}
+mysqlnd.net_cmd_buffer_size = 16384
+mysqlnd.collect_memory_statistics = Off
+mysqlnd.mempool_default_size = 16000
+always_populate_raw_post_data=-1
+;disable_functions=exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+EOhostvn_custom_ini
+}
+
+hostvn_custom_ini_2(){
+    memory_limit_calculation
+    cat > "${PHP2_PATH}/etc/php.d/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
 max_input_time = 90
@@ -1856,11 +2362,44 @@ EOphp_opcache
 EOopcache_blacklist
 }
 
+php_opcache_2(){
+    if [[ -f "${PHP2_PATH}/etc/php.d/10-opcache.ini" ]]; then
+        mv "${PHP2_PATH}"/etc/php.d/10-opcache.ini "${PHP2_PATH}"/etc/php.d/10-opcache.ini.orig
+    fi
+    cat > "${PHP2_PATH}/etc/php.d/10-opcache.ini" << EOphp_opcache
+zend_extension=opcache.so
+opcache.enable=1
+opcache.memory_consumption=${OPCACHE_MEM}
+opcache.interned_strings_buffer=8
+opcache.max_wasted_percentage=5
+opcache.max_accelerated_files=65407
+opcache.revalidate_freq=180
+opcache.fast_shutdown=0
+opcache.enable_cli=0
+opcache.save_comments=1
+opcache.enable_file_override=1
+opcache.validate_timestamps=1
+opcache.blacklist_filename=${PHP2_PATH}/etc/php.d/opcache-default.blacklist
+EOphp_opcache
+
+    cat > "${PHP2_PATH}/etc/php.d/opcache-default.blacklist" << EOopcache_blacklist
+/home/*/public_html/wp-content/plugins/backwpup/*
+/home/*/public_html/wp-content/plugins/duplicator/*
+/home/*/public_html/wp-content/plugins/updraftplus/*
+EOopcache_blacklist
+}
+
 config_php(){
     echo ""
     php_global_config
     hostvn_custom_ini
     php_opcache
+
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        php_global_config_2
+        hostvn_custom_ini_2
+        php_opcache_2
+    fi
 }
 
 ############################################
@@ -2715,22 +3254,18 @@ EOphpmyadmin_temp
 
 install_phpmyadmin(){
     echo ""
-    PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
+
     if [[ ${PHP_VERSION} == "56" ]]; then
-        wget -O ${USR_DIR}/phpmyadmin.zip ${PMA_LINK}/${PHPMYADMIN_FOUR}/phpMyAdmin-${PHPMYADMIN_FOUR}-english.zip
-        unzip_phpmyadmin
-        mv phpMyAdmin-${PHPMYADMIN_FOUR}-english phpmyadmin
-        ln -s ${USR_DIR}/phpmyadmin ${DEFAULT_DIR_WEB}/phpmyadmin
-        config_phpmyadmin
-        cd_dir "${DIR}"
-    else
-        wget -O ${USR_DIR}/phpmyadmin.zip  ${PMA_LINK}/${PHPMYADMIN_FIVE}/phpMyAdmin-${PHPMYADMIN_FIVE}-english.zip
-        unzip_phpmyadmin
-        mv phpMyAdmin-${PHPMYADMIN_FIVE}-english phpmyadmin
-        ln -s ${USR_DIR}/phpmyadmin ${DEFAULT_DIR_WEB}/phpmyadmin
-        config_phpmyadmin
-        cd_dir "${DIR}"
+        PHPMYADMIN_VERSION="4.9.5"
     fi
+
+    wget -O ${USR_DIR}/phpmyadmin.zip  "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
+    unzip_phpmyadmin
+    rm -rf "${USR_DIR}"/phpmyadmin.zip
+    mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
+    ln -s "${USR_DIR}"/phpmyadmin " ${DEFAULT_DIR_WEB}"/phpmyadmin
+    config_phpmyadmin
+    cd_dir "${DIR}"
 
     chown -R nginx:nginx ${USR_DIR}/nginx/html
     create_phpmyadmin_db
@@ -2799,6 +3334,26 @@ change_ssh_port() {
     echo ""
     sed -i 's/#Port 22/Port 8282/g' /etc/ssh/sshd_config
     systemctl restart sshd
+}
+
+############################################
+# Install certbot-auto
+############################################
+install_certbot_auto() {
+    wget https://dl.eff.org/certbot-auto
+    mv certbot-auto /usr/local/bin/certbot-auto
+    chown root /usr/local/bin/certbot-auto
+    chmod +x /usr/local/bin/certbot-auto
+    certbot-auto --nginx << EOF
+y
+EOF
+
+    certbot-auto --nginx << EOF
+${ADMIN_EMAIL}
+A
+Y
+r
+EOF
 }
 
 ############################################
@@ -2875,32 +3430,32 @@ start_service() {
 
 check_service_status(){
     echo ""
-    NGINX_STATUS=$(systemctl is-active nginx)
+    NGINX_STATUS="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${NGINX_STATUS}" != "active" ]]; then
         echo "${NGINX_NOT_WORKING}" >> ${LOG}
     fi
 
-    MARIADB_STATUS=$(systemctl is-active mariadb)
+    MARIADB_STATUS="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${MARIADB_STATUS}" != 'active' ]]; then
         echo "${MARIADB_NOT_WORKING}" >> ${LOG}
     fi
 
-    PURE_STATUS=$(systemctl is-active pure-ftpd)
+    PURE_STATUS="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${PURE_STATUS}" != 'active' ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
     fi
 
-    PHP_STATUS=$(systemctl is-active php-fpm)
+    PHP_STATUS="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${PHP_STATUS}" != 'active' ]]; then
         echo "${PHP_NOT_WORKING}" >> ${LOG}
     fi
 
-    CSF_STATUS=$(systemctl is-active csf)
+    CSF_STATUS="$(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${CSF_STATUS}" != 'active' ]]; then
         echo "${CSF_NOT_WORKING}" >> ${LOG}
     fi
 
-    LFD_STATUS=$(systemctl is-active lfd)
+    LFD_STATUS="$(systemctl status lfd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${LFD_STATUS}" != "active" ]]; then
         echo "${LFD_NOT_WORKING}" >> ${LOG}
     fi
@@ -2922,19 +3477,19 @@ add_menu(){
 # Write Info
 ############################################
 write_info(){
-    FILE_INFO="${BASH_DIR}/hostvn.txt"
     touch "${FILE_INFO}"
     {
-        echo "SSH  Port: 8282"
-        echo "Link phpMyAdmin: http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
-        echo "MariaDB Root Password: ${SQLPASS}"
-        echo "Link Opcache Dashboard     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
-        echo "Link Server Info     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
-        echo "User Admin Tool    : admin"
-        echo "Password Admin Tool : ${ADMIN_TOOL_PWD}"
+        echo "ssh_port=8282"
+        echo "admin_port=${RANDOM_ADMIN_PORT}"
+        echo "admin_pwd=${ADMIN_TOOL_PWD}"
+        echo "admin_email=${ADMIN_EMAIL}"
+        echo "php1_release=yes"
+        echo "php2_release=${PHP2_RELEASE}"
+        echo "php1_version=${PHP_VERSION}"
+        echo "php2_version=${PHP_VERSION_2}"
     } >> "${FILE_INFO}"
 
-    chmod 400 "${FILE_INFO}"
+    chmod 600 "${FILE_INFO}"
 }
 
 
@@ -2957,6 +3512,7 @@ run_(){
     install_phpmyadmin
     install_pure_ftpd
     change_ssh_port
+    install_certbot_auto
     install_csf
     opcache_dashboard
     php_sys_info
@@ -2971,18 +3527,18 @@ run_
 clear
 sleep 1
 
-echo "========================================================================="
-echo "                        Cài đặt thành công                               "
-echo "Bạn có thể xem lại thông tin cần thiết tại file: ${FILE_INFO}            "
-echo "          Nếu cần hỗ trợ vui lòng liên hệ ${AUTHOR_CONTACT}              "
-echo "========================================================================="
+printf "========================================================================="
+printf "                        Cài đặt thành công                               "
+printf "Bạn có thể xem lại thông tin cần thiết tại file: %s" "${FILE_INFO}"
+printf "          Nếu cần hỗ trợ vui lòng liên hệ %s" "${AUTHOR_CONTACT}"
+printf "========================================================================="
 echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
 echo "-------------------------------------------------------------------------"
 echo "1.  SSH  Port                  : 8282"
 echo "2.  phpMyAdmin                 : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 echo "3.  MariaDB Root Password      : ${SQLPASS}"
 echo "-------------------------------------------------------------------------"
-echo "========================================================================="
+printf "========================================================================="
 echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool          "
 echo "-------------------------------------------------------------------------"
 echo "1.  Link Opcache Dashboard     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
@@ -2990,7 +3546,7 @@ echo "2.  Link Server Info     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/server
 echo "3.  User                       : admin                                   "
 echo "4.  Password                   : ${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
-echo "========================================================================="
+printf "========================================================================="
 echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không. "
 echo "-------------------------------------------------------------------------"
 

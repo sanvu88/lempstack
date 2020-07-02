@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+echo "========================================================================="
+echo "Quản lý Nginx"
+echo "========================================================================="
+printf "%s\n" "$(nginx -v)"
+echo "-------------------------------------------------------------------------"
+echo "Trạng thái: $(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+echo "-------------------------------------------------------------------------"
+echo
+PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
+options=("Khởi động lại nginx" "Kiểm tra cấu hình Nginx")
+
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Khởi động lại nginx")
+            clear
+            echo "Đang khởi động lại..."
+            sleep 1
+            systemctl restart nginx
+            sleep 2
+            echo
+            controller_nginx
+            ;;
+        "Kiểm tra cấu hình Nginx")
+            clear
+            sleep 1
+            nginx -t
+            sleep 2
+            echo
+            controller_nginx
+            ;;
+        *) hvn;;
+    esac
+done

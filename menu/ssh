@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo "========================================================================="
+echo "Quản lý SSH"
+echo "========================================================================="
+PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
+options=("Đổi port SSH" "Đổi Password")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Đổi port SSH")
+            '/var/hostvn/script/menu/controller/ssh/change_port'
+            ;;
+        "Đổi Password")
+            passwd
+            controller_ssh
+            ;;
+        *) hvn;;
+    esac
+done

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/functions
+
+list_domain(){
+	if [ "$(ls -At /var/hostvn/script/users)" ]; then
+    	clear
+    	echo "Danh sách Domain trên VPS:"
+    	echo
+    	i=1
+    	cd_dir "/var/hostvn/script/users"
+    	for entry in .*.conf; do
+    		[[ -e "${entry}" ]] || break
+    	    domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
+    	    echo "$i) $domain"
+    		i=$((i+1));
+    	done
+    echo "-------------------------------------------------------------------------"
+    	echo "Tổng Domain: $((i-1))"
+    else
+    	clear
+    	echo "Không có Domain nào tồn tại trên hệ thống"
+    	controller_domain
+    fi
+}
+
+list_domain
+echo ""
+controller_domain
