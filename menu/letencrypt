@@ -20,7 +20,7 @@ do
         "Gia hạn Let's Encrypt")
             '/etc/larvps/menu/action/lets_encrypt/update'
             ;;
-        *) hvn;;
+        *) '/var/hostvn/script/menu/hvn';;
     esac
 done
 

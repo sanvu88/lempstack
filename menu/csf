@@ -1,7 +1,7 @@
 #!/bin/bash
-
+clear
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/functions
+source /var/hostvn/script/menu/helpers/function
 
 echo "========================================================================="
 echo "Quản lý CSF Firewall"
@@ -34,8 +34,8 @@ do
             controller_csf
             ;;
         "Gỡ block toàn bộ IP")
-        	csf -tf
-    		csf -df
+            csf -tf
+            csf -df
             systemctl restart csf
             systemctl restart lfd
             echo ""
@@ -72,6 +72,6 @@ do
             echo ""
             controller_csf
             ;;
-        *) hvn;;
+        *) '/var/hostvn/script/menu/hvn';;
     esac
 done

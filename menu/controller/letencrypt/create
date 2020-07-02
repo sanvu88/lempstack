@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/functions
+source /var/hostvn/script/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
 
 echo "-------------------------------------------------------------------------"
 echo "Thêm SSL - Let's Encrypt"
@@ -11,11 +13,12 @@ echo
 set_variable(){
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    source=$(grep "source" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    cache=$(grep "plugin_cache" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    brute=""
-    wordpress_conf=""
+    wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     wp_secure=""
+    cache=""
+    plugin_cache="other"
+    php_use="1"
+    brute=""
 }
 
 check_nginx_status(){
@@ -40,6 +43,10 @@ check_dns(){
 }
 
 backup_vhost(){
+    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
+        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
+    fi
+
     mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
 }
 
@@ -49,40 +56,14 @@ ${domain}
 EOF
 }
 
-browser_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-        rewrite="include /etc/nginx/rewrite/${source}.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    elif [[ "${plugins_cache}" == "wpfc" ]]; then
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wprocket" ]]; then
-        cache="include /etc/nginx/wordpress/wprocket.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wpsc" ]]; then
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "enabler" ]]; then
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    else
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-        rewrite="include /etc/nginx/rewrite/${source}.conf;"
-    fi
-}
-
 create_ssl_vhost(){
     backup_vhost
+    set_rewrite
+    fastcgi
 
     if [[ "${source}" == "wordpress" ]]; then
         browser_cache
         brute_force_wp
-        wordpress_config
     fi
 
     cat >> "/etc/nginx/conf.d/$domain.conf" << END
@@ -126,12 +107,11 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm/${username}.sock;
+            ${fastcgi_pass}
         }
     }
 
     ${brute}
-    ${wordpress_conf}
     ${wp_secure}
     include /etc/nginx/extra/security.conf;
 }
@@ -145,6 +125,12 @@ restart_nginx(){
 run(){
     check_nginx_status
     select_domain
+    select_source
+
+    if [[ "${SOURCE}" == "wordpress" ]]; then
+        plugin_cache
+    fi
+
     set_variable
     check_dns
     check_domain_exists

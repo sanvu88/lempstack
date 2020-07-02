@@ -1,0 +1,56 @@
+#!/bin/bash
+clear
+# shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
+
+ip=$(ip route get 1 | awk '{print $NF;exit}')
+
+echo "========================================================================="
+echo "                  HOSTVN Scripts - Công cụ quản lý VPS"
+echo "                              HOSTVN.NET"
+echo "========================================================================="
+echo "IP VPS: ${ip}"
+echo "phpMyAdmin: http://${ip}:${admin_port}/phpmyadmin"
+echo "Phím tắt: Ctrl + C hoặc nhập 0 để thoát"
+echo "-------------------------------------------------------------------------"
+
+PS3='Nhập lựa chọn của bạn (1-19) [0=Thoát]: '
+options=(
+    "Quản lý Domain"
+    "Quản lý Let's Encrypt"
+    "Quản lý SSH"
+    "Quản lý Cache"
+    "Quản lý Nginx"
+    "Quản lý CSF Firewall"
+    "Phân quyền Chown/Chmod"
+    "Thông tin VPS")
+select opt in "${options[@]}"
+do
+	case $opt in
+		"Quản lý Domain")
+            '/var/hostvn/script/menu/domain'
+            ;;
+        "Quản lý Let's Encrypt")
+            '/var/hostvn/script/menu/letencrypt'
+            ;;
+        "Quản lý SSH")
+            '/var/hostvn/script/menu/ssh'
+            ;;
+        "Quản lý Cache")
+            '/var/hostvn/script/menu/cache'
+            ;;
+        "Quản lý Nginx")
+            '/var/hostvn/script/menu/nginx'
+            ;;
+        "Quản lý CSF Firewall")
+            '/var/hostvn/script/menu/csf'
+            ;;
+       	"Phân quyền Chown/Chmod")
+            '/var/hostvn/script/menu/permission'
+            ;;
+        "Thông tin VPS")
+            '/var/hostvn/script/menu/info'
+            ;;
+		*) break;;
+	esac
+done

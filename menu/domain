@@ -1,5 +1,5 @@
 #!/bin/bash
-
+clear
 echo "========================================================================="
 echo "Quản lý Domain"
 echo "========================================================================="
@@ -21,6 +21,6 @@ do
         "Xóa Domain")
             '/var/hostvn/script/menu/controller/domain/destroy'
             ;;
-        *) hvn;;
+        *) '/var/hostvn/script/menu/hvn';;
     esac
 done

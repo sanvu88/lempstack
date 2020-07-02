@@ -1,4 +1,5 @@
 #!/bin/bash
+clear
 echo "========================================================================="
 echo "Quản lý Cache"
 echo "========================================================================="
@@ -13,6 +14,6 @@ do
         "Redis")
             '/var/hostvn/script/menu/controller/cache/redis'
             ;;
-        *) hvn;;
+        *) '/var/hostvn/script/menu/hvn';;
     esac
 done

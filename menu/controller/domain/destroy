@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/functions
+source /var/hostvn/script/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
 
 echo "-------------------------------------------------------------------------"
 echo "Xóa Domain"
@@ -11,6 +13,9 @@ set_var(){
 	db_name=$(grep "db_name" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
     db_user=$(grep "db_user" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
     username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
+    php_mode=$(grep "php_mode" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
+    vhost_config_path="/etc/nginx/conf.d/"${domain}".conf"
+    php_config_path="/etc/php-fpm.d/"${domain}".conf"
 }
 
 destroy_user(){
@@ -28,10 +33,15 @@ destroy_db(){
 }
 
 remove_path(){
+	if [[ "{$php_mode}" == 2 ]]; then
+		vhost_config_path="/opt/remi/${php_version}/root/etc/nginx/conf.d/${domain}.conf"
+    	php_config_path="/opt/remi/${php_version}/root/etc/php-fpm.d/${domain}.conf"
+	fi
+
 	rm -rf /home/"${username:?}"
-	rm -rf /var/hostvn/script/users/."${domain}".conf
+	rm -rf "${vhost_config_path}"
 	rm -rf /etc/nginx/conf.d/"${domain}".conf
-    rm -rf /etc/php-fpm.d/"${domain}".conf
+    rm -rf "${php_config_path}"
 }
 
 confirm(){

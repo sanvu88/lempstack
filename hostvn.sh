@@ -39,10 +39,10 @@ AUTHOR="HOSTVN"
 AUTHOR_CONTACT="kythuat@hostvn.net"
 
 # Set Lang
-ROOT_ERR="Bạn cần chạy script với user root. Chạy lệnh \"sudo su\" để có quyền root!\n"
+ROOT_ERR="Bạn cần chạy script với user root. Chạy lệnh \"sudo su\" để có quyền root!"
 CANCEL_INSTALL="Huỷ cài đặt..."
-OS_WROG="Script chỉ hoạt động trên \"CentOS 7\"!\n"
-RAM_NOT_ENOUGH="Cảnh báo: Dung lượng RAM quá thấp để cài Script. (Ít nhất 512MB)\n"
+OS_WROG="Script chỉ hoạt động trên \"CentOS 7\"!"
+RAM_NOT_ENOUGH="Cảnh báo: Dung lượng RAM quá thấp để cài Script. (Ít nhất 512MB)"
 OTHER_CP_EXISTS="Máy chủ của bạn đã cài đặt Control Panel khác. Vui lòng rebuild để cài đặt Script"
 ENTER_OPTION="Nhập vào lựa chọn của bạn [1-6]: "
 SELECT_PHP="Hãy lựa chọn phiên bản PHP muốn cài đặt:"
@@ -50,20 +50,25 @@ WRONG_PHP_OPTION="Lựa chọn của bạn không chính xác, hệ thống sẽ
 SELECT_INST_PHP_2="Bạn có muốn cài đặt phiên bản PHP thứ hai không - Multiple PHP ?"
 ENTER_OPTION_PHP_2="Nhập vào lựa chọn của bạn [1-2]: "
 WRONG_PHP_SELECT_2="Bạn nhập sai. Hệ thống sẽ cài một phiên bản PHP."
-WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6\n"
-SELECT_PHP_2="Lựa chọn phiên bản PHP thứ hai bạn muốn sử dụng:\n"
+WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6"
+SELECT_PHP_2="Lựa chọn phiên bản PHP thứ hai bạn muốn sử dụng:"
 INST_MARIADB_ERR="Cài đặt MariaDB thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_NGINX_ERR="Cài đặt Nginx thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_PHP_ERR="Cài đặt PHP thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
+INST_PHP_ERR_2="Cài đặt PHP 2 thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
 INST_IGBINARY_ERR="Cài đặt Igbinary không thành công. Vui lòng cài đặt lại: Igbinary, Php memcached ext, Phpredis."
 INST_MEMEXT_ERR="Cài đặt Php memcached extension không thành công. Vui lòng cài đặt lại."
 INST_PHPREDIS_ERR="Cài đặt Phpredis không thành công. Vui lòng cài đặt lại."
+INST_IGBINARY_ERR_2="Cài đặt Igbinary cho PHP 2 không thành công. Vui lòng cài đặt lại: Igbinary, Php memcached ext, Phpredis."
+INST_MEMEXT_ERR_2="Cài đặt Php memcached extension cho PHP 2 không thành công. Vui lòng cài đặt lại."
+INST_PHPREDIS_ERR_2="Cài đặt Phpredis cho PHP 2 không thành công. Vui lòng cài đặt lại."
 NGINX_NOT_WORKING="Nginx không hoạt động."
 MARIADB_NOT_WORKING="MariaDB không hoạt động."
 PUREFTP_NOT_WORKING="Pure-ftp không hoạt động."
 PHP_NOT_WORKING="PHP-FPM không hoạt động."
 LFD_NOT_WORKING="CSF không hoạt động."
 LFD_NOT_WORKING="LFD không hoạt động."
+LOGIN_NOTI="Cam on ban da su dung dich vu cua ${AUTHOR}. Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
 
 # Service Version
 PHPMYADMIN_VERSION="5.0.2"
@@ -115,7 +120,7 @@ LOW_RAM='524288'
 NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
 MAX_CLIENT=$((NGINX_PROCESSES * 1024))
 
-rm -rf "${DIR}"/install
+#rm -rf "${DIR}"/hostvn.sh
 
 ############################################
 # Function
@@ -194,6 +199,10 @@ create_log(){
     touch "${LOG}"
 }
 
+ssh_login_noti(){
+    echo 'echo "'${LOGIN_NOTI}'"' >> ~/.bash_profile
+}
+
 prepare_install(){
     echo ""
     disable_selinux
@@ -203,6 +212,7 @@ prepare_install(){
     remove_service
     instell_service
     create_log
+    ssh_login_noti
     set_email
 }
 
@@ -212,9 +222,9 @@ prepare_install(){
 
 # Check if user not root
 check_root(){
-    if [[ $(id -u) != "0" ]]; then
-        echo "${ROOT_ERR}"
-        echo "${CANCEL_INSTALL}"
+    if [[ "$(id -u)" != "0" ]]; then
+        echo ${ROOT_ERR}
+        echo ${CANCEL_INSTALL}
         exit
     fi
 }
@@ -222,32 +232,32 @@ check_root(){
 # Check OS
 check_os(){
     if [[ "${OS_VER}" != "7" ]]; then
-        echo "${OS_WROG}"
-        echo "${CANCEL_INSTALL}"
+        echo ${OS_WROG}
+        echo ${CANCEL_INSTALL}
         exit
     fi
 }
 
 # Check if not enough ram
 check_low_ram(){
-    if [ "${RAM_TOTAL}" -lt ${LOW_RAM} ]; then
-        echo -e "${RAM_NOT_ENOUGH}"
-        echo "${CANCEL_INSTALL}"
+    if [[ "${RAM_TOTAL}" -lt "${LOW_RAM}" ]]; then
+        echo -e ${RAM_NOT_ENOUGH}
+        echo ${CANCEL_INSTALL}
         exit
     fi
 }
 
 # Check if other Control Panel has installed before
 check_control_panel(){
-    if [[ -f ${CPANEL} || -f ${DIRECTADMIN} || -f ${PLESK} || -f ${WEBMIN} || -f ${SENTORA} || -f ${HOCVPS} ]]; then
-        echo -e "${OTHER_CP_EXISTS}"
-        echo "${CANCEL_INSTALL}"
+    if [[ -f "${CPANEL}" || -f "${DIRECTADMIN}" || -f "${PLESK}" || -f "${WEBMIN}" || -f "${SENTORA}" || -f "${HOCVPS}" ]]; then
+        echo -e ${OTHER_CP_EXISTS}
+        echo ${CANCEL_INSTALL}
         exit
     fi
 
-    if [[ -f ${VPSSIM} || -f ${WORDOPS} || -f ${EEV3} || -d ${EEV4} || -d ${VESTA} || -d ${CWP} || -d ${KUSANAGI}  ]]; then
-        echo -e "${OTHER_CP_EXISTS}"
-        echo "${CANCEL_INSTALL}"
+    if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}"  ]]; then
+        echo -e ${OTHER_CP_EXISTS}
+        echo ${CANCEL_INSTALL}
         exit
     fi
 }
@@ -284,8 +294,8 @@ nginx_brotli(){
     NGINXV=$( ${COMMAND} 2>&1 )
     NGINXLOCAL=$(echo "${NGINXV}" | grep -o '[0-9.]*$')
     MODULES_PATH="/etc/nginx/modules"
-    wget -q ${EXT_LINK}/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_filter_module.so -O  ${MODULES_PATH}/ngx_http_brotli_filter_module.so
-    wget -q ${EXT_LINK}/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_static_module.so -O  ${MODULES_PATH}/ngx_http_brotli_static_module.so
+    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_filter_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_filter_module.so
+    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_static_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_static_module.so
 
     if [[ -f "${MODULES_PATH}/ngx_http_brotli_filter_module.so" && -f "${MODULES_PATH}/ngx_http_brotli_static_module.so" ]]; then
         LOAD_BROTLI_FILTER="load_module modules/ngx_http_brotli_filter_module.so;"
@@ -352,7 +362,7 @@ select_php_multi(){
 
 select_php_ver_2(){
     echo "${SELECT_PHP_2}"
-    PS3="${ENTER_OPTION_PHP_2}"
+    PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
     select opt in "${options[@]}"
     do
@@ -397,6 +407,11 @@ install_lemp(){
     select_php_ver
     select_php_multi
 
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        select_php_ver_2
+        check_duplicate_php
+    fi
+
     install_nginx
 
     if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
@@ -419,9 +434,19 @@ install_lemp(){
     install_php
 
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        select_php_ver_2
-        check_duplicate_php
         install_php_2
+
+        if [[ ! -f "${PHP2_PATH}/usr/lib/systemd/system/php-fpm.service" ]]; then
+            clear
+            echo "${INST_PHP_ERR_2}"
+        fi
+    fi
+
+    if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
+        clear
+        echo "${INST_PHP_ERR}"
+        sleep 3
+        exit
     fi
 
     if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
@@ -439,6 +464,15 @@ install_composer(){
     echo ""
     curl -sS https://getcomposer.org/installer | php
     mv composer.phar /usr/local/bin/composer
+}
+
+############################################
+# Install WP-CLI
+############################################
+install_wpcli(){
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x wp-cli.phar
+    mv wp-cli.phar /usr/local/bin/wp
 }
 
 ############################################
@@ -573,14 +607,14 @@ EOF
 }
 
 install_igbinary_2(){
-    if [[ "${PHP_VERSION_2}" == "56" ]]; then
+    if [[ "${PHP_VERSION_2}" == "php56" ]]; then
         IGBINARY_VERSION="2.0.8"
     fi
 
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
-    /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
+    ${PHP2_PATH}/usr/bin/phpize && ./configure --with-php-config="${PHP2_PATH}"/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
@@ -589,7 +623,7 @@ install_igbinary_2(){
 extension=igbinary.so
 EOF
     else
-        echo "${INST_IGBINARY_ERR}" >> ${LOG}
+        echo "${INST_IGBINARY_ERR_2}" >> ${LOG}
     fi
 }
 
@@ -616,14 +650,14 @@ EOF
 }
 
 install_php_memcached_2(){
-    if [[ "${PHP_VERSION}" == "56" ]]; then
+    if [[ "${PHP_VERSION_2}" == "php56" ]]; then
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
-        /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
+        ${PHP2_PATH}/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config="${PHP2_PATH}"/usr/bin/php-config
         make && make install
         cd "${DIR}" && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
@@ -632,7 +666,7 @@ install_php_memcached_2(){
 extension=memcached.so
 EOF
     else
-        echo "${INST_MEMEXT_ERR}" >> ${LOG}
+        echo "${INST_MEMEXT_ERR_2}" >> ${LOG}
     fi
 }
 
@@ -660,14 +694,14 @@ EOF
 }
 
 install_php_redis_2(){
-    if [[ "${PHP_VERSION}" == "56" ]]; then
+    if [[ "${PHP_VERSION_2}" == "php56" ]]; then
         PHP_REDIS_VERSION="4.3.0"
     fi
 
-    cd "${DIR}" && wget ${PECL_PHP_LINK}/redis-"${PHP_REDIS_VERSION}".tgz
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
-    /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
+    ${PHP2_PATH}/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config="${PHP2_PATH}"/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
@@ -676,7 +710,7 @@ install_php_redis_2(){
 extension=redis.so
 EOF
     else
-        echo "${INST_PHPREDIS_ERR}" >> ${LOG}
+        echo "${INST_PHPREDIS_ERR_2}" >> "${LOG}"
     fi
 
 }
@@ -1218,6 +1252,35 @@ location @cachemiss {
 include /etc/nginx/extra/staticfiles.conf;
 EOenabler
 
+cat >> "/etc/nginx/wordpress/swift2.conf" << EOswift2
+set \$swift_cache 1;
+if (\$request_method = POST){
+    set \$swift_cache 0;
+}
+
+if (\$args != ''){
+    set \$swift_cache 0;
+}
+
+if (\$http_cookie ~* "wordpress_logged_in") {
+    set \$swift_cache 0;
+}
+
+if (\$request_uri ~ ^/wp-content/cache/swift-performance/([^/]*)/assetproxy) {
+    set \$swift_cache 0;
+}
+
+if (!-f "/wp-content/cache/swift-performance//\$http_host/\$request_uri/desktop/unauthenticated/index.html") {
+    set \$swift_cache 0;
+}
+
+if (\$swift_cache = 1){
+    rewrite .* /wp-content/cache/swift-performance//\$http_host/\$request_uri/desktop/unauthenticated/index.html last;
+}
+
+include /etc/nginx/extra/staticfiles.conf;
+EOswift2
+
 }
 
 # Extra config
@@ -1510,7 +1573,7 @@ EOsecurity
 
 vhost_custom(){
     REWRITE_CONFIG_PATH="/etc/nginx/rewrite"
-    mkdir -p ${REWRITE_CONFIG_PATH}
+    mkdir -p "${REWRITE_CONFIG_PATH}"
 cat >> "${REWRITE_CONFIG_PATH}/default.conf" << EOrewrite_default
 location / {
     try_files \$uri \$uri/ /index.php?\$query_string;
@@ -1819,8 +1882,7 @@ server {
 }
 
 server {
-    listen ${IPADDRESS}:${RANDOM_ADMIN_PORT};
-    listen       127.0.0.1:${RANDOM_ADMIN_PORT};
+    listen ${RANDOM_ADMIN_PORT};
     #listen [::]:${RANDOM_ADMIN_PORT};
 
     server_name ${IPADDRESS};
@@ -2238,7 +2300,7 @@ EOphp_fpm_2_conf
     if [[ -f "${PHP2_PATH}/etc/php-fpm.d/www.conf" ]]; then
         mv "${PHP2_PATH}"/etc/php-fpm.d/www.conf "${PHP2_PATH}"/etc/php-fpm.d/www.conf.orig
     fi
-cat >> "/etc/php-fpm.d/www.conf" << EOwww_2_conf
+cat >> "${PHP2_PATH}/etc/php-fpm.d/www.conf" << EOwww_2_conf
 [www]
 listen = ${PHP2_PATH}/var/run/php-fpm.sock;
 listen.backlog = -1
@@ -3199,16 +3261,16 @@ EOmysql_log
 # Install phpMyAdmin
 ############################################
 unzip_phpmyadmin(){
-    cd ${USR_DIR} && unzip phpmyadmin.zip
+    cd "${USR_DIR}" && unzip phpmyadmin.zip
     rm -rf phpmyadmin.zip
 }
 
 #Config phpMyAdmin
 config_phpmyadmin(){
     BLOWFISH_SECRET=$(date +%s | sha256sum | base64 | head -c 32)
-    mv ${USR_DIR}/phpmyadmin/config.sample.inc.php ${USR_DIR}/phpmyadmin/config.inc.php
-    rm -rf ${USR_DIR}/phpmyadmin/setup
-    mkdir -p ${USR_DIR}/phpmyadmin/tmp
+    mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
+    rm -rf "${USR_DIR}"/phpmyadmin/setup
+    mkdir -p "${USR_DIR}"/phpmyadmin/tmp
 
     if [[ "${PHP_VERSION}" != "56" ]]; then
         DECLARE="declare(strict_types=1);"
@@ -3255,11 +3317,11 @@ EOphpmyadmin_temp
 install_phpmyadmin(){
     echo ""
 
-    if [[ ${PHP_VERSION} == "56" ]]; then
+    if [[ "${PHP_VERSION}" == "56" ]]; then
         PHPMYADMIN_VERSION="4.9.5"
     fi
 
-    wget -O ${USR_DIR}/phpmyadmin.zip  "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
+    wget -O "${USR_DIR}"/phpmyadmin.zip  "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     unzip_phpmyadmin
     rm -rf "${USR_DIR}"/phpmyadmin.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
@@ -3279,7 +3341,7 @@ install_pure_ftpd(){
     yum -y install pure-ftpd
     PURE_CONF_PATH="/etc/pure-ftpd"
     if [[ -f "${PURE_CONF_PATH}/pure-ftpd.conf" ]]; then
-        mv ${PURE_CONF_PATH}/pure-ftpd.conf ${PURE_CONF_PATH}/pure-ftpd.conf.orig
+        mv "${PURE_CONF_PATH}"/pure-ftpd.conf "${PURE_CONF_PATH}"/pure-ftpd.conf.orig
     fi
 
     cat >> "${PURE_CONF_PATH}/pure-ftpd.conf" << EOpure_ftpd_conf
@@ -3321,10 +3383,10 @@ TLSCipherSuite               HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3
 CertFile                     /etc/pure-ftpd/ssl/pure-ftpd.pem
 EOpure_ftpd_conf
 
-    mkdir -p ${PURE_CONF_PATH}/ssl
-    openssl dhparam -out ${PURE_CONF_PATH}/ssl/pure-ftpd-dhparams.pem 2048
+    mkdir -p "${PURE_CONF_PATH}"/ssl
+    openssl dhparam -out "${PURE_CONF_PATH}"/ssl/pure-ftpd-dhparams.pem 2048
     openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout ${PURE_CONF_PATH}/ssl/pure-ftpd.pem -out ${PURE_CONF_PATH}/ssl/pure-ftpd.pem
-    chmod 600 ${PURE_CONF_PATH}/ssl/pure-ftpd*.pem
+    chmod 600 "${PURE_CONF_PATH}"/ssl/pure-ftpd*.pem
 }
 
 ############################################
@@ -3362,11 +3424,11 @@ EOF
 opcache_dashboard(){
     echo ""
     ADMIN_TOOL_PWD=$(date |md5sum |cut -c '14-30')
-    mkdir -p ${DEFAULT_DIR_WEB}/opcache
-    wget -q ${GITHUB_RAW_LINK}/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_WEB}/opcache/index.php
-    chown -R nginx:nginx ${DEFAULT_DIR_WEB}/opcache
-    htpasswd -b -c ${USR_DIR}/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
-    chown -R nginx:nginx ${USR_DIR}/nginx/auth
+    mkdir -p "${DEFAULT_DIR_WEB}"/opcache
+    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_WEB}"/opcache/index.php
+    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/opcache
+    htpasswd -b -c "${USR_DIR}"/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
+    chown -R nginx:nginx "${USR_DIR}"/nginx/auth
 }
 
 ############################################
@@ -3375,12 +3437,12 @@ opcache_dashboard(){
 php_sys_info(){
     echo ""
     cd_dir "${DEFAULT_DIR_WEB}"
-    wget -q ${GITHUB_URL}/phpsysinfo/phpsysinfo/archive/v${PHP_SYS_INFO_VERSION}.zip
-    unzip -q v${PHP_SYS_INFO_VERSION}.zip && rm -f v${PHP_SYS_INFO_VERSION}.zip
-    mv phpsysinfo-${PHP_SYS_INFO_VERSION} serverinfo
+    wget -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
+    unzip -q v"${PHP_SYS_INFO_VERSION}".zip && rm -f v"${PHP_SYS_INFO_VERSION}".zip
+    mv phpsysinfo-"${PHP_SYS_INFO_VERSION}" serverinfo
     cd serverinfo && mv phpsysinfo.ini.new phpsysinfo.ini
     cd_dir "${DIR}"
-    chown -R nginx:nginx ${DEFAULT_DIR_WEB}
+    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"
 }
 
 ############################################
@@ -3426,38 +3488,45 @@ start_service() {
     systemctl enable lfd
     systemctl start csf
     systemctl enable csf
+
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        systemctl enable ${PHP_VERSION_2}-php-fpm
+        systemctl start ${PHP_VERSION_2}-php-fpm
+    fi
+
+    check_service_status
 }
 
 check_service_status(){
     echo ""
     NGINX_STATUS="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${NGINX_STATUS}" != "active" ]]; then
-        echo "${NGINX_NOT_WORKING}" >> ${LOG}
+        echo "${NGINX_NOT_WORKING}" >> "${LOG}"
     fi
 
     MARIADB_STATUS="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${MARIADB_STATUS}" != 'active' ]]; then
-        echo "${MARIADB_NOT_WORKING}" >> ${LOG}
+        echo "${MARIADB_NOT_WORKING}" >> "${LOG}"
     fi
 
     PURE_STATUS="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${PURE_STATUS}" != 'active' ]]; then
-        echo "${PUREFTP_NOT_WORKING}" >> ${LOG}
+        echo "${PUREFTP_NOT_WORKING}" >> "${LOG}"
     fi
 
     PHP_STATUS="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${PHP_STATUS}" != 'active' ]]; then
-        echo "${PHP_NOT_WORKING}" >> ${LOG}
+        echo "${PHP_NOT_WORKING}" >> "${LOG}"
     fi
 
     CSF_STATUS="$(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${CSF_STATUS}" != 'active' ]]; then
-        echo "${CSF_NOT_WORKING}" >> ${LOG}
+        echo "${CSF_NOT_WORKING}" >> "${LOG}"
     fi
 
     LFD_STATUS="$(systemctl status lfd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     if [[ "${LFD_STATUS}" != "active" ]]; then
-        echo "${LFD_NOT_WORKING}" >> ${LOG}
+        echo "${LFD_NOT_WORKING}" >> "${LOG}"
     fi
 }
 
@@ -3467,10 +3536,14 @@ check_service_status(){
 add_menu(){
     echo ""
     cd_dir "${BASH_DIR}"
-    #wget ${EXT_LINK}/menu.zip
-    #unzip menu.zip
+    wget "${EXT_LINK}"/menu.tar.gz
+    tar -xvf menu.tar.gz && rm -rf menu.tar.gz
+    mkdir -p "${BASH_DIR}"/users
+    chmod 711 menu && chmod 711 users
 
-    #chmod 711 menu && chmod 711 users
+    # Create Alias Command
+    echo 'alias hvn="/var/hostvn/script/menu/menu/hvn" ' >> ~/.bashrc
+    source ~/.bashrc
 }
 
 ############################################
@@ -3502,6 +3575,7 @@ run_(){
     create_bash_dir
     install_lemp
     install_composer
+    install_wpcli
     memory_calculation
     install_cache
     config_nginx
@@ -3518,7 +3592,6 @@ run_(){
     php_sys_info
     start_service
     add_menu
-    check_service_status
     write_info
 }
 
@@ -3528,9 +3601,9 @@ clear
 sleep 1
 
 printf "========================================================================="
-printf "                        Cài đặt thành công                               "
-printf "Bạn có thể xem lại thông tin cần thiết tại file: %s" "${FILE_INFO}"
-printf "          Nếu cần hỗ trợ vui lòng liên hệ %s" "${AUTHOR_CONTACT}"
+printf "                        Cài đặt thành công\n                             "
+printf "Bạn có thể xem lại thông tin cần thiết tại file: %s\n" "${FILE_INFO}"
+printf "          Nếu cần hỗ trợ vui lòng liên hệ %s\n" "${AUTHOR_CONTACT}"
 printf "========================================================================="
 echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
 echo "-------------------------------------------------------------------------"
@@ -3538,17 +3611,17 @@ echo "1.  SSH  Port                  : 8282"
 echo "2.  phpMyAdmin                 : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 echo "3.  MariaDB Root Password      : ${SQLPASS}"
 echo "-------------------------------------------------------------------------"
-printf "========================================================================="
-echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool          "
-echo "-------------------------------------------------------------------------"
+printf "========================================================================"
+echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool\n         "
+echo "--------------------------------------------------------------------------"
 echo "1.  Link Opcache Dashboard     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
 echo "2.  Link Server Info     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
 echo "3.  User                       : admin                                   "
 echo "4.  Password                   : ${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
 printf "========================================================================="
-echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không. "
+echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không.\n "
 echo "-------------------------------------------------------------------------"
 
 sleep 3
-shutdown -r now
+#shutdown -r now

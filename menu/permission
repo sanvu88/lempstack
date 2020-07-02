@@ -1,5 +1,5 @@
 #!/bin/bash
-
+clear
 echo "========================================================================="
 echo "Phân quyền Chown/Chmod"
 echo "========================================================================="
@@ -18,6 +18,6 @@ do
         "Phân quyền toàn bộ website")
             '/var/hostvn/script/menu/controller/permission/all'
             ;;
-        *) exit;;
+        *) '/var/hostvn/script/menu/hvn';;
     esac
 done

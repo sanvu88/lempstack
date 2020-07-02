@@ -3,7 +3,7 @@
 # shellcheck disable=SC1091
 source /root/.my.cnf
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/functions
+source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
 # shellcheck disable=SC1091
@@ -49,11 +49,11 @@ prepare(){
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-24}";echo;)
+    wp_secure=""
+    cache=""
     plugin_cache="other"
     php_use="1"
     brute=""
-    wordpress_conf=""
-    wp_secure=""
 }
 
 # Check Conditions
@@ -107,34 +107,6 @@ check_mysql_user(){
     fi
 }
 
-# Select Source
-select_source(){
-	SOURCE="Other"
-    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
-    PS3='Nhập lựa chọn của bạn (1-14): '
-	options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
-	select opt in "${options[@]}"
-	do
-	    case $opt in
-	        "WordPress") SOURCE="wordpress"; break;;
-         	"Laravel") SOURCE="laravel"; break;;
-            "CodeIgniter") SOURCE="codeigniter"; break;;
-            "Xenforo") SOURCE="xenforo"; break;;
-            "Joomla") SOURCE="joomla"; break;;
-            "Drupal") SOURCE="drupal"; break;;
-            "OpenCart") SOURCE="opencart"; break;;
-            "WHMCS") SOURCE="whmcs"; break;;
-            "PrestaShop") SOURCE="prestashop"; break;;
-            "Yii") SOURCE="yii"; break;;
-            "NextCloud") SOURCE="nextcloud"; break;;
-            "Discuz") SOURCE="discuz"; break;;
-            "Ecshop") SOURCE="ecshop"; break;;
-            "Other") SOURCE="default"; break;;
-	        *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
-	    esac
-	done
-}
-
 set_php_version(){
     php1="php${php1_version}"
     php2=${php2_version}
@@ -152,25 +124,6 @@ select_php(){
             "${php1}") php_use="1"; break;;
             "${php2}") php_use="2"; break;;
             *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
-        esac
-    done
-}
-
-plugin_cache(){
-    plugins_cache="n"
-    echo "Lựa chọn Plugins cache mà bạn sẽ sử dụng ?"
-    PS3='Nhập lựa chọn của bạn (1-2): '
-    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Other")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "W3 Total Cache") plugins_cache="w3c"; break;;
-            "WP Fastest Cache") plugins_cache="wpfc"; break;;
-            "WP Rocket") plugins_cache="wprocket"; break;;
-            "WP Super Cache") plugins_cache="wpsc"; break;;
-            "Cache Enabler") plugins_cache="enabler"; break;;
-            "Other") plugins_cache="other"; break;;
-            *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
         esac
     done
 }
@@ -334,78 +287,11 @@ security.limit_extensions = .php
 END
 }
 
-set_rewrite(){
-    if [ "${SOURCE}" == "wordpress" ]; then
-        rewrite="include /etc/nginx/rewrite/wordpress.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    elif [ "${SOURCE}" == "laravel" ]; then
-        rewrite="include /etc/nginx/rewrite/laravel.conf;"
-    elif [ "${SOURCE}" == "codeigniter" ]; then
-        rewrite="include /etc/nginx/rewrite/codeigniter.conf;"
-    elif [ "${SOURCE}" == "xenforo" ]; then
-        rewrite="include /etc/nginx/rewrite/xenforo.conf;"
-    elif [ "${SOURCE}" == "joomla" ]; then
-        rewrite="include /etc/nginx/rewrite/joomla.conf;"
-    elif [ "${SOURCE}" == "drupal" ]; then
-        rewrite="include /etc/nginx/rewrite/drupal.conf;"
-    elif [ "${SOURCE}" == "opencart" ]; then
-        rewrite="include /etc/nginx/rewrite/opencart.conf;"
-    elif [ "${SOURCE}" == "whmcs" ]; then
-        rewrite="include /etc/nginx/rewrite/whmcs.conf;"
-    elif [ "${SOURCE}" == "prestashop" ]; then
-        rewrite="include /etc/nginx/rewrite/prestashop.conf;"
-    elif [ "${SOURCE}" == "yii" ]; then
-        rewrite="include /etc/nginx/rewrite/yii.conf;"
-    elif [ "${SOURCE}" == "nextcloud" ]; then
-        rewrite="include /etc/nginx/rewrite/nextcloud.conf;"
-    elif [ "${SOURCE}" == "discuz" ]; then
-        rewrite="include /etc/nginx/rewrite/discuz.conf;"
-    elif [ "${SOURCE}" == "ecshop" ]; then
-        rewrite="include /etc/nginx/rewrite/ecshop.conf;"
-    else
-        rewrite="include /etc/nginx/rewrite/default.conf;"
-    fi
-}
-
-browser_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-        plugin_cache="w3c"
-    elif [[ "${plugins_cache}" == "wpfc" ]]; then
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-        plugin_cache="wpfc"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wprocket" ]]; then
-        cache="include /etc/nginx/wordpress/wprocket.conf;"
-        plugin_cache="wprocket"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wpsc" ]]; then
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-        plugin_cache="wpsc"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "enabler" ]]; then
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-        plugin_cache="enabler"
-        rewrite=""
-    else
-        plugin_cache="other"
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-    fi
-}
-
 set_docroot(){
     if [[ "${SOURCE}" == "laravel" ]]; then
         root="root /home/${username}/${domain}/public_html/public;"
     else
         root="root /home/${username}/${domain}/public_html;"
-    fi
-}
-
-fastcgi(){
-    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
-
-    if [[ "${php_use}" == "2" ]]; then
-        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
 }
 
@@ -416,7 +302,6 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         browser_cache
         brute_force_wp
-        wordpress_config
     fi
 
     set_docroot
@@ -451,7 +336,6 @@ server {
     }
 
     ${brute}
-    ${wordpress_conf}
     ${wp_secure}
 	include /etc/nginx/extra/security.conf;
 }
@@ -460,10 +344,10 @@ END
 
 save_user_config(){
     php_ver=${php1_version}
-    php_release="1"
+    php_mode="1"
     if [[ "${php_use}" == "2" ]]; then
         php_ver="${php2_version}"
-        php_release="2"
+        php_mode="2"
     fi
 
 	cat > "/var/hostvn/script/users/.${domain}.conf" <<END
@@ -475,9 +359,8 @@ db_name=${db_name}
 db_user=${db_user}
 db_password=${db_pass}
 public_html=/home/${username}/${domain}/public_html
-source=${SOURCE}
 plugin_cache=${plugin_cache}
-php_release=${php_release}
+php_mode=${php_mode}
 php_version=${php_ver}
 END
 	chmod 600 /var/hostvn/script/users/."${domain}".conf
