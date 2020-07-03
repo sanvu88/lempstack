@@ -1,5 +1,15 @@
 #!/bin/bash
 
+debug_(){
+    LOG_FILE=/var/log/hostvn/del_domain.log
+    exec 5> ${LOG_FILE}
+    BASH_XTRACEFD="5"
+    PS4='$LINENO: '
+    set -x
+}
+
+debug_
+
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
@@ -23,7 +33,8 @@ destroy_user(){
 }
 
 destroy_ftp_user(){
-	pure-pw "$1"
+	pure-pw userdel "$1"
+	pure-pw mkdb
 }
 
 destroy_db(){
@@ -41,6 +52,7 @@ remove_path(){
 	rm -rf /home/"${username:?}"
 	rm -rf "${vhost_config_path}"
 	rm -rf /etc/nginx/conf.d/"${domain}".conf
+	rm -rf /var/hostvn/script/users/."${domain}".conf
     rm -rf "${php_config_path}"
 }
 

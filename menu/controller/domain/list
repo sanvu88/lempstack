@@ -16,12 +16,12 @@ list_domain(){
     	    echo "$i) $domain"
     		i=$((i+1));
     	done
-    echo "-------------------------------------------------------------------------"
+        echo "-------------------------------------------------------------------------"
     	echo "Tổng Domain: $((i-1))"
+        controller_domain
     else
     	clear
     	echo "Không có Domain nào tồn tại trên hệ thống"
-    	controller_domain
     fi
 }
 

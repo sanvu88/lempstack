@@ -4,21 +4,12 @@ echo "========================================================================="
 echo "Quản lý Let's Encrypt"
 echo "========================================================================="
 PS3='Nhập lựa chọn của bạn (1-4) [0=Thoát]: '
-options=("Các domain sử dụng Let's Encrypt" "Thêm Let's Encrypt" "Xóa Let's Encrypt" "Gia hạn Let's Encrypt")
+options=("Thêm Let's Encrypt")
 select opt in "${options[@]}"
 do
     case $opt in
-        "Các domain sử dụng Let's Encrypt")
-            '/etc/larvps/menu/action/lets_encrypt/list'
-            ;;
         "Thêm Let's Encrypt")
-            '/etc/larvps/menu/action/lets_encrypt/create'
-            ;;
-        "Xóa Let's Encrypt")
-            '/etc/larvps/menu/action/lets_encrypt/delete'
-            ;;
-        "Gia hạn Let's Encrypt")
-            '/etc/larvps/menu/action/lets_encrypt/update'
+            '/var/hostvn/script/menu/controller/letencrypt/create'
             ;;
         *) '/var/hostvn/script/menu/hvn';;
     esac

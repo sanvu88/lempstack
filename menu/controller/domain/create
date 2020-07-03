@@ -1,5 +1,15 @@
 #!/bin/bash
 
+debug_(){
+    LOG_FILE=/var/log/hostvn/create_domain.log
+    exec 5> ${LOG_FILE}
+    BASH_XTRACEFD="5"
+    PS4='$LINENO: '
+    set -x
+}
+
+debug_
+
 # shellcheck disable=SC1091
 source /root/.my.cnf
 # shellcheck disable=SC1091
@@ -7,7 +17,7 @@ source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/script/php_parameter.conf
+source /var/hostvn/script/menu/helpers/php_parameter.conf
 
 echo "-------------------------------------------------------------------------"
 echo "Thêm domain mới"
@@ -39,16 +49,16 @@ check_service(){
 
 # Set variables
 prepare(){
-	read -r -p "Nhập domain (Không có www) [ENTER]: " domain
+    read -r -p "Nhập domain (Không có www) [ENTER]: " domain
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
-	username=${domain//[-._]/}
-	user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-24}";echo;)
+    username=${domain//[-._]/}
+    user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
     SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
     wp_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
-    db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-24}";echo;)
+    db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
     wp_secure=""
     cache=""
     plugin_cache="other"
@@ -58,26 +68,26 @@ prepare(){
 
 # Check Conditions
 check_domain(){
-	if [ "$domain" = '' ]; then
-	    clear
-	    echo "Bạn chưa nhập Domain."
-	    echo
-	    controller_domain
-	fi
+    if [ "$domain" = '' ]; then
+        clear
+        echo "Bạn chưa nhập Domain."
+        echo
+        controller_domain
+    fi
 
-	if [ "$domain" = "${domain/.}" ]; then
-	    clear
-	    echo "Domain bạn nhập không đúng định dạng."
-	    echo
-	    controller_domain
-	fi
+    if [ "$domain" = "${domain/.}" ]; then
+        clear
+        echo "Domain bạn nhập không đúng định dạng."
+        echo
+        controller_domain
+    fi
 
-	if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "/var/hostvn/script/users/.${domain}.conf" ]]; then
-	    clear
-	    echo "Domain đã tồn tại trên VPS."
-	    echo
-	    controller_domain
-	fi
+    if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "/var/hostvn/script/users/.${domain}.conf" ]]; then
+        clear
+        echo "Domain đã tồn tại trên VPS."
+        echo
+        controller_domain
+    fi
 }
 
 check_user(){
@@ -193,7 +203,10 @@ create_user(){
 }
 
 create_ftp(){
-    pure-pw useradd "${username}" -u "${username}" -d /home/"${username}"
+    pure-pw useradd "${username}" -u "${username}" -g "${username}" -d /home/"${username}" << EOF
+${user_pass}
+${user_pass}
+EOF
     pure-pw mkdb
 }
 
@@ -201,7 +214,7 @@ create_db(){
     check_database
     check_mysql_user
 
-	MYSQL=$(which mysql)
+    MYSQL=$(which mysql)
     Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
     Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
     Q3="FLUSH PRIVILEGES;"
@@ -211,13 +224,13 @@ create_db(){
 }
 
 create_docrot(){
-	mkdir -p /home/"${username}"/"${domain}"/public_html
-	mkdir -p /home/"${username}"/"${domain}"/logs
-	chmod 710 /home/"${username}"
-	chmod 711 /home/"${username}"/"${domain}"
-	chmod 711 /home/"${username}"/"${domain}"/logs
-	chmod 755 /home/"${username}"/"${domain}"/public_html
-	chown -R "${username}":"${username}" /home/"${username}"
+    mkdir -p /home/"${username}"/"${domain}"/public_html
+    mkdir -p /home/"${username}"/"${domain}"/logs
+    chmod 711 /home/"${username}"
+    chmod 711 /home/"${username}"/"${domain}"
+    chmod 711 /home/"${username}"/"${domain}"/logs
+    chmod 755 /home/"${username}"/"${domain}"/public_html
+    chown -R "${username}":"${username}" /home/"${username}"
 }
 
 disable_functions(){
@@ -238,7 +251,7 @@ set_phpconf_var(){
 
     if [[ "${php2_release}" == "yes" && "${php_use}" == "2" ]]; then
         php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
-        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
+        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
         slowlog="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-slow.log"
         error_log="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-error.log"
         session_path="/opt/remi/${php2_version}/root/var/lib/php/user/${username}/session"
@@ -255,9 +268,9 @@ set_phpconf_var(){
 
 create_phpconfig(){
     set_phpconf_var
-	cat > "${php_conf_file}" << END
+    cat > "${php_conf_file}" << END
 [${username}]
-listen = ${listen};
+listen = ${listen}
 listen.backlog = -1
 listen.allowed_clients = 127.0.0.1
 listen.owner = ${username}
@@ -337,7 +350,7 @@ server {
 
     ${brute}
     ${wp_secure}
-	include /etc/nginx/extra/security.conf;
+    include /etc/nginx/extra/security.conf;
 }
 END
 }
@@ -350,7 +363,7 @@ save_user_config(){
         php_mode="2"
     fi
 
-	cat > "/var/hostvn/script/users/.${domain}.conf" <<END
+    cat > "/var/hostvn/script/users/.${domain}.conf" <<END
 [${domain}]
 username=${username}
 user_pass=${user_pass}
@@ -363,29 +376,29 @@ plugin_cache=${plugin_cache}
 php_mode=${php_mode}
 php_version=${php_ver}
 END
-	chmod 600 /var/hostvn/script/users/."${domain}".conf
+    chmod 600 /var/hostvn/script/users/."${domain}".conf
 }
 
 restart_service(){
-	systemctl restart nginx.service
-	systemctl restart php-fpm.service
+    systemctl restart nginx.service
+    systemctl restart php-fpm.service
 }
 
 run(){
     check_service
-	prepare "$@"
-	check_domain
-	select_source
+    prepare "$@"
+    check_domain
+    select_source
 
     if [[ "${php2_release}" == "yes" ]]; then
         select_php
     fi
 
-	create_user
-	create_ftp
-	create_db
-	create_docrot
-	create_phpconfig
+    create_user
+    create_ftp
+    create_db
+    create_docrot
+    create_phpconfig
 
     if [[ "${SOURCE}" == "wordpress" ]]; then
         auto_install_wp "$@"
@@ -394,7 +407,7 @@ run(){
 
     create_vhost
     save_user_config
-	restart_service
+    restart_service
 }
 
 run "$@"

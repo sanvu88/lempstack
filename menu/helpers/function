@@ -1,32 +1,32 @@
 #!/bin/bash
 
 controller_domain(){
-    . /var/hostvn/script/domain
+    . /var/hostvn/script/menu/domain
 }
 
 
 controller_csf(){
-    . /var/hostvn/script/csf
+    . /var/hostvn/script/menu/csf
 }
 
 controller_permission(){
-    . /var/hostvn/script/permission
+    . /var/hostvn/script/menu/permission
 }
 
 controller_ssh(){
-    . /var/hostvn/script/ssh
+    . /var/hostvn/script/menu/ssh
 }
 
 controller_cache(){
-    . /var/hostvn/script/cache
+    . /var/hostvn/script/menu/cache
 }
 
 controller_nginx(){
-    . /var/hostvn/script/nginx
+    . /var/hostvn/script/menu/nginx
 }
 
 controller_lets_encrypt(){
-    . /var/hostvn/script/letencrypt
+    . /var/hostvn/script/menu/letencrypt
 }
 
 menu_primary(){
@@ -57,10 +57,6 @@ convert_to_mb(){
     fi
 }
 
-php_parameter(){
-
-}
-
 select_domain(){
     domain=""
     if [ "$(ls -At /var/hostvn/script/users)" ]; then
@@ -70,7 +66,7 @@ select_domain(){
         for entry in .*.conf; do
             domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
             if [ "$domain" != "${domain/.}" ]; then
-                selects+=("${domain}")
+                selects+=(${domain})
             fi
         done
         PS3="Nhập lựa chọn của bạn [0=Exit]: "

@@ -1,5 +1,5 @@
 #!/bin/bash
-clear
+
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 

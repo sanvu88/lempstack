@@ -1,5 +1,5 @@
 #!/bin/bash
-clear
+
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 
@@ -9,7 +9,6 @@ totalSwap=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 freeSwap=$(grep 'SwapFree' /proc/meminfo |cut -f2 -d':' | xargs | cut -f1 -d' ')
 disk=$(fdisk -l | grep 'Disk' | cut -f1 -d',' | tr '\n' ' ')
 
-clear
 printf "=========================================================================\n"
 printf "                       Info VPS - IP: %s\n" "$(ip route get 1 | awk '{print $NF;exit}')"
 printf "=========================================================================\n"

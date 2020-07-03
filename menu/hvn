@@ -28,27 +28,35 @@ select opt in "${options[@]}"
 do
 	case $opt in
 		"Quản lý Domain")
+            clear
             '/var/hostvn/script/menu/domain'
             ;;
         "Quản lý Let's Encrypt")
+            clear
             '/var/hostvn/script/menu/letencrypt'
             ;;
         "Quản lý SSH")
+            clear
             '/var/hostvn/script/menu/ssh'
             ;;
         "Quản lý Cache")
+            clear
             '/var/hostvn/script/menu/cache'
             ;;
         "Quản lý Nginx")
+            clear
             '/var/hostvn/script/menu/nginx'
             ;;
         "Quản lý CSF Firewall")
+            clear
             '/var/hostvn/script/menu/csf'
             ;;
        	"Phân quyền Chown/Chmod")
+            clear
             '/var/hostvn/script/menu/permission'
             ;;
         "Thông tin VPS")
+            clear
             '/var/hostvn/script/menu/info'
             ;;
 		*) break;;

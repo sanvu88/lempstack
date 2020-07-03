@@ -1,5 +1,15 @@
 #!/bin/bash
 
+debug_(){
+    LOG_FILE=/var/log/hostvn/le_domain.log
+    exec 5> ${LOG_FILE}
+    BASH_XTRACEFD="5"
+    PS4='$LINENO: '
+    set -x
+}
+
+debug_
+
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
@@ -33,7 +43,7 @@ check_nginx_status(){
 }
 
 check_dns(){
-    a_record=$(dig -4 +nocomments @8.8.8.8 +short A "${domain}")
+    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
     if [[ "${a_record}" != "${server_ip}" ]]; then
         echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại."
         sleep 2

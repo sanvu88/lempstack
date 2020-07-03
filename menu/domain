@@ -1,5 +1,4 @@
 #!/bin/bash
-clear
 echo "========================================================================="
 echo "Quản lý Domain"
 echo "========================================================================="
@@ -9,9 +8,9 @@ echo "-------------------------------------------------------------------------"
 echo
 PS3='Nhập lựa chọn của bạn (1-3) [0=Exit]: '
 options=("Danh sách Domain" "Thêm Domain"  "Xóa Domain")
-select opt in "${options[@]}"
+select opt_domain in "${options[@]}"
 do
-    case $opt in
+    case $opt_domain in
         "Danh sách Domain")
             '/var/hostvn/script/menu/controller/domain/list'
             ;;

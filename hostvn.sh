@@ -190,7 +190,18 @@ instell_service(){
 
 # Admin Email
 set_email(){
-    read -r -p "Nhập vào email của bạn: " ADMIN_EMAIL
+    while true
+    do
+        read -r -p "Nhập vào email của bạn: " email
+        echo
+        if [[ "${email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
+        then
+            echo "Email của bạn là: ${email}."
+            break
+        else
+            echo "Email bạn nhập không chính xác vui lòng nhập lại."
+        fi
+    done
 }
 
 # Create log file
@@ -902,23 +913,6 @@ location ~* /wp-json/wp/v2/users {
     log_not_found off;
 }
 
-# webp rewrite rules for EWWW testing image
-location /wp-content/plugins/ewww-image-optimizer/images {
-    location ~ \.(png|jpe?g)\$ {
-        add_header Vary "Accept-Encoding";
-        more_set_headers 'Access-Control-Allow-Origin : *';
-        more_set_headers  "Cache-Control : public, no-transform";
-        access_log off;
-        log_not_found off;
-        expires max;
-        try_files \$uri\$webp_suffix \$uri =404;
-    }
-    location ~ \.php\$ {
-        #Prevent Direct Access Of PHP Files From Web Browsers
-        deny all;
-    }
-}
-
 # enable gzip on static assets - php files are forbidden
 location /wp-content/cache {
 # Cache css & js files
@@ -1109,7 +1103,6 @@ EOw3c
 
     cat >> "/etc/nginx/wordpress/wpfc.conf" << EOwpfc
 location / {
-    try_files \$uri \$uri/ /index.php?\$args;
     error_page 418 = @cachemiss;
     error_page 419 = @mobileaccess;
     recursive_error_pages on;
@@ -1143,48 +1136,131 @@ include /etc/nginx/extra/staticfiles.conf;
 EOwpfc
 
     cat >> "/etc/nginx/wordpress/wprocket.conf" << EOwprocket
-location / {
-    try_files \$uri \$uri/ /index.php?\$args;
-    if (\$http_user_agent ~ wprocketbot) { return 403; access_log off; }
-    error_page 418 = @cachemiss;
-    error_page 419 = @mobileaccess;
-    recursive_error_pages on;
-    if (\$request_method = POST) { return 418; }
-    if (\$arg_s != "") { return 418; }
-    if (\$arg_p != "") { return 418; }
-    if (\$args ~ "amp") { return 418; }
-    if (\$arg_preview = "true") { return 418; }
-    if (\$arg_ao_noptimize != "") { return 418; }
-    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
-    if (\$http_cookie ~* "comment_author_") { return 418; }
-    if (\$http_cookie ~* "wp_postpass_") { return 418; }
-    if (\$http_user_agent = "Amazon CloudFront" ) { return 403; access_log off; }
-    if (\$http_x_pull = "KeyCDN") { return 403; access_log off; }
-    try_files "/wp-content/cache/wp-rocket/\$host\${uri}\$is_args\$args/index\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
-    add_header "X-Cache" "HIT";
-    add_header "Vary" "Cookie";
-    expires modified 30m;
-    add_header "Cache-Control" "must-revalidate";
+set \$rocket_debug 0;
+set \$rocket_bypass 1;
+set \$rocket_encryption "";
+set \$rocket_file "";
+set \$rocket_is_bypassed "No";
+Header: X-Rocket-Nginx-Serving-Static
+set \$rocket_reason "";
+set \$rocket_https_prefix "";
+set \$rocket_hsts 0;
+set \$rocket_hsts_value "max-age=31536000; includeSubDomains";
+if (\$http_accept_encoding ~ gzip) {
+    set \$rocket_encryption "_gzip";
 }
-location @mobileaccess {
-    try_files "/wp-content/cache/wp-rocket/\$host\${uri}\$is_args\$args/index-mobile\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
-
-    add_header "X-Cache" "HIT";
-    add_header "Vary" "User-Agent, Cookie";
-    expires modified 30m;
-    add_header "Cache-Control" "must-revalidate";
+if (\$http_accept_encoding ~ br) {
+    set \$rocket_encryption "";
 }
 
-location @cachemiss {
-    try_files \$uri \$uri/ /index.php\$is_args\$args;
+if (\$https = "on") {
+    set \$rocket_https_prefix "-https";
+    set \$rocket_hsts 1;
+}
+if (\$rocket_hsts = "0") {
+    set \$rocket_hsts_value "";
 }
 
-include /etc/nginx/extra/staticfiles.conf;
+set \$rocket_end "/cache/wp-rocket/\$http_host/\$request_uri/index\$rocket_https_prefix.html$rocket_encryption";
+set \$rocket_url "/wp-content\$rocket_end";
+set \$rocket_file "\$document_root/wp-content\$rocket_end";
+set \$rocket_mobile_detection "\$document_root/wp-content/cache/wp-rocket/\$http_host/\$request_uri/.mobile-active";
+
+if (\$request_method = POST) {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "POST request";
+}
+
+if (\$is_args) {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "Arguments found";
+}
+
+if (-f "\$document_root/.maintenance") {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "Maintenance mode";
+}
+
+if (\$http_cookie ~* "(wordpress_logged_in_|wp\-postpass_|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle|comment_author_|comment_author_email_)") {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "Cookie";
+}
+
+if (-f "\$rocket_mobile_detection") {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "Specific mobile cache activated";
+}
+
+if (!-f "\$rocket_file") {
+    set \$rocket_bypass 0;
+    set \$rocket_reason "File not cached";
+}
+
+if (\$rocket_bypass = 1) {
+    set \$rocket_is_bypassed "Yes";
+    set \$rocket_reason "\$rocket_url";
+}
+
+if (\$rocket_debug = 0) {
+    set \$rocket_reason "";
+    set \$rocket_file "";
+}
+
+if (\$rocket_bypass = 1) {
+    rewrite .* "\$rocket_url" last;
+}
+
+location ~ /wp-content/cache/wp-rocket/.*html\$ {
+    etag on;
+    add_header Vary "Accept-Encoding, Cookie";
+    add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header X-Rocket-Nginx-Serving-Static \$rocket_is_bypassed;
+    add_header X-Rocket-Nginx-Reason \$rocket_reason;
+    add_header X-Rocket-Nginx-File \$rocket_file;
+    add_header Strict-Transport-Security "\$rocket_hsts_value";
+}
+
+
+location ~ /wp-content/cache/wp-rocket/.*_gzip\$ {
+    etag on;
+    gzip off;
+    types {}
+    default_type text/html;
+    add_header Content-Encoding gzip;
+    add_header Vary "Accept-Encoding, Cookie";
+    add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header X-Rocket-Nginx-Serving-Static \$rocket_is_bypassed;
+    add_header X-Rocket-Nginx-Reason \$rocket_reason;
+    add_header X-Rocket-Nginx-File \$rocket_file;
+    add_header Strict-Transport-Security "\$rocket_hsts_value";
+}
+
+add_header X-Rocket-Nginx-Serving-Static \$rocket_is_bypassed;
+add_header X-Rocket-Nginx-Reason \$rocket_reason;
+add_header X-Rocket-Nginx-File \$rocket_file;
+
+location ~* \.css\$ {
+    etag on;
+    gzip_vary on;
+    expires 30d;
+}
+
+location ~* \.js\$ {
+    etag on;
+    gzip_vary on;
+    expires 30d;
+}
+
+location ~* \.(ico|gif|jpe?g|png|svg|eot|otf|woff|woff2|ttf|ogg)\$ {
+    etag on;
+    expires 30d;
+}
 EOwprocket
 
     cat >> "/etc/nginx/wordpress/wpsc.conf" << EOwpsc
+map $scheme $https_suffix { default ''; https '-https'; }
+
 location / {
-    try_files \$uri \$uri/ /index.php?\$args;
     error_page 418 = @cachemiss;
     error_page 419 = @mobileaccess;
     recursive_error_pages on;
@@ -1218,9 +1294,10 @@ location @cachemiss {
 include /etc/nginx/extra/staticfiles.conf;
 EOwpsc
 
-cat >> "/etc/nginx/wordpress/enabler.conf" << EOenabler
+    cat >> "/etc/nginx/wordpress/enabler.conf" << EOenabler
+map $scheme $https_suffix { default ''; https '-https'; }
+
 location / {
-    try_files \$uri \$uri/ /index.php?\$args;
     error_page 418 = @cachemiss;
     error_page 419 = @mobileaccess;
     recursive_error_pages on;
@@ -1252,7 +1329,7 @@ location @cachemiss {
 include /etc/nginx/extra/staticfiles.conf;
 EOenabler
 
-cat >> "/etc/nginx/wordpress/swift2.conf" << EOswift2
+    cat >> "/etc/nginx/wordpress/swift2.conf" << EOswift2
 set \$swift_cache 1;
 if (\$request_method = POST){
     set \$swift_cache 0;
@@ -2106,6 +2183,7 @@ config_nginx(){
     echo ""
     create_nginx_conf
     create_extra_conf
+    create_wp_cache_conf
     vhost_custom
     default_vhost
     default_index
@@ -2117,6 +2195,7 @@ config_nginx(){
 ############################################
 # PHP Parameter
 save_php_parameter(){
+    mkdir -p "${BASH_DIR}"/menu/helpers
     {
         echo PM_MAX_CHILDREN="${PM_MAX_CHILDREN}"
         echo PM_START_SERVERS="${PM_START_SERVERS}"
