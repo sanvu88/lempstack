@@ -170,7 +170,7 @@ set_rewrite(){
 fastcgi(){
     fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
 
-    if [[ "${php_use}" == "2" ]]; then
+    if [[ "${php_mode}" == "2" ]]; then
         fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
 }
@@ -194,48 +194,6 @@ plugin_cache(){
             *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
         esac
     done
-}
-
-browser_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
-        plugin_cache="w3c"
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    elif [[ "${plugins_cache}" == "wpfc" ]]; then
-        plugin_cache="wpfc"
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wprocket" ]]; then
-        plugin_cache="wprocket"
-        cache="include /etc/nginx/wordpress/wprocket.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wpsc" ]]; then
-        plugin_cache="wpsc"
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "enabler" ]]; then
-        plugin_cache="enabler"
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "swift1" ]]; then
-        plugin_cache="swift1"
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
-    elif [[ "${plugins_cache}" == "swift2" ]]; then
-        plugin_cache="swift2"
-        cache="include /etc/nginx/wordpress/swift2.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
-    else
-        wp_secure=""
-        plugin_cache="other"
-        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
-    fi
 }
 
 brute_force_wp(){

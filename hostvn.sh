@@ -880,7 +880,7 @@ location = /wp-comments-post.php {
 }
 
 # Protect System Files
-location = /wp-admin/install.php { deny all; access_log off; log_not_found off; }
+#location = /wp-admin/install.php { deny all; access_log off; log_not_found off; }
 location ~ ^/wp-admin/includes/ { deny all; access_log off; log_not_found off; }
 location ~ ^/wp-includes/[^/]+\.php\$ { deny all; access_log off; log_not_found off; }
 location ~ ^/wp-includes/js/tinymce/langs/.+\.php\$ { deny all; access_log off; log_not_found off; }

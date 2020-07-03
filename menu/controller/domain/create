@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debug_(){
-    LOG_FILE=/var/log/hostvn/create_domain.log
+    LOG_FILE=/var/log/hostvn/$(date +%F)_create_domain.log
     exec 5> ${LOG_FILE}
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
@@ -10,8 +10,6 @@ debug_(){
 
 debug_
 
-# shellcheck disable=SC1091
-source /root/.my.cnf
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
@@ -62,7 +60,7 @@ prepare(){
     wp_secure=""
     cache=""
     plugin_cache="other"
-    php_use="1"
+    php_mode="1"
     brute=""
 }
 
@@ -131,8 +129,8 @@ select_php(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "${php1}") php_use="1"; break;;
-            "${php2}") php_use="2"; break;;
+            "${php1}") php_mode="1"; break;;
+            "${php2}") php_mode="2"; break;;
             *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
         esac
     done
@@ -196,6 +194,48 @@ END
     fi
 }
 
+browser_cache(){
+    if [[ "${plugins_cache}" == "w3c" ]]; then
+        plugin_cache="w3c"
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    elif [[ "${plugins_cache}" == "wpfc" ]]; then
+        plugin_cache="wpfc"
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wprocket" ]]; then
+        plugin_cache="wprocket"
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wpsc" ]]; then
+        plugin_cache="wpsc"
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "enabler" ]]; then
+        plugin_cache="enabler"
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "swift1" ]]; then
+        plugin_cache="swift1"
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
+    elif [[ "${plugins_cache}" == "swift2" ]]; then
+        plugin_cache="swift2"
+        cache="include /etc/nginx/wordpress/swift2.conf;"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
+    else
+        plugin_cache="other"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
+    fi
+}
+
 # Create
 create_user(){
     check_user
@@ -249,7 +289,7 @@ set_phpconf_var(){
     wsdl_cache_dir="/var/lib/php/user/${username}/wsdlcache"
     open_basedir="/home/${username}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/"
 
-    if [[ "${php2_release}" == "yes" && "${php_use}" == "2" ]]; then
+    if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
         listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
         slowlog="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-slow.log"
@@ -321,7 +361,7 @@ create_vhost(){
 
     cat >> "/etc/nginx/conf.d/${domain}.conf" << END
 server {
-    listen ${server_ip}:80;
+    listen 80;
     #listen [::]:80
     server_name ${domain} www.${domain};
 
@@ -358,7 +398,7 @@ END
 save_user_config(){
     php_ver=${php1_version}
     php_mode="1"
-    if [[ "${php_use}" == "2" ]]; then
+    if [[ "${php_mode}" == "2" ]]; then
         php_ver="${php2_version}"
         php_mode="2"
     fi

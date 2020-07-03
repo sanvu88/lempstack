@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debug_(){
-    LOG_FILE=/var/log/hostvn/le_domain.log
+    LOG_FILE=/var/log/hostvn/$(date +%F)_le_domain.log
     exec 5> ${LOG_FILE}
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
@@ -23,11 +23,11 @@ echo
 set_variable(){
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    php_mode=$(grep "php_mode" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
+    plugin_cache="$(grep "plugin_cache" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')"
+    rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     wp_secure=""
     cache=""
-    plugin_cache="other"
-    php_use="1"
     brute=""
 }
 
@@ -45,10 +45,49 @@ check_nginx_status(){
 check_dns(){
     a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
     if [[ "${a_record}" != "${server_ip}" ]]; then
-        echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại."
+        echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại.\n"
+        echo "Nếu bạn mới trỏ tên miền vui lòng đợi 30 phút đến 24 tiếng để DNS cập nhật sau đó thử lại."
         sleep 2
         echo
         controller_lets_encrypt
+    fi
+}
+
+check_wordpress(){
+    if [[ -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
+        SOURCE="wordpress"
+    fi
+}
+
+check_plugins_cache(){
+    if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
+        cache="include /etc/nginx/wordpress/swift2.conf;"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+    else
+        plugin_cache="other"
+        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
     fi
 }
 
@@ -71,8 +110,8 @@ create_ssl_vhost(){
     set_rewrite
     fastcgi
 
-    if [[ "${source}" == "wordpress" ]]; then
-        browser_cache
+    if [[ "${SOURCE}" == "wordpress" ]]; then
+        check_plugins_cache
         brute_force_wp
     fi
 
@@ -135,7 +174,7 @@ restart_nginx(){
 run(){
     check_nginx_status
     select_domain
-    select_source
+    check_wordpress
 
     if [[ "${SOURCE}" == "wordpress" ]]; then
         plugin_cache
