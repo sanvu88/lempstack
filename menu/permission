@@ -1,23 +1,28 @@
 #!/bin/bash
 
+CHOICE=1
+
 echo "========================================================================="
 echo "Phân quyền Chown/Chmod"
 echo "========================================================================="
 echo
 
-PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
-options=(
-    "Phân quyền website"
-    "Phân quyền toàn bộ website")
-select opt in "${options[@]}"
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Phân quyền website")
-            '/var/hostvn/script/menu/controller/permission/one'
-            ;;
-        "Phân quyền toàn bộ website")
-            '/var/hostvn/script/menu/controller/permission/all'
-            ;;
-        *) '/var/hostvn/script/menu/hvn';;
+    echo "1. Phân quyền website"
+    echo "2. Phân quyền toàn bộ website"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) permission_one ;;
+        2) permission_all ;;
+        0) menu_primary ;;
+        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+
+CHOICE=1
+
 echo "========================================================================="
 echo "Quản lý Domain"
 echo "========================================================================="
@@ -6,20 +12,24 @@ echo "-------------------------------------------------------------------------"
 echo "Hướng dẫn: https://hostvn.net"
 echo "-------------------------------------------------------------------------"
 echo
-PS3='Nhập lựa chọn của bạn (1-3) [0=Exit]: '
-options=("Danh sách Domain" "Thêm Domain"  "Xóa Domain")
-select opt_domain in "${options[@]}"
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt_domain in
-        "Danh sách Domain")
-            '/var/hostvn/script/menu/controller/domain/list'
-            ;;
-        "Thêm Domain")
-            '/var/hostvn/script/menu/controller/domain/create'
-            ;;
-        "Xóa Domain")
-            '/var/hostvn/script/menu/controller/domain/destroy'
-            ;;
-        *) '/var/hostvn/script/menu/hvn';;
+    echo "1. Danh sách Domain"
+    echo "2. Thêm Domain"
+    echo "3. Xóa Domain"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) domain_list ;;
+        2) domain_create ;;
+        3) domain_destroy ;;
+        0) menu_primary ;;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

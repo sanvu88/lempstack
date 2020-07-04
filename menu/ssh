@@ -1,20 +1,34 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+
+CHOICE=1
+
 echo "========================================================================="
-echo "Quản lý SSH"
+echo "Phân quyền Chown/Chmod"
 echo "========================================================================="
-PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
-options=("Đổi port SSH" "Đổi Password")
-select opt in "${options[@]}"
+echo
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Đổi port SSH")
-            '/var/hostvn/script/menu/controller/ssh/change_port'
-            ;;
-        "Đổi Password")
+    echo "1. Đổi port SSH"
+    echo "2. Đổi Password SSH"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) ssh_change_port ;;
+        2)
             passwd
-            controller_ssh
+            menu_ssh
             ;;
-        *) '/var/hostvn/script/menu/hvn';;
+        0) menu_primary ;;
+        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

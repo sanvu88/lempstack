@@ -2,6 +2,10 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+
+CHOICE=1
 
 echo "-------------------------------------------------------------------------"
 echo "Quản lý Redis Cache"
@@ -9,12 +13,22 @@ echo "-------------------------------------------------------------------------"
 status=$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
 echo "Trạng thái: ${status}"
 echo "-------------------------------------------------------------------------"
-PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
-options=("Bật Redis Cache" "Tắt Redis Cache")
-select opt in "${options[@]}"
+echo
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Bật Redis Cache")
+    echo "1. Bật Redis Cache"
+    echo "2. Tắt Redis Cache"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1)
             echo "Đang tiến hành mở Redis Cache..."
             sleep 1
             systemctl enable redis.service
@@ -22,9 +36,9 @@ do
             clear
             echo "Đã bật Redis Cache"
             echo
-            action_cache
+            menu_cache
             ;;
-        "Tắt Redis Cache")
+        2)
             echo "Đang tiến hành tắt Redis Cache..."
             sleep 1
             systemctl stop redis.service
@@ -32,8 +46,9 @@ do
             clear
             echo "Đã tắt Redis Cache"
             echo
-            action_cache
+            menu_cache
             ;;
-        *) controller_cache;;
+        0) menu_primary ;;
+        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

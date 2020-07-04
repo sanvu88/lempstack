@@ -2,6 +2,8 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
 
 echo "========================================================================="
 echo "Phân quyền Chown/Chmod"
@@ -16,17 +18,17 @@ if [ "$(ls -At /var/hostvn/script/users)" ]; then
     for entry in .*.conf; do
         domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
         username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
-        chmod 710 /home/"${username}"
+        chmod 711 /home/"${username}"
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
         chown -R "${username}":"${username}" /home/"${username}"
     done
     echo "Hoàn tất."
-    controller_permission
+    menu_permission
 else
     clear
     echo "Không có Domain nào tồn tại trên hệ thống."
-    controller_permission
+    menu_permission
 fi
 

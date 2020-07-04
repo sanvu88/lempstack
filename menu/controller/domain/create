@@ -15,6 +15,8 @@ source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
 # shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+# shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/php_parameter.conf
 
 echo "-------------------------------------------------------------------------"
@@ -41,7 +43,7 @@ check_service(){
         echo "Pure-ftp: ${pureftpd}"
         echo "-------------------------------------------------------------------------"
         echo
-        controller_domain
+        menu_domain
     fi
 }
 
@@ -57,10 +59,10 @@ prepare(){
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
-    wp_secure=""
-    cache=""
+    cache="include /etc/nginx/extra/staticfiles.conf;"
     plugin_cache="other"
     php_mode="1"
+    wp_secure=""
     brute=""
 }
 
@@ -70,21 +72,21 @@ check_domain(){
         clear
         echo "Bạn chưa nhập Domain."
         echo
-        controller_domain
+        menu_domain
     fi
 
     if [ "$domain" = "${domain/.}" ]; then
         clear
         echo "Domain bạn nhập không đúng định dạng."
         echo
-        controller_domain
+        menu_domain
     fi
 
     if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "/var/hostvn/script/users/.${domain}.conf" ]]; then
         clear
         echo "Domain đã tồn tại trên VPS."
         echo
-        controller_domain
+        menu_domain
     fi
 }
 
@@ -93,7 +95,7 @@ check_user(){
     if [[ ${RESULT_USER} != 0 ]]; then
         echo "User đã tồn tại trên VPS."
         echo ""
-        controller_domain
+        menu_domain
     fi
 }
 
@@ -102,7 +104,7 @@ check_database(){
     if [ "$RESULT_DB" == "${db_name}" ]; then
         echo "Database đã tồn tại trên VPS."
         echo ""
-        controller_domain
+        menu_domain
     fi
 }
 
@@ -111,7 +113,7 @@ check_mysql_user(){
     if [ "${RESULT_VARIABLE}" = 1 ]; then
         echo "Mysql User đã tồn tại trên VPS."
         echo ""
-        controller_domain
+        menu_domain
     fi
 }
 
@@ -132,6 +134,34 @@ select_php(){
             "${php1}") php_mode="1"; break;;
             "${php2}") php_mode="2"; break;;
             *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
+        esac
+    done
+}
+
+# Select Source
+select_source(){
+    SOURCE="Other"
+    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
+    PS3='Nhập lựa chọn của bạn (1-14): '
+    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "WordPress") SOURCE="wordpress"; break;;
+            "Laravel") SOURCE="laravel"; break;;
+            "CodeIgniter") SOURCE="codeigniter"; break;;
+            "Xenforo") SOURCE="xenforo"; break;;
+            "Joomla") SOURCE="joomla"; break;;
+            "Drupal") SOURCE="drupal"; break;;
+            "OpenCart") SOURCE="opencart"; break;;
+            "WHMCS") SOURCE="whmcs"; break;;
+            "PrestaShop") SOURCE="prestashop"; break;;
+            "Yii") SOURCE="yii"; break;;
+            "NextCloud") SOURCE="nextcloud"; break;;
+            "Discuz") SOURCE="discuz"; break;;
+            "Ecshop") SOURCE="ecshop"; break;;
+            "Other") SOURCE="default"; break;;
+            *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
         esac
     done
 }
@@ -192,6 +222,27 @@ Allow: /*.css$
 END
         chown -R "${username}":"${username}" ./*
     fi
+}
+
+plugin_cache(){
+    plugins_cache="n"
+    echo "Lựa chọn Plugins cache mà bạn sử dụng ?"
+    PS3='Nhập lựa chọn của bạn (1-2): '
+    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "W3 Total Cache") plugins_cache="w3c"; break;;
+            "WP Fastest Cache") plugins_cache="wpfc"; break;;
+            "WP Rocket") plugins_cache="wprocket"; break;;
+            "WP Super Cache") plugins_cache="wpsc"; break;;
+            "Cache Enabler") plugins_cache="enabler"; break;;
+            "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
+            "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
+            "Other") plugins_cache="other"; break;;
+            *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
+        esac
+    done
 }
 
 browser_cache(){
@@ -362,7 +413,6 @@ create_vhost(){
     cat >> "/etc/nginx/conf.d/${domain}.conf" << END
 server {
     listen 80;
-    #listen [::]:80
     server_name ${domain} www.${domain};
 
     #access_log off;
@@ -467,4 +517,4 @@ echo "8.  FTP Port              : 21"
 echo "9.  Public_html           : /home/${username}/${domain}/public_html"
 echo "-------------------------------------------------------------------------"
 echo
-controller_domain
+menu_domain

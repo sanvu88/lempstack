@@ -2,8 +2,11 @@
 clear
 # shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
 
 ip=$(ip route get 1 | awk '{print $NF;exit}')
+CHOICE=1
 
 echo "========================================================================="
 echo "                  HOSTVN Scripts - Công cụ quản lý VPS"
@@ -14,51 +17,33 @@ echo "phpMyAdmin: http://${ip}:${admin_port}/phpmyadmin"
 echo "Phím tắt: Ctrl + C hoặc nhập 0 để thoát"
 echo "-------------------------------------------------------------------------"
 
-PS3='Nhập lựa chọn của bạn (1-19) [0=Thoát]: '
-options=(
-    "Quản lý Domain"
-    "Quản lý Let's Encrypt"
-    "Quản lý SSH"
-    "Quản lý Cache"
-    "Quản lý Nginx"
-    "Quản lý CSF Firewall"
-    "Phân quyền Chown/Chmod"
-    "Thông tin VPS")
-select opt in "${options[@]}"
+while [ "${CHOICE}" != "0" ]
 do
-	case $opt in
-		"Quản lý Domain")
-            clear
-            '/var/hostvn/script/menu/domain'
-            ;;
-        "Quản lý Let's Encrypt")
-            clear
-            '/var/hostvn/script/menu/letencrypt'
-            ;;
-        "Quản lý SSH")
-            clear
-            '/var/hostvn/script/menu/ssh'
-            ;;
-        "Quản lý Cache")
-            clear
-            '/var/hostvn/script/menu/cache'
-            ;;
-        "Quản lý Nginx")
-            clear
-            '/var/hostvn/script/menu/nginx'
-            ;;
-        "Quản lý CSF Firewall")
-            clear
-            '/var/hostvn/script/menu/csf'
-            ;;
-       	"Phân quyền Chown/Chmod")
-            clear
-            '/var/hostvn/script/menu/permission'
-            ;;
-        "Thông tin VPS")
-            clear
-            '/var/hostvn/script/menu/info'
-            ;;
-		*) break;;
-	esac
+    echo "1. Quản lý Domain"
+    echo "2. Quản lý Let's Encrypt"
+    echo "3. Quản lý SSH"
+    echo "4. Quản lý Cache"
+    echo "5. Quản lý Nginx"
+    echo "6. Quản lý CSF Firewall"
+    echo "7. Phân quyền Chown/Chmod"
+    echo "8. Thông tin VPS"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; menu_domain;;
+        2) clear; menu_letencrypt;;
+        3) clear; menu_ssh;;
+        4) clear; menu_cache;;
+        5) clear; menu_nginx;;
+        6) clear; menu_csf;;
+        7) clear; menu_permission;;
+        8) clear; menu_info;;
+        0) clear; echo -e "Tạm biệt";;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+    esac
 done

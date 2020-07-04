@@ -2,6 +2,8 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
 
 echo "========================================================================="
 echo "Phân quyền Chown/Chmod"
@@ -15,7 +17,7 @@ action(){
         username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
         path="/home/${username}"
         if [[ -d "${path}" ]]; then
-            chmod 710 /home/"${username}"
+            chmod 711 /home/"${username}"
             chmod 711 /home/"${username}"/"${domain}"
             chmod 711 /home/"${username}"/"${domain}"/logs
             chmod 755 /home/"${username}"/"${domain}"/public_html
@@ -29,11 +31,11 @@ action(){
         else
             echo
             echo "Domain không tồn tại trên VPS"
-            controller_permission
+            menu_permission
         fi
     else
         echo
-        controller_permission
+        menu_permission
     fi
 }
 

@@ -14,6 +14,8 @@ debug_
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
 
 echo "-------------------------------------------------------------------------"
 echo "Xóa Domain"
@@ -67,7 +69,7 @@ confirm(){
         case $opt in
             "Yes") confirm_destroy_domain="y"; break;;
             "No") confirm_destroy_domain="N"; break;;
-			"Cancel") controller_domain; break;;
+			"Cancel") menu_domain; break;;
             *) printf "Bạn nhập sai, vui lòng nhập lại\n";;
         esac
     done
@@ -80,7 +82,7 @@ confirm(){
         case $opt in
             "Yes") confirm_destroy_db="y"; break;;
             "No") confirm_destroy_db="N"; break;;
-			"Cancel") controller_domain; break;;
+			"Cancel") menu_domain; break;;
             *) printf "Bạn nhập sai, vui lòng nhập lại\n";;
         esac
     done
@@ -94,7 +96,7 @@ run(){
 
 	if [[ "${confirm_destroy_domain}" =~ ^([nN])$ ]]; then
 		echo "Bạn đã chọn huỷ xoá domain. Bye bye"
-		controller_domain
+		menu_domain
 	fi
 
 	if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
@@ -111,4 +113,4 @@ run
 clear
 echo "Xóa Domain thành công."
 echo
-controller_domain
+menu_domain

@@ -1,40 +1,17 @@
 #!/bin/bash
 
-controller_domain(){
-    . /var/hostvn/script/menu/domain
-}
-
-
-controller_csf(){
-    . /var/hostvn/script/menu/csf
-}
-
-controller_permission(){
-    . /var/hostvn/script/menu/permission
-}
-
-controller_ssh(){
-    . /var/hostvn/script/menu/ssh
-}
-
-controller_cache(){
-    . /var/hostvn/script/menu/cache
-}
-
-controller_nginx(){
-    . /var/hostvn/script/menu/nginx
-}
-
-controller_lets_encrypt(){
-    . /var/hostvn/script/menu/letencrypt
-}
-
-menu_primary(){
-    . /var/hostvn/script/menu/hvn
-}
-
 cd_dir(){
     cd "$1" || return
+}
+
+# Print space
+printf_s(){
+    if [ $1 -le 0 ]
+    then
+        echo ""
+    else
+        printf '%0.s ' $(seq 1 $1)
+    fi
 }
 
 valid_number(){
@@ -106,34 +83,6 @@ check_domain_exists(){
     fi
 }
 
-# Select Source
-select_source(){
-    SOURCE="Other"
-    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
-    PS3='Nhập lựa chọn của bạn (1-14): '
-    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "WordPress") SOURCE="wordpress"; break;;
-            "Laravel") SOURCE="laravel"; break;;
-            "CodeIgniter") SOURCE="codeigniter"; break;;
-            "Xenforo") SOURCE="xenforo"; break;;
-            "Joomla") SOURCE="joomla"; break;;
-            "Drupal") SOURCE="drupal"; break;;
-            "OpenCart") SOURCE="opencart"; break;;
-            "WHMCS") SOURCE="whmcs"; break;;
-            "PrestaShop") SOURCE="prestashop"; break;;
-            "Yii") SOURCE="yii"; break;;
-            "NextCloud") SOURCE="nextcloud"; break;;
-            "Discuz") SOURCE="discuz"; break;;
-            "Ecshop") SOURCE="ecshop"; break;;
-            "Other") SOURCE="default"; break;;
-            *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
-        esac
-    done
-}
-
 set_rewrite(){
     if [ "${SOURCE}" == "wordpress" ]; then
         rewrite="include /etc/nginx/rewrite/wordpress.conf;"
@@ -173,27 +122,6 @@ fastcgi(){
     if [[ "${php_mode}" == "2" ]]; then
         fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
-}
-
-plugin_cache(){
-    plugins_cache="n"
-    echo "Lựa chọn Plugins cache mà bạn sử dụng ?"
-    PS3='Nhập lựa chọn của bạn (1-2): '
-    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "W3 Total Cache") plugins_cache="w3c"; break;;
-            "WP Fastest Cache") plugins_cache="wpfc"; break;;
-            "WP Rocket") plugins_cache="wprocket"; break;;
-            "WP Super Cache") plugins_cache="wpsc"; break;;
-            "Cache Enabler") plugins_cache="enabler"; break;;
-            "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
-            "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
-            "Other") plugins_cache="other"; break;;
-            *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
-        esac
-    done
 }
 
 brute_force_wp(){

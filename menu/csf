@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/script/menu/helpers/menu
+
+CHOICE=1
 
 echo "========================================================================="
 echo "Quản lý CSF Firewall"
@@ -10,68 +12,83 @@ echo "-------------------------------------------------------------------------"
 echo "Hướng dẫn: https://hostvn.net"
 echo "-------------------------------------------------------------------------"
 echo
-PS3='Nhập lựa chọn của bạn (1-7) [0=Exit]: '
-options=("Kiểm tra Block IP" "Block IP" "Gỡ Block IP" "Gỡ block toàn bộ IP" "Allow IP" "Restart CSF" "Tắt CSF" "Bật CSF")
-select opt in "${options[@]}"
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Kiểm tra Block IP")
+    echo "1. Kiểm tra Block IP"
+    echo "2. Block IP"
+    echo "3. Gỡ Block IP"
+    echo "4. Gỡ Block toàn bộ IP"
+    echo "5. Allow IP"
+    echo "6. Restart CSF"
+    echo "7. Tắt CSF"
+    echo "8. Bật CSF"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1)
             read -r -p "Nhập vào IP muốn kiểm tra: " ip
             csf -g "${ip}"
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Block IP")
+        2)
             read -r -p "Nhập vào IP muốn block: " ip
             csf -d "${ip}"
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Gỡ Block IP")
+        3)
             read -r -p "Nhập vào IP muốn gỡ block: " ip
             csf -dr "${ip}"
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Gỡ block toàn bộ IP")
+        4)
             csf -tf
             csf -df
             systemctl restart csf
             systemctl restart lfd
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Allow IP")
+        5)
             read -r -p "Nhập vào IP muốn allow: " ip
             csf -a "${ip}"
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Restart CSF")
+        6)
             csf -r
             systemctl restart csf
             systemctl restart lfd
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Tắt CSF")
+        7)
             csf -x
             systemctl stop csf
             systemctl stop lfd
             systemctl disable csf
             systemctl disable lfd
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        "Bật CSF")
+        8)
             csf -e
             systemctl start csf
             systemctl start lfd
             systemctl enable csf
             systemctl enable lfd
             echo ""
-            controller_csf
+            menu_csf
             ;;
-        *) '/var/hostvn/script/menu/hvn';;
+        0) menu_primary ;;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

@@ -1,19 +1,33 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+
+CHOICE=1
+
 echo "========================================================================="
 echo "Quản lý Cache"
 echo "========================================================================="
-PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
-options=("Memcached" "Redis")
-select opt in "${options[@]}"
+echo "-------------------------------------------------------------------------"
+echo "Hướng dẫn: https://hostvn.net"
+echo "-------------------------------------------------------------------------"
+echo
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Memcached")
-            '/var/hostvn/script/menu/controller/cache/memcached'
-            ;;
-        "Redis")
-            '/var/hostvn/script/menu/controller/cache/redis'
-            ;;
-        *) '/var/hostvn/script/menu/hvn';;
+    echo "1. Memcached"
+    echo "2. Redis"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) memcached_c ;;
+        2) redis_c ;;
+        0) menu_primary ;;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

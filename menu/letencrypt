@@ -1,17 +1,36 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+
+
+CHOICE=1
+
 echo "========================================================================="
 echo "Quản lý Let's Encrypt"
 echo "========================================================================="
-PS3='Nhập lựa chọn của bạn (1-4) [0=Thoát]: '
-options=("Thêm Let's Encrypt")
-select opt in "${options[@]}"
+echo "-------------------------------------------------------------------------"
+echo "Hướng dẫn: https://hostvn.net"
+echo "-------------------------------------------------------------------------"
+echo
+
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Thêm Let's Encrypt")
-            '/var/hostvn/script/menu/controller/letencrypt/create'
-            ;;
-        *) '/var/hostvn/script/menu/hvn';;
+    echo "1. Thêm Let's Encrypt"
+    echo "2. Gia hạn Let's Encrypt"
+    echo "3. Gỡ bỏ Let's Encrypt"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) le_create ;;
+        2) echo "Đang xây dựng" ;;
+        3) echo "Đang xây dựng" ;;
+        0) menu_primary ;;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done
-

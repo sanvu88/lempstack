@@ -1,7 +1,9 @@
 #!/bin/bash
 
+CHOICE=1
+
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/script/menu/helpers/menu
 
 echo "========================================================================="
 echo "Quản lý Nginx"
@@ -11,29 +13,44 @@ echo "-------------------------------------------------------------------------"
 echo "Trạng thái: $(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 echo "-------------------------------------------------------------------------"
 echo
-PS3='Nhập lựa chọn của bạn (1-2) [0=Thoát]: '
-options=("Khởi động lại nginx" "Kiểm tra cấu hình Nginx")
 
-select opt in "${options[@]}"
+while [ "${CHOICE}" != "0" ]
 do
-    case $opt in
-        "Khởi động lại nginx")
+    echo "1. Khởi động lại nginx"
+    echo "2. Kiểm tra cấu hình Nginx"
+    echo "3. Cập nhật Nginx"
+    echo " ----------------------------------------------- "
+    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1)
             clear
             echo "Đang khởi động lại..."
             sleep 1
             systemctl restart nginx
             sleep 2
             echo
-            controller_nginx
+            menu_nginx
             ;;
-        "Kiểm tra cấu hình Nginx")
+        2)
             clear
             sleep 1
             nginx -t
             sleep 2
             echo
-            controller_nginx
+            menu_nginx
             ;;
-        *) '/var/hostvn/script/menu/hvn';;
+        3)
+            yum -y update nginx
+            echo
+            menu_nginx
+            ;;
+        0) menu_primary ;;
+        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

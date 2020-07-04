@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
+source /var/hostvn/script/hostvn.conf
+# shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
-source /var/hostvn/script/hostvn.conf
+source /var/hostvn/script/menu/helpers/menu
 
 echo "-------------------------------------------------------------------------"
 echo "Thay đổi port SSH hiện tại"
@@ -23,28 +25,28 @@ check(){
 	    clear
 	    echo "Bạn chưa nhập Port."
 	    echo
-	    controller_ssh
+	    menu_ssh
 	fi
 
 	if [[ ! $port_new =~ ^-?[0-9]+$ ]]; then
 	    clear
 	    echo "Port không đúng định dạng, vui lòng nhập lại"
 	    echo
-	    controller_ssh
+	    menu_ssh
 	fi
 
 	if [[ "${port_new}" == "${current_port}" ]]; then
 		clear
 	    echo "Port bạn nhập trùng với Port SSH hiện tại."
 	    echo
-	    controller_ssh
+	    menu_ssh
 	fi
 
 	if [[ "${port_new}" == "${admin_port}" ]]; then
 		clear
 	    echo "Port bạn nhập trùng với Port Admin tool."
 	    echo
-	    controller_ssh
+	    menu_ssh
 	fi
 }
 
@@ -73,4 +75,4 @@ run
 
 echo "Đã thay đổi Port SSH sang $port_new thành công"
 echo ""
-controller_ssh
+menu_ssh

@@ -13,6 +13,8 @@ debug_
 # shellcheck disable=SC1091
 source /var/hostvn/script/menu/helpers/function
 # shellcheck disable=SC1091
+source /var/hostvn/script/menu/helpers/menu
+# shellcheck disable=SC1091
 source /var/hostvn/script/hostvn.conf
 
 echo "-------------------------------------------------------------------------"
@@ -26,8 +28,8 @@ set_variable(){
     php_mode=$(grep "php_mode" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
     plugin_cache="$(grep "plugin_cache" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
+    cache="include /etc/nginx/extra/staticfiles.conf;"
     wp_secure=""
-    cache=""
     brute=""
 }
 
@@ -38,18 +40,19 @@ check_nginx_status(){
         clear
         echo "Nginx hiện tại không hoạt động. Vui lòng kiểm tra lại."
         echo
-        controller_lets_encrypt
+        menu_letencrypt
     fi
 }
 
 check_dns(){
     a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
-    if [[ "${a_record}" != "${server_ip}" ]]; then
+    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${domain})
+    if [[ "${a_record}" != "${server_ip}" || "${www_record}" != "${server_ip}" ]]; then
         echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại.\n"
         echo "Nếu bạn mới trỏ tên miền vui lòng đợi 30 phút đến 24 tiếng để DNS cập nhật sau đó thử lại."
         sleep 2
         echo
-        controller_lets_encrypt
+        menu_letencrypt
     fi
 }
 
@@ -100,9 +103,7 @@ backup_vhost(){
 }
 
 sign_ssl(){
-    /usr/local/bin/certbot-auto --nginx --no-bootstrap << EOF
-${domain}
-EOF
+    /usr/local/bin/certbot-auto --nginx --no-bootstrap -d ${domain} -d www.${domain}
 }
 
 create_ssl_vhost(){
@@ -193,4 +194,4 @@ run
 echo ""
 echo "Tạo SSL Let's Encrypt thành công"
 sleep 2
-controller_lets_encrypt
+menu_letencrypt

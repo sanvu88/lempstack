@@ -37,6 +37,7 @@ PHP2_RELEASE="no"
 # Copyright
 AUTHOR="HOSTVN"
 AUTHOR_CONTACT="kythuat@hostvn.net"
+AUTHOR_WEBSITE="https://hostvn.net"
 
 # Set Lang
 ROOT_ERR="Bạn cần chạy script với user root. Chạy lệnh \"sudo su\" để có quyền root!"
@@ -852,11 +853,15 @@ http {
     add_header X-Content-Type-Options "nosniff";
     add_header Referrer-Policy "no-referrer-when-downgrade";
 
+    # Custom Variables
+    map $scheme $https_suffix { default ''; https '-https'; }
+
     include /etc/nginx/extra/gzip.conf;
     include /etc/nginx/extra/brotli.conf;
     include /etc/nginx/extra/ssl.conf;
     include /etc/nginx/extra/cloudflare.conf;
     include /etc/nginx/extra/webp.conf;
+    include /etc/nginx/web_apps.conf;
     include /etc/nginx/conf.d/*.conf;
 }
 EONGINXCONF
@@ -1258,8 +1263,6 @@ location ~* \.(ico|gif|jpe?g|png|svg|eot|otf|woff|woff2|ttf|ogg)\$ {
 EOwprocket
 
     cat >> "/etc/nginx/wordpress/wpsc.conf" << EOwpsc
-map $scheme $https_suffix { default ''; https '-https'; }
-
 location / {
     error_page 418 = @cachemiss;
     error_page 419 = @mobileaccess;
@@ -1295,8 +1298,6 @@ include /etc/nginx/extra/staticfiles.conf;
 EOwpsc
 
     cat >> "/etc/nginx/wordpress/enabler.conf" << EOenabler
-map $scheme $https_suffix { default ''; https '-https'; }
-
 location / {
     error_page 418 = @cachemiss;
     error_page 419 = @mobileaccess;
@@ -1950,17 +1951,16 @@ default_vhost(){
     NGINX_VHOST_PATH="/etc/nginx/conf.d"
     mkdir -p ${USR_DIR}/nginx/auth
     if [[ -f "${NGINX_VHOST_PATH}/default.conf" ]]; then
-        mv ${NGINX_VHOST_PATH}/default.conf ${NGINX_VHOST_PATH}/default.conf.orig
+        rm -rf "${NGINX_VHOST_PATH}"/default.conf
     fi
-cat >> "${NGINX_VHOST_PATH}/default.conf" << EOdefault_vhost
+cat >> "${NGINX_VHOST_PATH}/web_apps.conf" << EOdefault_vhost
 server {
     listen 80 default_server;
-    #listen [::]:80 default_server;
+    root /usr/share/nginx/html/;
 }
 
 server {
     listen ${RANDOM_ADMIN_PORT};
-    #listen [::]:${RANDOM_ADMIN_PORT};
 
     server_name ${IPADDRESS};
 
@@ -2138,7 +2138,7 @@ default_index(){
             <div>
                 <p>Sorry for the inconvenience but we're performing some maintenance at the moment. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p>${AUTHOR} Team!</p>
+                <p><<a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
             </div>
         </article>
     </body>
@@ -2149,7 +2149,7 @@ EOdefault_index
 
 default_error_page(){
     if [[ -f "${DEFAULT_DIR_WEB}/50x.html" ]]; then
-        rm -rf ${DEFAULT_DIR_WEB}/50x.html
+        rm -rf "${DEFAULT_DIR_WEB}"/50x.html
         cat >> "${DEFAULT_DIR_WEB}/50x.html" << EOdefault_index
 <!DOCTYPE html>
 <html lang="en">
@@ -2170,7 +2170,7 @@ default_error_page(){
             <div>
                 <p>Sorry, the page you are looking for is currently unavailable. Please try again later. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p>${AUTHOR} Team!</p>
+                <p><<a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
             </div>
         </article>
     </body>
@@ -3404,7 +3404,7 @@ install_phpmyadmin(){
     unzip_phpmyadmin
     rm -rf "${USR_DIR}"/phpmyadmin.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
-    ln -s "${USR_DIR}"/phpmyadmin " ${DEFAULT_DIR_WEB}"/phpmyadmin
+    ln -s "${USR_DIR}"/phpmyadmin "${DEFAULT_DIR_WEB}"/phpmyadmin
     config_phpmyadmin
     cd_dir "${DIR}"
 

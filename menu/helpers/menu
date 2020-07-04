@@ -1,0 +1,73 @@
+#!/bin/bash
+
+menu_primary(){
+    . /var/hostvn/script/menu/hvn
+}
+
+menu_domain(){
+    . /var/hostvn/script/menu/domain
+}
+
+menu_letencrypt(){
+    . /var/hostvn/script/menu/letencrypt
+}
+
+menu_ssh(){
+    . /var/hostvn/script/menu/ssh
+}
+
+menu_cache(){
+    . /var/hostvn/script/menu/cache
+}
+
+menu_nginx(){
+    . /var/hostvn/script/menu/nginx
+}
+
+menu_csf(){
+    . /var/hostvn/script/menu/csf
+}
+
+menu_permission(){
+    . /var/hostvn/script/menu/permission
+}
+
+menu_info(){
+    . /var/hostvn/script/menu/info
+}
+
+domain_list(){
+	. /var/hostvn/script/menu/controller/domain/list
+}
+
+domain_create(){
+	. /var/hostvn/script/menu/controller/domain/create
+}
+
+domain_destroy(){
+	. /var/hostvn/script/menu/controller/domain/destroy
+}
+
+memcached_c(){
+	. /var/hostvn/script/menu/controller/cache/memcached
+}
+
+redis_c(){
+	. /var/hostvn/script/menu/controller/cache/redis
+}
+
+le_create(){
+	. /var/hostvn/script/menu/controller/letencrypt/create
+}
+
+permission_one(){
+	. /var/hostvn/script/menu/controller/permission/one
+}
+
+permission_all(){
+	. /var/hostvn/script/menu/controller/permission/all
+}
+
+ssh_change_port(){
+	. /var/hostvn/script/menu/controller/ssh/change_port
+}
