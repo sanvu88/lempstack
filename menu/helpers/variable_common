@@ -4,31 +4,7 @@
 # Version: 1.0
 # Author: Sanvv
 
-# Serrver info
-OS_VER=$(rpm -E %centos)
-OS_ARCH=$(uname -m)
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
-HOSTNAME=$(hostname)
-FILE_INFO="${BASH_DIR}/hostvn.conf"
-CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
-RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-SWAP_TOTAL=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
-PHP_MEM=${RAM_TOTAL}+${SWAP_TOTAL}
-RAM_MB=$(echo "scale=0;${RAM_TOTAL}/1024" | bc)
-
-# Copyright
-AUTHOR="HOSTVN"
-AUTHOR_CONTACT="kythuat@hostvn.net"
-AUTHOR_WEBSITE="https://hostvn.net"
-
-# Set admin tool version
-PHPMYADMIN_VERSION="5.0.2"
-PHP_SYS_INFO_VERSION="3.3.2"
-
-# Set service version
-MARIADB_VERSION="10.5"
-NGINX_VERSION=$(echo $( nginx -v 2>&1 ) | grep -o '[0-9.]*$')
-PHP_MAIN=$(php -v | head -1 | cut -d" " -f2 | cut -d"." -f1,2)
 
 # Set directory variables
 BASH_DIR="/var/hostvn"

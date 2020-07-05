@@ -4,10 +4,9 @@ clear
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
 
 CHOICE=1
+IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 
 echo "========================================================================="
 echo "                  HOSTVN Scripts - Công cụ quản lý VPS"
@@ -23,12 +22,16 @@ while [ "${CHOICE}" != "0" ]
 do
     echo "1. Quản lý Domain"
     echo "2. Quản lý Let's Encrypt"
-    echo "3. Quản lý SSH"
-    echo "4. Quản lý Cache"
-    echo "5. Quản lý Nginx"
-    echo "6. Quản lý CSF Firewall"
-    echo "7. Phân quyền Chown/Chmod"
-    echo "8. Thông tin VPS"
+    echo "3. SSL trả phí"
+    echo "4. Quản lý SSH"
+    echo "5. Quản lý Cache"
+    echo "6. Quản lý Nginx"
+    echo "7. Quản lý PHP"
+    echo "8. Quản lý Database"
+    echo "9. Quản lý CSF Firewall"
+    echo "10. Phân quyền Chown/Chmod"
+    echo "11. Thông tin VPS"
+    echo "12. Quản lý WordPress"
     echo " ----------------------------------------------- "
     read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -39,12 +42,16 @@ do
     case ${CHOICE} in
         1) clear; menu_domain;;
         2) clear; menu_letencrypt;;
-        3) clear; menu_ssh;;
-        4) clear; menu_cache;;
-        5) clear; menu_nginx;;
-        6) clear; menu_csf;;
-        7) clear; menu_permission;;
-        8) clear; menu_info;;
+        3) clear; menu_ssl;;
+        4) clear; menu_ssh;;
+        5) clear; menu_cache;;
+        6) clear; menu_nginx;;
+        7) clear; menu_php;;
+        8) clear; echo "Đang xây dựng.";;
+        9) clear; menu_csf;;
+        10) clear; menu_permission;;
+        11) clear; menu_info;;
+        12) clear; menu_wp;;
         0) clear; echo -e "Tạm biệt";;
         *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac

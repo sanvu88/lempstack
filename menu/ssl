@@ -6,28 +6,25 @@ source /var/hostvn/menu/helpers/menu
 CHOICE=1
 
 echo "========================================================================="
-echo "Kiểm tra thông tin máy chủ"
+echo "Quản lý SSL trả phí"
 echo "========================================================================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Trạng thái Webserver"
-    echo "2. Thông tin VPS"
-    echo "3. Thông tin khác"
+    echo "1. Cài đặt SSL"
+    echo "2. Gỡ bỏ SSL"
     echo " ----------------------------------------------- "
     read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
-
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
         continue
     fi
     case ${CHOICE} in
-        1) info_webserver ;;
-        2) info_vps ;;
-		3) info_other ;;
+        1) ssl_create ;;
+        2) ssl_remove ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac
 done

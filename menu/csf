@@ -1,15 +1,17 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
+source /var/hostvn/hostvn.conf
+# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
+IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 
 echo "========================================================================="
 echo "Quản lý CSF Firewall"
 echo "========================================================================="
-echo "-------------------------------------------------------------------------"
-echo "Hướng dẫn: https://hostvn.net"
+printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port}"
 echo "-------------------------------------------------------------------------"
 echo
 
@@ -20,9 +22,10 @@ do
     echo "3. Gỡ Block IP"
     echo "4. Gỡ Block toàn bộ IP"
     echo "5. Allow IP"
-    echo "6. Restart CSF"
-    echo "7. Tắt CSF"
-    echo "8. Bật CSF"
+    echo "6. Cấp quyền truy cập CSF GUI"
+    echo "7. Restart CSF"
+    echo "8. Tắt CSF"
+    echo "9. Bật CSF"
     echo " ----------------------------------------------- "
     read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -64,13 +67,22 @@ do
             menu_csf
             ;;
         6)
-            csf -r
+            read -r -p "Nhập vào IP muốn cấp quyền truy cập CSF GUI: " ip
+            echo "${ip}" >>  /etc/csf/ui/ui.allow
+            csf -x
+            csf -e
+            echo ""
+            menu_csf
+            ;;
+        7)
+            csf -x
+            csf -e
             systemctl restart csf
             systemctl restart lfd
             echo ""
             menu_csf
             ;;
-        7)
+        8)
             csf -x
             systemctl stop csf
             systemctl stop lfd
@@ -79,7 +91,7 @@ do
             echo ""
             menu_csf
             ;;
-        8)
+        9)
             csf -e
             systemctl start csf
             systemctl start lfd

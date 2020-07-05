@@ -1,7 +1,7 @@
 #!/bin/bash
 
 menu_primary(){
-    . /var/hostvn/menu/hvn
+    hvn
 }
 
 menu_domain(){
@@ -36,6 +36,22 @@ menu_info(){
     . /var/hostvn/menu/info
 }
 
+menu_ssl(){
+    . /var/hostvn/menu/ssl
+}
+
+menu_php(){
+    . /var/hostvn/menu/php
+}
+
+menu_database(){
+    . /var/hostvn/menu/database
+}
+
+menu_wp(){
+    . /var/hostvn/menu/wordpress
+}
+
 domain_list(){
 	. /var/hostvn/menu/controller/domain/list
 }
@@ -60,6 +76,10 @@ le_create(){
 	. /var/hostvn/menu/controller/letencrypt/create
 }
 
+le_remove(){
+	. /var/hostvn/menu/controller/letencrypt/remove
+}
+
 permission_one(){
 	. /var/hostvn/menu/controller/permission/one
 }
@@ -70,4 +90,28 @@ permission_all(){
 
 ssh_change_port(){
 	. /var/hostvn/menu/controller/ssh/change_port
+}
+
+ssl_create(){
+	. /var/hostvn/menu/controller/ssl/create
+}
+
+ssl_remove(){
+	. /var/hostvn/menu/controller/ssl/remove
+}
+
+php_setting(){
+	. /var/hostvn/menu/controller/php/php_setting
+}
+
+info_webserver(){
+	. /var/hostvn/menu/controller/info/webserver
+}
+
+info_vps(){
+	. /var/hostvn/menu/controller/info/vps
+}
+
+info_other(){
+	. /var/hostvn/menu/controller/info/other
 }

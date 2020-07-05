@@ -1,22 +1,23 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
+source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/function
+source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
 
 echo "========================================================================="
-echo "Quản lý Let's Encrypt"
+echo "Quản lý PHP"
 echo "========================================================================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Thêm Let's Encrypt"
-    echo "2. Kiểm tra thời hạn"
-    echo "3. Gỡ bỏ Let's Encrypt"
+    echo "1. Kiểm tra phiên bản PHP mặc định"
+    echo "2. Cập nhật phiên bản PHP mặc định"
+    echo "3. Khởi động lại PHP"
+    echo "4. Cấu hình thông số PHP"
     echo " ----------------------------------------------- "
     read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -25,13 +26,15 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) le_create ;;
-        2)
-            select_domain
-            echo
-            openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
+        1) php -v; menu_php ;;
+        2) yum -y update php php-fpm; menu_php ;;
+        3)
+            systemctl restart php-fpm
+            if [[ "${php2_release}" == "yes" ]]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
             ;;
-        3) le_remove ;;
+        4) php_setting ;;
         0) menu_primary ;;
         *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
     esac

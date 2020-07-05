@@ -1,0 +1,81 @@
+#!/bin/bash
+
+printf "=========================================================================\n"
+printf "                             Chinh sua thong so php\n"
+printf "=========================================================================\n"
+
+printf "Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.\n"
+printf "Can suy nghi ky truoc khi thay doi bat ky thong so nao.\n"
+printf "Lua chon cac thong so ban muon thay doi: \n"
+
+set_variable(){
+	ini_1="/etc/php.d/00-hostvn-custom.ini"
+	ini_2="${php2_version}/etc/php.d/00-hostvn-custom.ini"
+}
+
+select_parameter(){
+    echo "Lựa chọn thông số muốn thay đổi"
+    PS3='Nhập lựa chọn của bạn (1-5): '
+    options=("post_max_size" "upload_max_filesize" "memory_limit" "max_input_time" "max_execution_time")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "post_max_size") parameter="post_max_size"; break;;
+            "upload_max_filesize") parameter="upload_max_filesize"; break;;
+            "memory_limit") parameter="memory_limit"; break;;
+            "max_input_time") parameter="max_input_time"; break;;
+            "max_execution_time") parameter="max_execution_time"; break;;
+            *) printf "Bạn nhập sai, vui lòng nhập lại.\n" ;;
+        esac
+    done
+}
+
+input_parameter(){
+	read -r -p "Nhập vào thông số mới (Ex: 120): " num
+}
+
+remove_ini_bak(){
+	if [[ -f "${ini_1}.bak" ]]; then
+		rm -rf "${ini_1}".bak
+	fi
+
+	if [[ -f "${ini_2}.bak" ]]; then
+		rm -rf "${ini_2}".bak
+	fi
+}
+
+change_parameter(){
+	if [[ "${parameter}" == "max_input_time" || "${parameter}" == "max_execution_time" ]]; then
+		parameter_new=${num}
+	else
+		parameter_new=${num}M
+	fi
+
+	sed -i.bak '/${parameter}/d' ${ini_1}
+	echo "${parameter} = ${parameter_new}" >> ${ini_1}
+
+	if [[ "${php2_release}" == "yes" ]]; then
+		sed -i.bak '/${parameter}/d' ${ini_2}
+		echo "${parameter} = ${parameter_new}" >> ${ini_2}
+	fi
+}
+
+restart_php(){
+	systemctl restart php-fpm
+	if [[ "${php2_release}" == "yes" ]]; then
+		systemctl restart "${php2_version}"-php-fpm
+	fi
+}
+
+main(){
+	set_variable
+	select_parameter
+	input_parameter
+	remove_ini_bak
+	change_parameter
+	restart_php
+}
+
+echo "Thay đổi thông số PHP thành công."
+sleep 2
+menu_php

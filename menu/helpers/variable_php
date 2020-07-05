@@ -1,9 +1,14 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
+set_variable(){
+    CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
+    RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+    RAM_MB=$(echo "scale=0;${RAM_TOTAL}/1024" | bc)
+}
 
 php_parameter(){
+    set_variable
+
     if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))

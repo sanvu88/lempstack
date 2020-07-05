@@ -110,7 +110,7 @@ EEV4="/opt/easyengine"
 yum -y install epel-release
 yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
 yum -y update
-yum -y install gawk git bc wget lsof htop curl zip unzip nano gcc gcc-c++ yum-utils
+yum -y install gawk git bc wget lsof htop curl zip unzip nano gcc gcc-c++ yum-utils shc
 
 # Get info VPS
 CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
@@ -304,16 +304,15 @@ EONGINXREPO
 }
 
 nginx_brotli(){
-    COMMAND="nginx -v"
-    NGINXV=$( ${COMMAND} 2>&1 )
-    NGINXLOCAL=$(echo "${NGINXV}" | grep -o '[0-9.]*$')
+    NGINXV=$(echo "$(nginx -v 2>&1)" | grep -o '[0-9.]*$')
     MODULES_PATH="/etc/nginx/modules"
-    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_filter_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_filter_module.so
-    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXLOCAL}"/ngx_http_brotli_static_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_static_module.so
+    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_filter_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_filter_module.so
+    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_static_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_static_module.so
 
     if [[ -f "${MODULES_PATH}/ngx_http_brotli_filter_module.so" && -f "${MODULES_PATH}/ngx_http_brotli_static_module.so" ]]; then
         LOAD_BROTLI_FILTER="load_module modules/ngx_http_brotli_filter_module.so;"
         LOAD_BROTLI_STATIC="load_module modules/ngx_http_brotli_static_module.so;"
+        INCLUDE_BROTLI="include /etc/nginx/extra/brotli.conf;"
         BROTLI_STATIC_OFF="brotli_static off;"
     fi
 }
@@ -882,7 +881,7 @@ http {
     map \$scheme \$https_suffix { default ''; https '-https'; }
 
     include /etc/nginx/extra/gzip.conf;
-    include /etc/nginx/extra/brotli.conf;
+    ${INCLUDE_BROTLI}
     include /etc/nginx/extra/ssl.conf;
     include /etc/nginx/extra/cloudflare.conf;
     include /etc/nginx/extra/webp.conf;
@@ -1537,7 +1536,7 @@ set_real_ip_from 199.27.128.0/21;
 #set_real_ip_from 2405:b500::/32;
 #set_real_ip_from 2606:4700::/32;
 #set_real_ip_from 2803:f800::/32;
-real_ip_header CF-Connecting-IP;
+real_ip_header X-Forwarded-For;
 EOCF
 
 cat >> "/etc/nginx/extra/nginx_limits.conf" << EOCF
@@ -2424,6 +2423,7 @@ memory_limit = ${MAX_MEMORY}M
 upload_max_filesize = ${MAX_MEMORY}M
 post_max_size = ${MAX_MEMORY}M
 expose_php = Off
+display_errors = Off
 mail.add_x_header = Off
 max_input_nesting_level = 128
 max_input_vars = ${MAX_INPUT_VARS}
@@ -2448,6 +2448,7 @@ memory_limit = ${MAX_MEMORY}M
 upload_max_filesize = ${MAX_MEMORY}M
 post_max_size = ${MAX_MEMORY}M
 expose_php = Off
+display_errors = Off
 mail.add_x_header = Off
 max_input_nesting_level = 128
 max_input_vars = ${MAX_INPUT_VARS}
@@ -3579,6 +3580,8 @@ start_service() {
     systemctl start php-fpm
     systemctl start pure-ftpd
     systemctl enable pure-ftpd
+    systemctl start lfd
+    systemctl enable lfd
     systemctl start csf
     systemctl enable csf
 
@@ -3635,7 +3638,7 @@ add_menu(){
     chmod 711 menu && chmod 711 users
 
     # Create Alias Command
-    #echo 'alias hvn="/var/hostvn/menu/hvn"' >> ~/.bashrc
+    #echo "alias hvn='/var/hostvn/menu/hvn'" >> ~/.bashrc
     #source ~/.bashrc
     mv "${BASH_DIR}"/menu/hvn /usr/bin/hvn && chmod +x /usr/bin/hvn
 }
@@ -3696,24 +3699,19 @@ clear
 sleep 1
 
 printf "=========================================================================\n"
-printf "                        Cài đặt thành công\n                             "
-printf "Bạn có thể xem lại thông tin cần thiết tại file: %s\n" "${FILE_INFO}"
+echo   "                        Cài đặt thành công                                 "
+printf "                 File lưu thông tin: %s\n" "${FILE_INFO}"
 printf "          Nếu cần hỗ trợ vui lòng liên hệ %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
 echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
 echo "-------------------------------------------------------------------------"
-echo "  1.  SSH  Port                  : 8282"
+echo   "1.  SSH  Port                  : 8282"
 printf "2.  phpMyAdmin                 : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
-printf "3.  MariaDB Root Password      : %s\n" "${SQLPASS}"
-echo "-------------------------------------------------------------------------"
-printf "========================================================================\n"
-echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool\n         "
-echo "--------------------------------------------------------------------------"
-printf "1.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
-printf "2.  Link Server Info           : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
-printf "3.  Link CSF GUI               : %s\n" "https://${IPADDRESS}:${CSF_UI_PORT}"
-echo   "4.  User                       : admin                                   "
-printf "5.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
+printf "2.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
+printf "3.  Link Server Info           : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
+printf "4.  Link CSF GUI               : %s\n" "https://${IPADDRESS}:${CSF_UI_PORT}"
+echo   "5.  User                       : admin                                   "
+printf "6.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
 printf "=========================================================================\n"
 printf "Kiểm tra file %s để xem có lỗi gì trong quá trình cài đặt hay không.\n " " ${LOG}"

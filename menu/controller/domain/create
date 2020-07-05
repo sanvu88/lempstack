@@ -10,8 +10,7 @@ debug_(){
 
 debug_
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/function
+
 # shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
@@ -20,6 +19,8 @@ source /var/hostvn/menu/helpers/menu
 source /var/hostvn/menu/helpers/variable_php
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
 
 echo "-------------------------------------------------------------------------"
 echo "Thêm domain mới"
@@ -32,7 +33,7 @@ check_service(){
     mariadb_status="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd}" != 'pureftpd_status' ]]; then
+    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd_status}" != 'active' ]]; then
         clear
         echo "-------------------------------------------------------------------------"
         echo "Có lỗi xảy ra:"
@@ -135,34 +136,6 @@ select_php(){
             "${php1}") php_mode="1"; break;;
             "${php2}") php_mode="2"; break;;
             *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
-        esac
-    done
-}
-
-# Select Source
-select_source(){
-    SOURCE="Other"
-    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
-    PS3='Nhập lựa chọn của bạn (1-14): '
-    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "WordPress") SOURCE="wordpress"; break;;
-            "Laravel") SOURCE="laravel"; break;;
-            "CodeIgniter") SOURCE="codeigniter"; break;;
-            "Xenforo") SOURCE="xenforo"; break;;
-            "Joomla") SOURCE="joomla"; break;;
-            "Drupal") SOURCE="drupal"; break;;
-            "OpenCart") SOURCE="opencart"; break;;
-            "WHMCS") SOURCE="whmcs"; break;;
-            "PrestaShop") SOURCE="prestashop"; break;;
-            "Yii") SOURCE="yii"; break;;
-            "NextCloud") SOURCE="nextcloud"; break;;
-            "Discuz") SOURCE="discuz"; break;;
-            "Ecshop") SOURCE="ecshop"; break;;
-            "Other") SOURCE="default"; break;;
-            *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
         esac
     done
 }
@@ -316,8 +289,10 @@ create_db(){
 }
 
 create_docrot(){
+    mkdir -p /home/"${username}"/backup
     mkdir -p /home/"${username}"/"${domain}"/public_html
     mkdir -p /home/"${username}"/"${domain}"/logs
+    chmod 710 /home/"${username}"/backup
     chmod 711 /home/"${username}"
     chmod 711 /home/"${username}"/"${domain}"
     chmod 711 /home/"${username}"/"${domain}"/logs
@@ -326,10 +301,7 @@ create_docrot(){
 }
 
 disable_functions(){
-    dis_functions="exec,system,passthru,shell_exec,proc_close,proc_open,popen,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname"
-    if [[ "${SOURCE}" == "laravel" || "${SOURCE}" == "yii" || "${SOURCE}" == "codeigniter" ]]; then
-        dis_functions="exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname"
-    fi
+    dis_functions="exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname"
 }
 
 set_phpconf_var(){

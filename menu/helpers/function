@@ -42,7 +42,7 @@ select_domain(){
         cd_dir "${USER_DIR}"
         for entry in .*.conf; do
             domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
-            if [ "$domain" != "${domain/.}" ]; then
+            if [ "${domain}" != "${domain/.}" ]; then
                 selects+=(${domain})
             fi
         done
@@ -81,6 +81,34 @@ check_domain_exists(){
         echo
         menu_primary
     fi
+}
+
+# Select Source
+select_source(){
+    SOURCE="Other"
+    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
+    PS3='Nhập lựa chọn của bạn (1-14): '
+    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "WordPress") SOURCE="wordpress"; break;;
+            "Laravel") SOURCE="laravel"; break;;
+            "CodeIgniter") SOURCE="codeigniter"; break;;
+            "Xenforo") SOURCE="xenforo"; break;;
+            "Joomla") SOURCE="joomla"; break;;
+            "Drupal") SOURCE="drupal"; break;;
+            "OpenCart") SOURCE="opencart"; break;;
+            "WHMCS") SOURCE="whmcs"; break;;
+            "PrestaShop") SOURCE="prestashop"; break;;
+            "Yii") SOURCE="yii"; break;;
+            "NextCloud") SOURCE="nextcloud"; break;;
+            "Discuz") SOURCE="discuz"; break;;
+            "Ecshop") SOURCE="ecshop"; break;;
+            "Other") SOURCE="default"; break;;
+            *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
+        esac
+    done
 }
 
 set_rewrite(){

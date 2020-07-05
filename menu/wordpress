@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+CHOICE=1
+
+echo "========================================================================="
+echo "Quản lý WordPress"
+echo "========================================================================="
+echo
+
+while [ "${CHOICE}" != "0" ]
+do
+    echo "1. Kiểm tra phiên bản WordPress"
+    echo "2. Cập nhật WordPress"
+    echo "3. Cập nhật plugins (Trừ plugins trả phí)"
+    echo "4. Tối ưu database"
+    echo "5. Repair database"
+    echo "6. Sao lưu dữ liệu"
+    echo "7. Khôi phục dữ liệu"
+    echo " ----------------------------------------------- "
+    read -r -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			cd_dir /home/"${username}"/"${domain}"/public_html/
+			printf "Phiên bản WordPress đang sử dụng: %s\n" "$(wp core version --allow-root)"
+			echo ""
+			menu_wp
+			;;
+        2)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			read -r -p "Bạn có muốn backup dữ liệu trước khi update không ? (y/n) " backup_confirm
+			if [[ "${backup_confirm}" == "y" || "${backup_confirm}" == "Y" ]]; then
+				db_name="$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+				cd_dir /home/"${username}"
+				tar -cpzvf /home/"${username}"/backup/"$(date +%F)"_"${domain}".tar.gz "${domain}"
+				cd_dir /home/"${username}"/"${domain}"/public_html
+				wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+				wp core update --allow-root
+				chown -R "${username}":"${username}" ./*
+				echo "Cập nhật WordPress thành công."
+			else
+				echo "Bạn đã chọn không backup. Điều này là không an toàn. Hệ thống sẽ huỷ cập nhật WordPress."
+				echo ""
+			fi
+
+			sleep 3
+			menu_wp
+			;;
+		3)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			read -r -p "Bạn có muốn backup dữ liệu trước khi tối ưu không ? (y/n) " backup_confirm
+			if [[ "${backup_confirm}" == "y" || "${backup_confirm}" == "Y" ]]; then
+				db_name="$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+				cd_dir /home/"${username}"
+				tar -cpzvf /home/"${username}"/backup/"$(date +%F)"_"${domain}".tar.gz "${domain}"
+				cd_dir /home/"${username}"/backup
+				wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+				cd_dir /home/"${username}"/"${domain}"/public_html
+				wp plugin update --all --allow-root
+				echo "Cập nhật WordPress thành công."
+			else
+				echo "Bạn đã chọn không backup. Điều này là không an toàn. Hệ thống sẽ huỷ cập nhật plugins."
+				echo ""
+			fi
+
+			sleep 3
+			menu_wp
+			;;
+		4)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			read -r -p "Bạn có muốn backup dữ liệu trước khi tối ưu không ? (y/n) " backup_confirm
+			if [[ "${backup_confirm}" == "y" || "${backup_confirm}" == "Y" ]]; then
+				db_name="$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+				cd_dir /home/"${username}"/"${domain}"/public_html
+				wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+				wp db optimize --allow-root
+				echo "Tối ưu database thành công."
+			else
+				echo "Bạn đã chọn không backup. Điều này là không an toàn. Hệ thống sẽ huỷ tối ưu database."
+				echo ""
+			fi
+
+			sleep 3
+			menu_wp
+			;;
+		5)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			read -r -p "Bạn có muốn backup dữ liệu trước khi tối ưu không ? (y/n) " backup_confirm
+			if [[ "${backup_confirm}" == "y" || "${backup_confirm}" == "Y" ]]; then
+				db_name="$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+				cd_dir /home/"${username}"/"${domain}"/public_html
+				wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+				wp db repair --allow-root
+				echo "Repair database thành công."
+			else
+				echo "Bạn đã chọn không backup. Điều này là không an toàn. Hệ thống sẽ huỷ Repair database."
+			fi
+
+			echo ""
+			sleep 3
+			menu_wp
+			;;
+		6)
+			select_domain
+			username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+			cd_dir /home/"${username}"
+			tar -cpzvf /home/"${username}"/backup/"$(date +%F)"_"${domain}".tar.gz "${domain}"
+			cd_dir /home/"${username}"/"${domain}"/public_html
+			wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+			echo "Sao lưu dữ liệu thành công."
+			echo ""
+			sleep 3
+			menu_wp
+			;;
+		7) echo "Đang nghĩ"; sleep 3; menu_wp ;;
+        0) menu_primary ;;
+        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+    esac
+done

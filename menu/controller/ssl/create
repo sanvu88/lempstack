@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%F)_create_le.log
+    LOG_FILE=/var/log/hostvn/$(date +%F)_create_ssl.log
     exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
@@ -20,7 +20,7 @@ source /var/hostvn/menu/helpers/variable_common
 source /var/hostvn/menu/helpers/function
 
 echo "-------------------------------------------------------------------------"
-echo "Thêm SSL - Let's Encrypt"
+echo "Cài đặt SSL trả phí"
 echo "-------------------------------------------------------------------------"
 echo
 
@@ -41,18 +41,6 @@ check_nginx_status(){
     if [[ "$nginx" != "active" ]]; then
         clear
         echo "Nginx hiện tại không hoạt động. Vui lòng kiểm tra lại."
-        echo
-        menu_letencrypt
-    fi
-}
-
-check_dns(){
-    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
-    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${domain})
-    if [[ "${a_record}" != "${server_ip}" || "${www_record}" != "${server_ip}" ]]; then
-        echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại.\n"
-        echo "Nếu bạn mới trỏ tên miền vui lòng đợi 30 phút đến 24 tiếng để DNS cập nhật sau đó thử lại."
-        sleep 2
         echo
         menu_letencrypt
     fi
@@ -98,23 +86,26 @@ backup_vhost(){
     mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
 }
 
-sign_ssl(){
-    /usr/local/bin/certbot-auto --nginx --no-bootstrap -d ${domain} -d www.${domain}
+remove_letencrypt(){
+	if [[ -d "/etc/letsencrypt/live/${domain}" ]]; then
+		rm -rf /etc/letsencrypt/live/${domain}
+	fi
 }
 
-auto_renew(){
-    if [[ ! -f /var/spool/cron/root ]]; then
-        echo "45 2 * * 6 /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> /var/spool/cron/root
-        echo "50 2 * * 6 systemctl restart nginx >/dev/null 2>&1" >> /var/spool/cron/root
-        systemctl restart crond
-    else
-        check_cron=$(grep -c "certbot-auto renew" "/var/spool/cron/root")
-        if [[ "${check_cron}" != 1 ]]; then
-            echo "45 2 * * 6 /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> /var/spool/cron/root
-            echo "50 2 * * 6 systemctl restart nginx >/dev/null 2>&1" >> /var/spool/cron/root
-            systemctl restart crond
-        fi
-    fi
+create_crt(){
+    echo "Để lưu file hãy bấm CTRL + X và nhấn ENTER sau đó bấm tiếp CTRL + O"
+    echo "Đang mở trình soạn thảo ...."
+    sleep 3
+    mkdir -p /etc/nginx/ssl/"${domain}"
+    nano /etc/nginx/ssl/"${domain}"/fullchain.pem
+}
+
+create_private_key(){
+	echo "Để lưu file hãy bấm CTRL + X và nhấn ENTER sau đó bấm tiếp CTRL + O"
+    echo "Đang mở trình soạn thảo ...."
+    sleep 3
+    mkdir -p /etc/nginx/ssl/"${domain}"
+    nano /etc/nginx/ssl/"${domain}"/privkey.pem
 }
 
 create_ssl_vhost(){
@@ -155,9 +146,8 @@ server {
     ${rewrite}
     ${cache}
 
-    ssl_certificate         /etc/letsencrypt/live/${domain}/fullchain.pem;
-    ssl_certificate_key     /etc/letsencrypt/live/${domain}/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/${domain}/chain.pem;
+    ssl_certificate         /etc/nginx/ssl/"${domain}"/fullchain.pem;
+    ssl_certificate_key     /etc/nginx/ssl/"${domain}"/privkey.pem;
 
     location ~ \.php\$
     {
@@ -194,10 +184,12 @@ run(){
     fi
 
     set_variable
-    check_dns
     check_domain_exists
-    sign_ssl
-    auto_renew
+    remove_letencrypt
+
+    create_crt
+	create_private_key
+
     create_ssl_vhost
     restart_nginx
 }
@@ -205,6 +197,6 @@ run(){
 run
 
 echo ""
-echo "Tạo SSL Let's Encrypt thành công"
+echo "Cấu hình SSL thành công"
 sleep 2
-menu_letencrypt
+menu_ssl

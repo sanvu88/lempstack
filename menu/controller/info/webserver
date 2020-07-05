@@ -1,0 +1,17 @@
+#!/bin/bash
+
+show_info(){
+	printf "Nginx        : %s\n" "$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "Php-FPM      : %s\n" "$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "Mysql        : %s\n" "$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "SSH          : %s\n" "$(systemctl status sshd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "CSF Firewall : %s\n" "$(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "LFD 		 : %s\n" "$(systemctl status lfd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "Pure-ftpd    : %s\n" "$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	printf "Memcached    : %s\n" "$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	echo "Redis          : %s\n" "$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	echo ""
+}
+
+show_info
+menu_info

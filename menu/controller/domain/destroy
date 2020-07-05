@@ -11,13 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
 
 echo "-------------------------------------------------------------------------"
 echo "Xóa Domain"
