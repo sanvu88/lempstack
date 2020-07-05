@@ -146,8 +146,9 @@ server {
     ${rewrite}
     ${cache}
 
-    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;
+    ssl_certificate         /etc/letsencrypt/live/${domain}/fullchain.pem;
+    ssl_certificate_key     /etc/letsencrypt/live/${domain}/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/${domain}/chain.pem;
 
     location ~ \.php\$
     {

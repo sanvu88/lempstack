@@ -4,16 +4,18 @@ clear
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
 
-ip=$(ip route get 1 | awk '{print $NF;exit}')
 CHOICE=1
 
 echo "========================================================================="
 echo "                  HOSTVN Scripts - Công cụ quản lý VPS"
 echo "                              HOSTVN.NET"
 echo "========================================================================="
-echo "IP VPS: ${ip}"
-echo "phpMyAdmin: http://${ip}:${admin_port}/phpmyadmin"
+printf "IP VPS: %s\n" "${IPADDRESS}"
+printf "phpMyAdmin: %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
+printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port}"
 echo "Phím tắt: Ctrl + C hoặc nhập 0 để thoát"
 echo "-------------------------------------------------------------------------"
 

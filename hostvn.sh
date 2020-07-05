@@ -33,6 +33,7 @@ PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
 FILE_INFO="${BASH_DIR}/hostvn.conf"
 HOSTNAME=$(hostname)
 PHP2_RELEASE="no"
+ADMIN_TOOL_PWD=$(date |md5sum |cut -c '14-30')
 
 # Copyright
 AUTHOR="HOSTVN"
@@ -193,11 +194,11 @@ install_service(){
 set_email(){
     while true
     do
-        read -r -p "Nhập vào email của bạn: " email
+        read -r -p "Nhập vào email của bạn: " ADMIN_EMAIL
         echo
-        if [[ "${email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
+        if [[ "${ADMIN_EMAIL}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
         then
-            echo "Email của bạn là: ${email}."
+            echo "Email của bạn là: ${ADMIN_EMAIL}."
             break
         else
             echo "Email bạn nhập không chính xác vui lòng nhập lại."
@@ -299,6 +300,7 @@ module_hotfixes=true
 EONGINXREPO
 
     yum -y install nginx
+    systemctl start nginx
 }
 
 nginx_brotli(){
@@ -777,10 +779,32 @@ cal_ssl_cache_size(){
     fi
 }
 
+self_signed_ssl(){
+    #Create dhparams
+    cal_ssl_cache_size
+    challenge_password=$(date +%s | sha256sum | base64 | head -c 12)
+    self_signed_dir="/etc/nginx/ssl/server"
+    mkdir -p "${self_signed_dir}"
+    openssl dhparam -out /etc/nginx/ssl/dhparams.pem 2048
+    openssl genrsa -out "${self_signed_dir}/server.key" 4096
+    openssl req -new -days 3650 -key "${self_signed_dir}/server.key" -out "${self_signed_dir}/server.csr" <<EOF
+VN
+Ha Noi
+Ba Dinh
+${AUTHOR}
+IT
+${IPADDRESS}
+${ADMIN_EMAIL}
+${challenge_password}
+${AUTHOR}
+EOF
+    openssl x509 -in "${self_signed_dir}/server.csr" -out "${self_signed_dir}/server.crt" -req -signkey "${self_signed_dir}/server.key" -days 3650
+}
+
 create_nginx_conf(){
     mkdir -p /etc/nginx/backup_vhost
-    mkdir -p /etc/nginx/ssl
     mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
+
     cat >> "/etc/nginx/nginx.conf" << EONGINXCONF
 user nginx;
 worker_processes ${NGINX_PROCESSES};
@@ -848,14 +872,14 @@ http {
 
     # Custom Response Headers
     add_header X-Powered-By ${AUTHOR};
-    add_header Strict-Transport-Security "max-age=31536000";
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
-    add_header Referrer-Policy "no-referrer-when-downgrade";
+    add_header X-Content-Type-Options    "nosniff" always;
+    add_header X-Frame-Options           "SAMEORIGIN" always;
+    add_header X-XSS-Protection          "1; mode=block" always;
+    add_header Referrer-Policy           "no-referrer-when-downgrade" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 
     # Custom Variables
-    map $scheme $https_suffix { default ''; https '-https'; }
+    map \$scheme \$https_suffix { default ''; https '-https'; }
 
     include /etc/nginx/extra/gzip.conf;
     include /etc/nginx/extra/brotli.conf;
@@ -1264,37 +1288,22 @@ location ~* \.(ico|gif|jpe?g|png|svg|eot|otf|woff|woff2|ttf|ogg)\$ {
 EOwprocket
 
     cat >> "/etc/nginx/wordpress/wpsc.conf" << EOwpsc
+set \$cache_uri \$request_uri;
+if (\$request_method = POST) {
+    set \$cache_uri 'null cache';
+}
+if (\$query_string != "") {
+    set $cache_uri 'null cache';
+}
+if (\$request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+    set \$cache_uri 'null cache';
+}
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+    set $cache_uri 'null cache';
+}
 location / {
-    error_page 418 = @cachemiss;
-    error_page 419 = @mobileaccess;
-    recursive_error_pages on;
-    if (\$request_method = POST) { return 418; }
-    if (\$arg_s != "") { return 418; }
-    if (\$arg_p != "") { return 418; }
-    if (\$args ~ "amp") { return 418; }
-    if (\$arg_preview = "true") { return 418; }
-    if (\$arg_ao_noptimize != "") { return 418; }
-    if (\$http_cookie ~* "wordpress_logged_in_") { return 418; }
-    if (\$http_cookie ~* "comment_author_") { return 418; }
-    if (\$http_cookie ~* "wp_postpass_") { return 418; }
-    if (\$http_user_agent = "Amazon CloudFront" ) { return 403; access_log off; }
-    if (\$http_x_pull = "KeyCDN") { return 403; access_log off; }
-    try_files "/wp-content/cache/supercache/\$host\${uri}index\$https_suffix.html" \$uri \$uri/ /index.php\$is_args\$args;
-    add_header "X-Cache" "HIT";
-    expires 30m;
-    add_header "Cache-Control" "must-revalidate";
+    try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php ;
 }
-location @mobileaccess {
-    try_files "/wp-content/cache/supercache/\$host\${uri}index\$https_suffix-mobile.html" \$uri \$uri/ /index.php\$is_args\$args;
-    add_header "X-Cache" "HIT";
-    expires 30m;
-    add_header "Cache-Control" "must-revalidate";
-}
-
-location @cachemiss {
-    try_files \$uri \$uri/ /index.php\$is_args\$args;
-}
-
 include /etc/nginx/extra/staticfiles.conf;
 EOwpsc
 
@@ -1364,11 +1373,6 @@ EOswift2
 
 # Extra config
 create_extra_conf(){
-    #Create dhparams
-    cal_ssl_cache_size
-    mkdir -p /etc/nginx/ssl
-    openssl dhparam -out /etc/nginx/ssl/dhparams.pem 2048
-
     # Include http block
     if [[ ! -d "/etc/nginx/extra" ]]; then
         mkdir -p /etc/nginx/extra
@@ -1604,11 +1608,16 @@ EOSTATICFILES
 
     cat >> "/etc/nginx/extra/security.conf" << EOsecurity
 # Return 403 forbidden for readme.(txt|html) or license.(txt|html) or example.(txt|html) or other common git repository files
-location ~*  "/(^\$|readme|license|example|README|LEGALNOTICE|INSTALLATION|CHANGELOG)\.(txt|html|md)" {
+location ~*  "/(^\$|readme|license|example|LICENSE|README|LEGALNOTICE|INSTALLATION|CHANGELOG)\.(txt|html|md)" {
     deny all;
 }
+location ~ ^/(\.user.ini|\.htaccess|\.htpasswd|\.user\.ini|\.ht|\.env|\.git|\.svn|\.project) {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
 # Deny backup extensions & log files and return 403 forbidden
-location ~* "\.(old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|bz2|7z|pem|asc|conf|dump)\$" {
+location ~* "\.(love|error|kid|old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|bz2|7z|pem|asc|conf|dump)\$" {
     deny all;
 }
 location ~* "/(=|\/\$&|_mm|(wp-)?config\.|cgi-|etc/passwd|muieblack)" {
@@ -1836,11 +1845,6 @@ cat >> "${REWRITE_CONFIG_PATH}/laravel.conf" << EOlaravel
 location / {
     try_files \$uri \$uri/ /index.php?\$query_string;
 }
-location ~ /\.(ht|svn|env|git) {
-    deny all;
-    access_log off;
-    log_not_found off;
-}
 EOlaravel
 
 cat >> "${REWRITE_CONFIG_PATH}/whmcs.conf" << EOwhmcs
@@ -1939,11 +1943,6 @@ location / {
 location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)$ {
     try_files \$uri =404;
 }
-location ~ /\.(ht|svn|git) {
-    deny all;
-    access_log off;
-    log_not_found off;
-}
 EOyii
 }
 
@@ -1972,11 +1971,6 @@ server {
     root /usr/share/nginx/html/;
     index index.php index.html index.htm;
 
-    location ~ ^/(\.user.ini|\.htaccess|\.htpasswd|\.user\.ini|\.ht|\.env|\.git|\.svn|\.project|LICENSE|README.md) {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
     location ^~ /phpmyadmin {
         root /usr/share/nginx/html/;
         index index.php index.html index.htm;
@@ -2114,6 +2108,7 @@ server {
     include /etc/nginx/extra/staticfiles.conf;
 }
 EOdefault_vhost
+    mv "${NGINX_VHOST_PATH}"/web_apps.conf /etc/nginx/web_apps.conf
 }
 
 default_index(){
@@ -2139,7 +2134,7 @@ default_index(){
             <div>
                 <p>Sorry for the inconvenience but we're performing some maintenance at the moment. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p><<a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
+                <p><a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
             </div>
         </article>
     </body>
@@ -2171,7 +2166,7 @@ default_error_page(){
             <div>
                 <p>Sorry, the page you are looking for is currently unavailable. Please try again later. If you need to you can always
                 <a href="mailto:${AUTHOR_CONTACT}">contact us</a>, otherwise we'll be back online shortly!</p>
-                <p><<a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
+                <p><a href="${AUTHOR_WEBSITE}">${AUTHOR}</a> Team!</p>
             </div>
         </article>
     </body>
@@ -2182,6 +2177,7 @@ EOdefault_index
 
 config_nginx(){
     echo ""
+    self_signed_ssl
     create_nginx_conf
     create_extra_conf
     create_wp_cache_conf
@@ -2986,11 +2982,23 @@ Y
 EOF
 }
 
+create_mysql_user(){
+    cat > "/tmp/mysql_query.temp" <<EOquery_temp
+    CREATE USER 'admin'@'localhost' IDENTIFIED BY '${ADMIN_TOOL_PWD}';
+    GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
+EOquery_temp
+
+    mysql -uroot -p"${SQLPASS}" < /tmp/mysql_query.temp
+    rm -f /tmp/mysql_query.temp
+}
+
 config_mariadb(){
     echo ""
     config_my_cnf
     mysql_limit_nofile
     set_mariadb_root_pwd
+    create_mysql_user
 }
 
 ############################################
@@ -3349,7 +3357,7 @@ ${DECLARE}
 \$cfg['blowfish_secret'] = '${BLOWFISH_SECRET}';
 \$i = 0;
 \$i++;
-\$cfg['Servers'][\$i]['auth_type'] = 'cookie';
+\$cfg['Servers'][\$i]['auth_type'] = 'http';
 \$cfg['Servers'][\$i]['host'] = 'localhost';
 \$cfg['Servers'][\$i]['connect_type'] = 'tcp';
 \$cfg['Servers'][\$i]['compress'] = false;
@@ -3490,7 +3498,6 @@ EOF
 ############################################
 opcache_dashboard(){
     echo ""
-    ADMIN_TOOL_PWD=$(date |md5sum |cut -c '14-30')
     mkdir -p "${DEFAULT_DIR_WEB}"/opcache
     wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_WEB}"/opcache/index.php
     chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/opcache
@@ -3515,28 +3522,50 @@ php_sys_info(){
 ############################################
 # Install CSF Firewall
 ############################################
+csf_gui(){
+    CSF_UI_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
+    if [[ "${CSF_UI_PORT}" == "${RANDOM_ADMIN_PORT}" ]]; then
+        CSF_UI_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
+    fi
+
+    sed -i 's/UI = "0"/UI = "1"/g' /etc/csf/csf.conf
+    sed -i 's/UI_PORT = "6666"/UI_PORT = "'${CSF_UI_PORT}'"/g' /etc/csf/csf.conf
+    sed -i 's/UI_USER = "username"/UI_USER = "admin"/g' /etc/csf/csf.conf
+    sed -i 's/UI_PASS = "password"/UI_PASS = "'${ADMIN_TOOL_PWD}'"/g' /etc/csf/csf.conf
+    mv /etc/csf/ui/server.key /etc/csf/ui/server.key.old
+    mv /etc/csf/ui/server.crt /etc/csf/ui/server.crt.old
+    cp /etc/nginx/ssl/server/server.crt /etc/csf/ui/server.crt
+    cp /etc/nginx/ssl/server/server.key /etc/csf/ui/server.key
+}
+
 install_csf(){
     echo ""
-    yum -y install perl-libwww-perl perl-LWP-Protocol-https perl-GDGraph bind-utils net-tools
+    yum -y install perl-libwww-perl perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN bind-utils perl-IO-Socket-INET6 perl-Socket6 net-tools
     curl -o "${DIR}"/csf.tgz https://download.configserver.com/csf.tgz
     tar -xf csf.tgz
     cd_dir "${DIR}/csf"
     sh install.sh
     cd_dir "${DIR}"
     rm -rf csf*
-    sed -i 's/443,465/443,8282,'${RANDOM_ADMIN_PORT}',465/g' /etc/csf/csf.conf
-    sed -i 's/TESTING = "1"/TESTING = "0"/; s/443,587/443,465,587,'${RANDOM_ADMIN_PORT}',8282/; s/RESTRICT_SYSLOG = "0"/RESTRICT_SYSLOG = "2"/' /etc/csf/csf.conf
+    sed -i 's/21,22/21,22,8282/g' /etc/csf/csf.conf
+    sed -i 's/443,465/443,'${RANDOM_ADMIN_PORT}',465/g' /etc/csf/csf.conf
+    sed -i 's/443,587/443,465,587,'${RANDOM_ADMIN_PORT}'/g' /etc/csf/csf.conf
+    sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
+    sed -i 's/RESTRICT_SYSLOG = "0"/RESTRICT_SYSLOG = "2"/g' /etc/csf/csf.conf
     sed -i 's/CT_LIMIT = "0"/CT_LIMIT = "600"/g' /etc/csf/csf.conf
     sed -i 's/ICMP_IN = "0"/ICMP_IN = "1"/; s/ICMP_IN_RATE = "1/ICMP_IN_RATE = "5/' /etc/csf/csf.conf
     sed -i 's/PORTS_sshd = "22"/PORTS_sshd = "22, 8282"/g' /etc/csf/csf.conf
     sed -i 's/PORTFLOOD = ""/PORTFLOOD = "21;tcp;20;300"/g' /etc/csf/csf.conf
+    echo '#!/bin/sh' > /usr/sbin/sendmail
+    chmod +x /usr/sbin/sendmail
     cat >> "/etc/csf/csf.pignore" << EOCSF
 exe:/usr/sbin/nginx
 exe:/usr/sbin/php-fpm
 exe:/usr/sbin/rpcbind
 pexe:/usr/libexec/postfix/.*
 EOCSF
-    csf -r
+    csf_gui
+    csf -e
 }
 
 ############################################
@@ -3545,14 +3574,11 @@ EOCSF
 start_service() {
     echo ""
     systemctl enable nginx
-    systemctl start nginx
     systemctl enable mariadb
     systemctl enable php-fpm
     systemctl start php-fpm
     systemctl start pure-ftpd
     systemctl enable pure-ftpd
-    systemctl start lfd
-    systemctl enable lfd
     systemctl start csf
     systemctl enable csf
 
@@ -3622,6 +3648,7 @@ write_info(){
     {
         echo "ssh_port=8282"
         echo "admin_port=${RANDOM_ADMIN_PORT}"
+        echo "csf_port=${CSF_UI_PORT}"
         echo "admin_pwd=${ADMIN_TOOL_PWD}"
         echo "admin_email=${ADMIN_EMAIL}"
         echo "php1_release=yes"
@@ -3675,7 +3702,7 @@ printf "          Nếu cần hỗ trợ vui lòng liên hệ %s\n" "${AUTHOR_CO
 printf "=========================================================================\n"
 echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
 echo "-------------------------------------------------------------------------"
-echo "1.  SSH  Port                  : 8282"
+echo "  1.  SSH  Port                  : 8282"
 printf "2.  phpMyAdmin                 : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 printf "3.  MariaDB Root Password      : %s\n" "${SQLPASS}"
 echo "-------------------------------------------------------------------------"
@@ -3683,9 +3710,10 @@ printf "========================================================================
 echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool\n         "
 echo "--------------------------------------------------------------------------"
 printf "1.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
-printf "2.  Link Server Info     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
-echo "3.  User                       : admin                                   "
-printf "4.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
+printf "2.  Link Server Info           : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
+printf "3.  Link CSF GUI               : %s\n" "https://${IPADDRESS}:${CSF_UI_PORT}"
+echo   "4.  User                       : admin                                   "
+printf "5.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
 printf "=========================================================================\n"
 printf "Kiểm tra file %s để xem có lỗi gì trong quá trình cài đặt hay không.\n " " ${LOG}"
