@@ -1,17 +1,19 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
 
 list_domain(){
-	if [ "$(ls -At /var/hostvn/script/users)" ]; then
+	if [ "$(ls -At ${USER_DIR})" ]; then
     	clear
     	echo "Danh sách Domain trên VPS:"
     	echo
     	i=1
-    	cd_dir "/var/hostvn/script/users"
+    	cd_dir "${USER_DIR}"
     	for entry in .*.conf; do
     		[[ -e "${entry}" ]] || break
     	    domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')

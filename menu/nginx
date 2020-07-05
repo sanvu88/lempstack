@@ -3,7 +3,7 @@
 CHOICE=1
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 
 echo "========================================================================="
 echo "Quản lý Nginx"

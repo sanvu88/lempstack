@@ -1,73 +1,73 @@
 #!/bin/bash
 
 menu_primary(){
-    . /var/hostvn/script/menu/hvn
+    . /var/hostvn/menu/hvn
 }
 
 menu_domain(){
-    . /var/hostvn/script/menu/domain
+    . /var/hostvn/menu/domain
 }
 
 menu_letencrypt(){
-    . /var/hostvn/script/menu/letencrypt
+    . /var/hostvn/menu/letencrypt
 }
 
 menu_ssh(){
-    . /var/hostvn/script/menu/ssh
+    . /var/hostvn/menu/ssh
 }
 
 menu_cache(){
-    . /var/hostvn/script/menu/cache
+    . /var/hostvn/menu/cache
 }
 
 menu_nginx(){
-    . /var/hostvn/script/menu/nginx
+    . /var/hostvn/menu/nginx
 }
 
 menu_csf(){
-    . /var/hostvn/script/menu/csf
+    . /var/hostvn/menu/csf
 }
 
 menu_permission(){
-    . /var/hostvn/script/menu/permission
+    . /var/hostvn/menu/permission
 }
 
 menu_info(){
-    . /var/hostvn/script/menu/info
+    . /var/hostvn/menu/info
 }
 
 domain_list(){
-	. /var/hostvn/script/menu/controller/domain/list
+	. /var/hostvn/menu/controller/domain/list
 }
 
 domain_create(){
-	. /var/hostvn/script/menu/controller/domain/create
+	. /var/hostvn/menu/controller/domain/create
 }
 
 domain_destroy(){
-	. /var/hostvn/script/menu/controller/domain/destroy
+	. /var/hostvn/menu/controller/domain/destroy
 }
 
 memcached_c(){
-	. /var/hostvn/script/menu/controller/cache/memcached
+	. /var/hostvn/menu/controller/cache/memcached
 }
 
 redis_c(){
-	. /var/hostvn/script/menu/controller/cache/redis
+	. /var/hostvn/menu/controller/cache/redis
 }
 
 le_create(){
-	. /var/hostvn/script/menu/controller/letencrypt/create
+	. /var/hostvn/menu/controller/letencrypt/create
 }
 
 permission_one(){
-	. /var/hostvn/script/menu/controller/permission/one
+	. /var/hostvn/menu/controller/permission/one
 }
 
 permission_all(){
-	. /var/hostvn/script/menu/controller/permission/all
+	. /var/hostvn/menu/controller/permission/all
 }
 
 ssh_change_port(){
-	. /var/hostvn/script/menu/controller/ssh/change_port
+	. /var/hostvn/menu/controller/ssh/change_port
 }

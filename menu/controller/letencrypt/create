@@ -2,7 +2,7 @@
 
 debug_(){
     LOG_FILE=/var/log/hostvn/$(date +%F)_le_domain.log
-    exec 5> ${LOG_FILE}
+    exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
     set -x
@@ -11,11 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 # shellcheck disable=SC1091
-source /var/hostvn/script/hostvn.conf
+source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
 
 echo "-------------------------------------------------------------------------"
 echo "Thêm SSL - Let's Encrypt"
@@ -24,9 +26,9 @@ echo
 
 set_variable(){
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
-    username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    php_mode=$(grep "php_mode" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')
-    plugin_cache="$(grep "plugin_cache" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=')"
+    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     cache="include /etc/nginx/extra/staticfiles.conf;"
     wp_secure=""
@@ -116,7 +118,7 @@ create_ssl_vhost(){
         brute_force_wp
     fi
 
-    cat >> "/etc/nginx/conf.d/$domain.conf" << END
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
 server {
     listen 80;
     #listen [::]:80;

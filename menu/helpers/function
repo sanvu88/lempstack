@@ -36,10 +36,10 @@ convert_to_mb(){
 
 select_domain(){
     domain=""
-    if [ "$(ls -At /var/hostvn/script/users)" ]; then
+    if [ "$(ls -At ${USER_DIR})" ]; then
         echo "Danh sách domain"
         selects=()
-        cd_dir "/var/hostvn/script/users"
+        cd_dir "${USER_DIR}"
         for entry in .*.conf; do
             domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
             if [ "$domain" != "${domain/.}" ]; then
@@ -74,7 +74,7 @@ check_domain_exists(){
         menu_primary
     fi
 
-    path="/var/hostvn/script/users/.${domain}.conf"
+    path="${USER_DIR}/.${domain}.conf"
     if [[ ! -f "${path}" ]]; then
         clear
         echo "Domain không tồn tại trên VPS."

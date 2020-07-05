@@ -1,11 +1,9 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/hostvn.conf
+source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 
 echo "-------------------------------------------------------------------------"
 echo "Thay đổi port SSH hiện tại"
@@ -57,7 +55,7 @@ change_port(){
     sed -i 's/Port '${port_open}'/Port '${port_new}'/g' /etc/ssh/sshd_config
     sed -i 's/,'${port_open}',/,'${port_new}',/g' /etc/csf/csf.conf
     sed -i 's/PORTS_sshd = "22, '${port_open}'"/PORTS_sshd = "22, '${port_new}'"/g' /etc/csf/csf.conf
-    sed -i 's/ssh_port='${port_open}'/ssh_port='${port_new}'/g' /var/hostvn/script/hostvn.conf
+    sed -i 's/ssh_port='${port_open}'/ssh_port='${port_new}'/g' "${BASH_DIR}"/hostvn.conf
     systemctl reload sshd.service
     csf -x
     csf -e

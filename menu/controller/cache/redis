@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
 
@@ -11,7 +9,7 @@ echo "-------------------------------------------------------------------------"
 echo "Quản lý Redis Cache"
 echo "-------------------------------------------------------------------------"
 status=$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-echo "Trạng thái: ${status}"
+printf "Trạng thái: %s\n" "${status}"
 echo "-------------------------------------------------------------------------"
 echo
 

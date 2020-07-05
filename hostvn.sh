@@ -2,8 +2,8 @@
 
 #Debug
 debug_(){
-    LOG_FILE=/opt/run.log
-    exec 5> ${LOG_FILE}
+    LOG_FILE=/opt/$(date +%F)_run.log
+    exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
     set -x
@@ -23,7 +23,7 @@ OS_VER=$(rpm -E %centos)
 OS_ARCH=$(uname -m)
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 DIR=$(pwd)
-BASH_DIR="/var/hostvn/script"
+BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
 GITHUB_RAW_LINK="https://raw.githubusercontent.com"
 EXT_LINK="https://scripts.sanvu88.net/lemp"
@@ -121,7 +121,7 @@ LOW_RAM='524288'
 NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
 MAX_CLIENT=$((NGINX_PROCESSES * 1024))
 
-#rm -rf "${DIR}"/hostvn.sh
+rm -rf "${DIR}"/hostvn.sh
 
 ############################################
 # Function
@@ -185,7 +185,7 @@ remove_service(){
 }
 
 # Install requirement service
-instell_service(){
+install_service(){
     yum -y install syslog-ng syslog-ng-libdbi cronie ntpdate
 }
 
@@ -195,7 +195,7 @@ set_email(){
     do
         read -r -p "Nhập vào email của bạn: " email
         echo
-        if [[ "${email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
+        if [[ "${email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
         then
             echo "Email của bạn là: ${email}."
             break
@@ -222,7 +222,7 @@ prepare_install(){
     set_os_arch
     set_dns
     remove_service
-    instell_service
+    install_service
     create_log
     ssh_login_noti
     set_email
@@ -235,8 +235,8 @@ prepare_install(){
 # Check if user not root
 check_root(){
     if [[ "$(id -u)" != "0" ]]; then
-        echo ${ROOT_ERR}
-        echo ${CANCEL_INSTALL}
+        printf "%s\n" "${ROOT_ERR}"
+        printf "%s\n" "${CANCEL_INSTALL}"
         exit
     fi
 }
@@ -244,8 +244,8 @@ check_root(){
 # Check OS
 check_os(){
     if [[ "${OS_VER}" != "7" ]]; then
-        echo ${OS_WROG}
-        echo ${CANCEL_INSTALL}
+        printf "%s\n" "${OS_WROG}"
+        printf "%s\n" "${CANCEL_INSTALL}"
         exit
     fi
 }
@@ -253,8 +253,8 @@ check_os(){
 # Check if not enough ram
 check_low_ram(){
     if [[ "${RAM_TOTAL}" -lt "${LOW_RAM}" ]]; then
-        echo -e ${RAM_NOT_ENOUGH}
-        echo ${CANCEL_INSTALL}
+        printf "%s\n" "${RAM_NOT_ENOUGH}"
+        printf "%s\n" "${CANCEL_INSTALL}"
         exit
     fi
 }
@@ -262,14 +262,14 @@ check_low_ram(){
 # Check if other Control Panel has installed before
 check_control_panel(){
     if [[ -f "${CPANEL}" || -f "${DIRECTADMIN}" || -f "${PLESK}" || -f "${WEBMIN}" || -f "${SENTORA}" || -f "${HOCVPS}" ]]; then
-        echo -e ${OTHER_CP_EXISTS}
-        echo ${CANCEL_INSTALL}
+        printf "%s\n" "${OTHER_CP_EXISTS}"
+        printf "%s\n" "${CANCEL_INSTALL}"
         exit
     fi
 
     if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}"  ]]; then
-        echo -e ${OTHER_CP_EXISTS}
-        echo ${CANCEL_INSTALL}
+        printf "%s\n" "${OTHER_CP_EXISTS}"
+        printf "%s\n" "${CANCEL_INSTALL}"
         exit
     fi
 }
@@ -331,7 +331,7 @@ EOMARIADBREPO
 
 # Install php-fpm
 select_php_ver(){
-    echo "${SELECT_PHP}"
+    printf "%s\n" "${SELECT_PHP}"
     PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
     select opt in "${options[@]}"
@@ -359,7 +359,7 @@ install_php(){
 }
 
 select_php_multi(){
-    echo "${SELECT_INST_PHP_2}"
+    printf "%s\n" "${SELECT_INST_PHP_2}"
     PS3="${ENTER_OPTION_PHP_2}"
     options=("Yes" "No")
     select opt in "${options[@]}"
@@ -373,7 +373,7 @@ select_php_multi(){
 }
 
 select_php_ver_2(){
-    echo "${SELECT_PHP_2}"
+    printf "%s\n" "${SELECT_PHP_2}"
     PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
     select opt in "${options[@]}"
@@ -392,12 +392,12 @@ select_php_ver_2(){
 
 install_php_2(){
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        yum -y install ${PHP_VERSION_2} ${PHP_VERSION_2}-php-fpm ${PHP_VERSION_2}-php-ldap ${PHP_VERSION_2}-php-zip ${PHP_VERSION_2}-php-embedded ${PHP_VERSION_2}-php-cli ${PHP_VERSION_2}-php-mysql ${PHP_VERSION_2}-php-common ${PHP_VERSION_2}-php-gd ${PHP_VERSION_2}-php-xml ${PHP_VERSION_2}-php-mbstring \
-        ${PHP_VERSION_2}-php-mcrypt ${PHP_VERSION_2}-php-pdo ${PHP_VERSION_2}-php-soap ${PHP_VERSION_2}-php-json ${PHP_VERSION_2}-php-simplexml ${PHP_VERSION_2}-php-process ${PHP_VERSION_2}-php-curl ${PHP_VERSION_2}-php-bcmath ${PHP_VERSION_2}-php-snmp ${PHP_VERSION_2}-php-pspell ${PHP_VERSION_2}-php-gmp \
-        ${PHP_VERSION_2}-php-intl ${PHP_VERSION_2}-php-imap perl-LWP-Protocol-https ${PHP_VERSION_2}-php-pear-Net-SMTP ${PHP_VERSION_2}-php-enchant ${PHP_VERSION_2}-php-pear ${PHP_VERSION_2}-php-devel ${PHP_VERSION_2}-php-zlib ${PHP_VERSION_2}-php-xmlrpc \
-        ${PHP_VERSION_2}-php-tidy ${PHP_VERSION_2}-php-opcache ${PHP_VERSION_2}-php-cli ${PHP_VERSION_2}-php-pecl-zip ${PHP_VERSION_2}-php-dom ${PHP_VERSION_2}-php-ssh2 ${PHP_VERSION_2}-php-xmlreader ${PHP_VERSION_2}-php-date ${PHP_VERSION_2}-php-exif ${PHP_VERSION_2}-php-filter ${PHP_VERSION_2}-php-ftp \
-        ${PHP_VERSION_2}-php-hash ${PHP_VERSION_2}-php-iconv ${PHP_VERSION_2}-php-libxml ${PHP_VERSION_2}-php-pecl-imagick ${PHP_VERSION_2}-php-mysqlnd ${PHP_VERSION_2}-php-openssl ${PHP_VERSION_2}-php-pcre ${PHP_VERSION_2}-php-posix ${PHP_VERSION_2}-php-sockets ${PHP_VERSION_2}-php-spl \
-        ${PHP_VERSION_2}-php-tokenizer ${PHP_VERSION_2}-php-bz2 ${PHP_VERSION_2}-php-pgsql ${PHP_VERSION_2}-php-sqlite3 ${PHP_VERSION_2}-php-fileinfo
+        yum -y install "${PHP_VERSION_2}" "${PHP_VERSION_2}"-php-fpm "${PHP_VERSION_2}"-php-ldap "${PHP_VERSION_2}"-php-zip "${PHP_VERSION_2}"-php-embedded "${PHP_VERSION_2}"-php-cli "${PHP_VERSION_2}"-php-mysql "${PHP_VERSION_2}"-php-common "${PHP_VERSION_2}"-php-gd "${PHP_VERSION_2}"-php-xml "${PHP_VERSION_2}"-php-mbstring \
+        "${PHP_VERSION_2}"-php-mcrypt "${PHP_VERSION_2}"-php-pdo "${PHP_VERSION_2}"-php-soap "${PHP_VERSION_2}"-php-json "${PHP_VERSION_2}"-php-simplexml "${PHP_VERSION_2}"-php-process "${PHP_VERSION_2}"-php-curl "${PHP_VERSION_2}"-php-bcmath "${PHP_VERSION_2}"-php-snmp "${PHP_VERSION_2}"-php-pspell "${PHP_VERSION_2}"-php-gmp \
+        "${PHP_VERSION_2}"-php-intl "${PHP_VERSION_2}"-php-imap perl-LWP-Protocol-https "${PHP_VERSION_2}"-php-pear-Net-SMTP "${PHP_VERSION_2}"-php-enchant "${PHP_VERSION_2}"-php-pear "${PHP_VERSION_2}"-php-devel "${PHP_VERSION_2}"-php-zlib "${PHP_VERSION_2}"-php-xmlrpc \
+        "${PHP_VERSION_2}"-php-tidy "${PHP_VERSION_2}"-php-opcache "${PHP_VERSION_2}"-php-cli "${PHP_VERSION_2}"-php-pecl-zip "${PHP_VERSION_2}"-php-dom "${PHP_VERSION_2}"-php-ssh2 "${PHP_VERSION_2}"-php-xmlreader "${PHP_VERSION_2}"-php-date "${PHP_VERSION_2}"-php-exif "${PHP_VERSION_2}"-php-filter "${PHP_VERSION_2}"-php-ftp \
+        "${PHP_VERSION_2}"-php-hash "${PHP_VERSION_2}"-php-iconv "${PHP_VERSION_2}"-php-libxml "${PHP_VERSION_2}"-php-pecl-imagick "${PHP_VERSION_2}"-php-mysqlnd "${PHP_VERSION_2}"-php-openssl "${PHP_VERSION_2}"-php-pcre "${PHP_VERSION_2}"-php-posix "${PHP_VERSION_2}"-php-sockets "${PHP_VERSION_2}"-php-spl \
+        "${PHP_VERSION_2}"-php-tokenizer "${PHP_VERSION_2}"-php-bz2 "${PHP_VERSION_2}"-php-pgsql "${PHP_VERSION_2}"-php-sqlite3 "${PHP_VERSION_2}"-php-fileinfo
 
         PHP2_PATH="/opt/remi/${PHP_VERSION_2}/root"
         PHP_MODULES_DIR_2="${PHP2_PATH}/usr/lib64/php/modules"
@@ -428,7 +428,7 @@ install_lemp(){
 
     if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
         clear
-        echo "${INST_NGINX_ERR}"
+        printf "%s\n" "${INST_NGINX_ERR}"
         sleep 3
         exit
     fi
@@ -438,7 +438,7 @@ install_lemp(){
 
     if [[ ! -f "/usr/lib/systemd/system/mariadb.service" ]]; then
         clear
-        echo "${INST_MARIADB_ERR}"
+        printf "%s\n" "${INST_MARIADB_ERR}"
         sleep 3
         exit
     fi
@@ -450,20 +450,20 @@ install_lemp(){
 
         if [[ ! -f "${PHP2_PATH}/usr/lib/systemd/system/php-fpm.service" ]]; then
             clear
-            echo "${INST_PHP_ERR_2}"
+            printf "%s\n" "${INST_PHP_ERR_2}"
         fi
     fi
 
     if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
         clear
-        echo "${INST_PHP_ERR}"
+        printf "%s\n" "${INST_PHP_ERR}"
         sleep 3
         exit
     fi
 
     if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
         clear
-        echo "${INST_PHP_ERR}"
+        printf "%s\n" "${INST_PHP_ERR}"
         sleep 3
         exit
     fi
@@ -482,6 +482,7 @@ install_composer(){
 # Install WP-CLI
 ############################################
 install_wpcli(){
+    echo ""
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     chmod +x wp-cli.phar
     mv wp-cli.phar /usr/local/bin/wp
@@ -1949,7 +1950,7 @@ EOyii
 # Config default server block
 default_vhost(){
     NGINX_VHOST_PATH="/etc/nginx/conf.d"
-    mkdir -p ${USR_DIR}/nginx/auth
+    mkdir -p "${USR_DIR}"/nginx/auth
     if [[ -f "${NGINX_VHOST_PATH}/default.conf" ]]; then
         rm -rf "${NGINX_VHOST_PATH}"/default.conf
     fi
@@ -2117,7 +2118,7 @@ EOdefault_vhost
 
 default_index(){
     if [[ -f "${DEFAULT_DIR_WEB}/index.html" ]]; then
-        rm -rf ${DEFAULT_DIR_WEB}/index.html
+        rm -rf "${DEFAULT_DIR_WEB}"/index.html
         cat >> "${DEFAULT_DIR_WEB}/index.html" << EOdefault_index
 <!DOCTYPE html>
 <html lang="en">
@@ -2194,17 +2195,6 @@ config_nginx(){
 # Config PHP-FPM
 ############################################
 # PHP Parameter
-save_php_parameter(){
-    mkdir -p "${BASH_DIR}"/menu/helpers
-    {
-        echo PM_MAX_CHILDREN="${PM_MAX_CHILDREN}"
-        echo PM_START_SERVERS="${PM_START_SERVERS}"
-        echo PM_MIN_SPARE_SERVER="${PM_MIN_SPARE_SERVER}"
-        echo PM_MAX_SPARE_SERVER="${PM_MAX_SPARE_SERVER}"
-        echo PM_MAX_REQUEST="${PM_MAX_REQUEST}"
-    } >> "${BASH_DIR}"/menu/helpers/php_parameter.conf
-}
-
 php_parameter(){
     if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
@@ -2273,8 +2263,6 @@ php_parameter(){
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 4))
         PM_MAX_REQUEST=500
     fi
-
-    save_php_parameter
 }
 
 php_global_config(){
@@ -3376,7 +3364,7 @@ ${DECLARE}
 \$cfg['ExecTimeLimit'] = 600;
 EOCONFIGINC
 
-    chown -R nginx:nginx ${USR_DIR}/phpmyadmin
+    chown -R nginx:nginx "${USR_DIR}"/phpmyadmin
 }
 
 create_phpmyadmin_db(){
@@ -3388,7 +3376,7 @@ EOphpmyadmin_temp
     mysql -u root -p"${SQLPASS}" < /tmp/phpmyadmin.temp
     rm -f /tmp/phpmyadmin.temp
 
-    curl -o phpmyadmin.sql ${EXT_LINK}/phpmyadmin.sql
+    curl -o phpmyadmin.sql "${EXT_LINK}"/phpmyadmin.sql
     mysql -u root -p"${SQLPASS}" phpmyadmin < phpmyadmin.sql
     rm -rf phpmyadmin.sql
 }
@@ -3408,7 +3396,7 @@ install_phpmyadmin(){
     config_phpmyadmin
     cd_dir "${DIR}"
 
-    chown -R nginx:nginx ${USR_DIR}/nginx/html
+    chown -R nginx:nginx "${USR_DIR}"/nginx/html
     create_phpmyadmin_db
 }
 
@@ -3569,8 +3557,8 @@ start_service() {
     systemctl enable csf
 
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        systemctl enable ${PHP_VERSION_2}-php-fpm
-        systemctl start ${PHP_VERSION_2}-php-fpm
+        systemctl enable "${PHP_VERSION_2}"-php-fpm
+        systemctl start "${PHP_VERSION_2}"-php-fpm
     fi
 
     check_service_status
@@ -3621,8 +3609,9 @@ add_menu(){
     chmod 711 menu && chmod 711 users
 
     # Create Alias Command
-    echo 'alias hvn="/var/hostvn/script/menu/menu/hvn" ' >> ~/.bashrc
-    source ~/.bashrc
+    #echo 'alias hvn="/var/hostvn/menu/hvn"' >> ~/.bashrc
+    #source ~/.bashrc
+    mv "${BASH_DIR}"/menu/hvn /usr/bin/hvn && chmod +x /usr/bin/hvn
 }
 
 ############################################
@@ -3648,7 +3637,7 @@ write_info(){
 ############################################
 # Run Script
 ############################################
-run_(){
+main(){
     check_before_install
     prepare_install
     create_bash_dir
@@ -3674,32 +3663,32 @@ run_(){
     write_info
 }
 
-run_
+main
 
 clear
 sleep 1
 
-printf "========================================================================="
+printf "=========================================================================\n"
 printf "                        Cài đặt thành công\n                             "
 printf "Bạn có thể xem lại thông tin cần thiết tại file: %s\n" "${FILE_INFO}"
 printf "          Nếu cần hỗ trợ vui lòng liên hệ %s\n" "${AUTHOR_CONTACT}"
-printf "========================================================================="
+printf "=========================================================================\n"
 echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
 echo "-------------------------------------------------------------------------"
 echo "1.  SSH  Port                  : 8282"
-echo "2.  phpMyAdmin                 : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
-echo "3.  MariaDB Root Password      : ${SQLPASS}"
+printf "2.  phpMyAdmin                 : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
+printf "3.  MariaDB Root Password      : %s\n" "${SQLPASS}"
 echo "-------------------------------------------------------------------------"
-printf "========================================================================"
+printf "========================================================================\n"
 echo "              Lưu lại thông tin dưới đây để truy cập Admin Tool\n         "
 echo "--------------------------------------------------------------------------"
-echo "1.  Link Opcache Dashboard     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
-echo "2.  Link Server Info     : http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
+printf "1.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
+printf "2.  Link Server Info     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
 echo "3.  User                       : admin                                   "
-echo "4.  Password                   : ${ADMIN_TOOL_PWD}"
+printf "4.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
-printf "========================================================================="
-echo "Kiểm tra file ${LOG} để xem có lỗi gì trong quá trình cài đặt hay không.\n "
+printf "=========================================================================\n"
+printf "Kiểm tra file %s để xem có lỗi gì trong quá trình cài đặt hay không.\n " " ${LOG}"
 echo "-------------------------------------------------------------------------"
 
 sleep 3

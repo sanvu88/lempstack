@@ -1,9 +1,9 @@
 #!/bin/bash
 clear
 # shellcheck disable=SC1091
-source /var/hostvn/script/hostvn.conf
+source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 
 ip=$(ip route get 1 | awk '{print $NF;exit}')
 CHOICE=1

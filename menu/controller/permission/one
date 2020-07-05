@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
 
 echo "========================================================================="
 echo "Phân quyền Chown/Chmod"
@@ -14,7 +16,7 @@ action(){
    read -r -p "Xác nhận phân lại quyền cho domain: ${domain}? (y/n): " confirm
 
     if [[ "$confirm" =~ ^([yY])$ ]]; then
-        username=$(grep "username" "/var/hostvn/script/users/.""${domain}"".conf" | cut -f2 -d'=');
+        username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         path="/home/${username}"
         if [[ -d "${path}" ]]; then
             chmod 711 /home/"${username}"

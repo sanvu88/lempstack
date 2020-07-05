@@ -2,7 +2,7 @@
 
 debug_(){
     LOG_FILE=/var/log/hostvn/$(date +%F)_create_domain.log
-    exec 5> ${LOG_FILE}
+    exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
     set -x
@@ -11,13 +11,15 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/function
+source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
-source /var/hostvn/script/hostvn.conf
+source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/menu
+source /var/hostvn/menu/helpers/menu
 # shellcheck disable=SC1091
-source /var/hostvn/script/menu/helpers/php_parameter.conf
+source /var/hostvn/menu/helpers/variable_php
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
 
 echo "-------------------------------------------------------------------------"
 echo "Thêm domain mới"
@@ -25,22 +27,22 @@ echo "-------------------------------------------------------------------------"
 echo ""
 
 check_service(){
-    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    phpfpm="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    mariadb="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    pureftpd="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    nginx_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    phpfpm_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    mariadb_status="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-    if [[ "${nginx}" != 'active' ]] || [[ "${phpfpm}" != 'active' ]] || [[ "${mariadb}" != 'active' || "${pureftpd}" != 'active' ]]; then
+    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd}" != 'pureftpd_status' ]]; then
         clear
         echo "-------------------------------------------------------------------------"
         echo "Có lỗi xảy ra:"
         echo "-------------------------------------------------------------------------"
         echo "Vui lòng kiểm tra lại các service trước khi thêm tên miền:"
         echo "-------------------------------------------------------------------------"
-        echo "Nginx: ${nginx}"
-        echo "PHP-FPM: ${phpfpm}"
-        echo "MariaDB: ${mariadb}"
-        echo "Pure-ftp: ${pureftpd}"
+        printf "Nginx: %s\n" "${nginx_status}"
+        printf "PHP-FPM: %s\n" "${phpfpm_status}"
+        printf "MariaDB: %s\n" "${mariadb_status}"
+        printf "Pure-ftp: %s\n" "${pureftpd_status}"
         echo "-------------------------------------------------------------------------"
         echo
         menu_domain
@@ -50,7 +52,6 @@ check_service(){
 # Set variables
 prepare(){
     read -r -p "Nhập domain (Không có www) [ENTER]: " domain
-    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=${domain//[-._]/}
     user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
@@ -82,7 +83,7 @@ check_domain(){
         menu_domain
     fi
 
-    if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "/var/hostvn/script/users/.${domain}.conf" ]]; then
+    if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "${USER_DIR}/.${domain}.conf" ]]; then
         clear
         echo "Domain đã tồn tại trên VPS."
         echo
@@ -92,7 +93,7 @@ check_domain(){
 
 check_user(){
     RESULT_USER=$(grep -c "^${username}:" /etc/passwd)
-    if [[ ${RESULT_USER} != 0 ]]; then
+    if [[ "${RESULT_USER}" != 0 ]]; then
         echo "User đã tồn tại trên VPS."
         echo ""
         menu_domain
@@ -110,7 +111,7 @@ check_database(){
 
 check_mysql_user(){
     RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$db_user')")"
-    if [ "${RESULT_VARIABLE}" = 1 ]; then
+    if [[ "${RESULT_VARIABLE}" = 1 ]]; then
         echo "Mysql User đã tồn tại trên VPS."
         echo ""
         menu_domain
@@ -336,29 +337,28 @@ set_phpconf_var(){
     listen="/var/run/php-fpm/${username}.sock;"
     slowlog="/var/log/php-fpm/${domain}-slow.log"
     error_log="/var/log/php-fpm/${domain}-error.log"
-    session_path="/var/lib/php/user/${username}/session"
-    wsdl_cache_dir="/var/lib/php/user/${username}/wsdlcache"
-    open_basedir="/home/${username}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/"
+    tmp_dir="/home/${username}/tmp"
+    session_path="/home/${username}/php/session"
+    wsdl_cache_dir="/home/${username}/php/wsdlcache"
+    open_basedir="/home/${username}/:/dev/urandom:/usr/share/php/:/dev/shm"
 
     if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
         listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
-        slowlog="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-slow.log"
-        error_log="/opt/remi/${php2_version}/root/var/log/php-fpm/${domain}-error.log"
-        session_path="/opt/remi/${php2_version}/root/var/lib/php/user/${username}/session"
-        wsdl_cache_dir="/opt/remi/${php2_version}/root/var/lib/php/user/${username}/wsdlcache"
-        open_basedir="/home/${username}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm:/var/lib/php/sessions/:/opt/remi/${php2_version}/root/var/lib/php/sessions/"
+        open_basedir="/home/${username}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
     fi
 
+    mkdir -p "${tmp_dir}"
     mkdir -p "${session_path}"
     mkdir -p "${wsdl_cache_dir}"
-    chown -R "${username}":"${username}" "${session_path}"
-    chown -R "${username}":"${username}" "${wsdl_cache_dir}"
     chmod 700 "${session_path}"
+    chmod 700 "${wsdl_cache_dir}"
+    chown -R "${username}":"${username}" /home/"${username}"
 }
 
 create_phpconfig(){
     set_phpconf_var
+    php_parameter
     cat > "${php_conf_file}" << END
 [${username}]
 listen = ${listen}
@@ -380,12 +380,16 @@ rlimit_files = 65536
 rlimit_core = 0
 ;slowlog = ${slowlog}
 chdir = /
+env[TMP] = ${tmp_dir}
+env[TMPDIR] = ${tmp_dir}
+env[TEMP] = ${tmp_dir}
 php_admin_value[error_log] = ${error_log}
 php_admin_flag[log_errors] = on
 php_value[session.save_handler] = files
 php_value[session.save_path]    = ${session_path}
 php_value[soap.wsdl_cache_dir]  = ${wsdl_cache_dir}
 php_admin_value[disable_functions] = ${dis_functions}
+php_admin_value[upload_tmp_dir] = ${tmp_dir}
 php_admin_value[open_basedir] = ${open_basedir}
 security.limit_extensions = .php
 END
@@ -410,7 +414,7 @@ create_vhost(){
 
     set_docroot
 
-    cat >> "/etc/nginx/conf.d/${domain}.conf" << END
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
 server {
     listen 80;
     server_name ${domain} www.${domain};
@@ -453,7 +457,7 @@ save_user_config(){
         php_mode="2"
     fi
 
-    cat > "/var/hostvn/script/users/.${domain}.conf" <<END
+    cat > "${USER_DIR}/.${domain}.conf" <<END
 [${domain}]
 username=${username}
 user_pass=${user_pass}
@@ -466,7 +470,7 @@ plugin_cache=${plugin_cache}
 php_mode=${php_mode}
 php_version=${php_ver}
 END
-    chmod 600 /var/hostvn/script/users/."${domain}".conf
+    chmod 600 "${USER_DIR}"/."${domain}".conf
 }
 
 restart_service(){
@@ -503,18 +507,18 @@ run(){
 run "$@"
 
 clear
-echo
+echo ""
 echo "Bạn đã thêm domain thành công. Hãy lưu lại thông tin để sử dụng"
 echo "-------------------------------------------------------------------------"
-echo "1.  Domain                : ${domain}"
-echo "2.  DB_Name               : ${db_name}"
-echo "3.  DB_User               : ${db_user}"
-echo "4.  DB_Password           : ${db_pass}"
-echo "5.  Username (FTP)        : ${username}"
-echo "6.  Password (FTP)        : $user_pass"
-echo "7.  FTP Host              : ${server_ip}"
+printf "1.  Domain                : %s\n" "${domain}"
+printf "2.  DB_Name               : %s\n" "${db_name}"
+printf "3.  DB_User               : %s\n" "${db_user}"
+printf "4.  DB_Password           : %s\n" "${db_pass}"
+printf "5.  Username (FTP)        : %s\n" "${username}"
+printf "6.  Password (FTP)        : %s\n" "$user_pass"
+printf "7.  FTP Host              : %s\n" "${IPADDRESS}"
 echo "8.  FTP Port              : 21"
-echo "9.  Public_html           : /home/${username}/${domain}/public_html"
+printf "9.  Public_html           : %s\n" "/home/${username}/${domain}/public_html"
 echo "-------------------------------------------------------------------------"
-echo
+echo ""
 menu_domain
