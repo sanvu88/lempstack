@@ -1,22 +1,19 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
 echo "=========================="
-echo "Kiểm tra thông tin máy chủ"
+echo "Kiem tra thong tin may chu"
 echo "=========================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Trạng thái Webserver"
-    echo "2. Thông tin VPS"
-    echo "3. Thông tin khác"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Trang thai Webserver"
+    echo "2. Thong tin VPS"
+    echo "3. Thong tin khac"
+    echo " ----------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then
@@ -28,6 +25,6 @@ do
         2) info_vps ;;
 		3) info_other ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

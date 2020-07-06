@@ -1,0 +1,62 @@
+#!/bin/bash
+clear
+# shellcheck disable=SC1091
+source /var/hostvn/hostvn.conf
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
+
+CHOICE=1
+
+echo "=================================================="
+echo "       HOSTVN Scripts - Cong cu quan ly VPS       "
+echo "                  HOSTVN.NET                      "
+echo "=================================================="
+printf "IP VPS: %s\n" "${IPADDRESS}"
+printf "phpMyAdmin: %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
+printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port} "
+echo "Phim tat: Ctrl + C hoac nhap 0 đe thoat            "
+echo "---------------------------------------------------"
+
+while [ "${CHOICE}" != "0" ]
+do
+    echo "---------------------------------------------------"
+    echo "1. Quan ly Domain"
+    echo "2. Quan ly Let's Encrypt"
+    echo "3. SSL tra phi"
+    echo "4. Quan ly SSH"
+    echo "5. Quan ly Cache"
+    echo "6. Quan ly Nginx"
+    echo "7. Quan ly PHP"
+    echo "8. Quan ly Database"
+    echo "9. Quan ly CSF Firewall"
+    echo "10. Phan quyen Chown/Chmod"
+    echo "11. Quan ly WordPress"
+    echo "12. Thong tin VPS"
+    echo "13. Xem thong tin tai khoan"
+    echo "--------------------------------------------------"
+    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; menu_domain;;
+        2) clear; menu_letencrypt;;
+        3) clear; menu_ssl;;
+        4) clear; menu_ssh;;
+        5) clear; menu_cache;;
+        6) clear; menu_nginx;;
+        7) clear; menu_php;;
+        8) clear; menu_database;;
+        9) clear; menu_csf;;
+        10) clear; menu_permission;;
+        11) clear; menu_wp;;
+        12) clear; menu_info;;
+        13) clear; account_info ;;
+        0) clear; echo -e "Bye Bye...";;
+        *) clear; echo -e "Lua chon cua ban khong chinh xac. Vui long chon lai.";;
+    esac
+done

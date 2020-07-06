@@ -1,8 +1,11 @@
 #!/bin/bash
 
-printf "=========================================================================\n"
-printf "                             Chinh sua thong so php\n"
-printf "=========================================================================\n"
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+printf "======================\n"
+printf "Chinh sua thong so php\n"
+printf "======================\n"
 
 printf "Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.\n"
 printf "Can suy nghi ky truoc khi thay doi bat ky thong so nao.\n"
@@ -14,8 +17,8 @@ set_variable(){
 }
 
 select_parameter(){
-    echo "Lựa chọn thông số muốn thay đổi"
-    PS3='Nhập lựa chọn của bạn (1-5): '
+    echo "Lua chon thong so muon thay đoi"
+    PS3='Nhap lua chon cua ban (1-5): '
     options=("post_max_size" "upload_max_filesize" "memory_limit" "max_input_time" "max_execution_time")
     select opt in "${options[@]}"
     do
@@ -25,13 +28,13 @@ select_parameter(){
             "memory_limit") parameter="memory_limit"; break;;
             "max_input_time") parameter="max_input_time"; break;;
             "max_execution_time") parameter="max_execution_time"; break;;
-            *) printf "Bạn nhập sai, vui lòng nhập lại.\n" ;;
+            *) printf "${RED}Ban nhap sai, vui long nhap lai.${NC}\n" ;;
         esac
     done
 }
 
 input_parameter(){
-	read -r -p "Nhập vào thông số mới (Ex: 120): " num
+	read -r -p "Nhap vao thong so moi (Ex: 120): " num
 }
 
 remove_ini_bak(){
@@ -67,15 +70,16 @@ restart_php(){
 	fi
 }
 
-main(){
+run(){
 	set_variable
 	select_parameter
 	input_parameter
 	remove_ini_bak
 	change_parameter
 	restart_php
+	printf "${GREEN}Thay đoi thong so PHP thanh cong.${NC}\n"
 }
 
-echo "Thay đổi thông số PHP thành công."
+run
 sleep 2
 menu_php

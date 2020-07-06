@@ -1,22 +1,19 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
 echo "====================="
-echo "Quản lý Let's Encrypt"
+echo "Quan ly Let's Encrypt"
 echo "====================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Thêm Let's Encrypt"
-    echo "2. Kiểm tra thời hạn"
-    echo "3. Gỡ bỏ Let's Encrypt"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Them Let's Encrypt"
+    echo "2. Kiem tra thoi han"
+    echo "3. Go bo Let's Encrypt"
+    echo " ---------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -27,6 +24,6 @@ do
         2) le_check_expired ;;
         3) le_remove ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

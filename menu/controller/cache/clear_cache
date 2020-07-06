@@ -1,22 +1,27 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
+set_var(){
+	redis_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	memcached_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+}
 
-redis_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-memcached_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+clear_cache(){
+	if [[ "${redis_status}" == "active" ]]; then
+		systemctl restart redis
+		printf "${GREEN}Xoá cache thành công.${NC}\n"
+	elif [[ "${memcached_status}" == "active" ]]; then
+		systemctl restart memcached
+		printf "${GREEN}Xoá cache thành công.${NC}\n"
+	else
+		printf "${RED}Bạn chưa bật cache.${NC}\n"
+	fi
+}
 
-if [[ "${redis_status}" == "active" ]]; then
-	systemctl restart redis
-	echo "Xoá cache thành công."
-	sleep 1
-elif [[ "${memcached_status}" == "active" ]]; then
-	systemctl restart memcached
-	echo "Xoá cache thành công."
-	sleep 1
-else
-	echo "Bạn chưa bật cache."
-	sleep 1
-fi
+run(){
+	set_var
+	clear_cache
+}
 
+run
+sleep 2
 menu_cache

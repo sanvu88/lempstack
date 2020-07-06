@@ -1,0 +1,83 @@
+#!/bin/bash
+
+check_service(){
+    nginx_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    phpfpm_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    mariadb_status="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd_status}" != 'active' ]]; then
+        ALERT=$(
+            printf "${RED}Co loi xay ra.${NC}\n"
+            printf "${RED}Vui long kiem tra lai cac service:${NC}\n"
+            echo "-------------------------------------------------"
+            printf "Nginx: %s\n" "${nginx_status}";
+            printf "PHP-FPM: %s\n" "${phpfpm_status}";
+            printf "MariaDB: %s\n" "${mariadb_status}";
+            printf "Pure-ftp: %s\n" "${pureftpd_status}";
+            echo "-------------------------------------------------"
+        )
+    fi
+}
+
+check_domain(){
+    if [ "$domain" = '' ]; then
+        ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
+    elif [[ "$domain" = "${domain/.}" ]]; then
+        ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
+    elif [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "${USER_DIR}/.${domain}.conf" ]]; then
+        ALERT=$(printf "${RED}Domain khong ton tai tren vps.${NC}\n")
+    fi
+}
+
+check_user(){
+    RESULT_USER=$(grep -c "^${username}:" /etc/passwd)
+    if [[ "${RESULT_USER}" != 0 ]]; then
+        ALERT=$(printf "${RED}User da ton tai tren VPS.${NC}\n")
+    fi
+}
+
+check_database(){
+    RESULT_DB=$(mysqlshow "${db_name}" | grep -v Wildcard | grep -o "${db_name}")
+    if [ "$RESULT_DB" == "${db_name}" ]; then
+        ALERT=$(printf "${RED}Database da ton tai tren VPS.${NC}\n")
+    fi
+}
+
+check_mysql_user(){
+    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$db_user')")"
+    if [[ "${RESULT_VARIABLE}" = 1 ]]; then
+        ALERT=$(printf "${RED}Mysql User da ton tai tren VPS.${NC}\n")
+    fi
+}
+
+check_nginx_status(){
+    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+    if [[ "$nginx" != "active" ]]; then
+        ALERT=$(printf "${RED}Nginx hien tai khong hoat đong. Vui long kiem tra lai.${NC}\n")
+    fi
+}
+
+check_dns(){
+    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
+    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${domain})
+    if [[ "${a_record}" != "${IPADDRESS}" || "${www_record}" != "${IPADDRESS}" ]]; then
+        ALERT=$(
+            printf "${RED}Ten mien chua đuoc tro ve VPS hoac DNS chua đuoc cap nhat. Vui long kiem tra lai.${NC}\n"
+            printf "${RED}Neu ban moi tro ten mien vui long đoi 30 phut đen 24 tieng đe DNS cap nhat sau đo thu lai.${NC}\n"
+        )
+    fi
+}
+
+check_le_exists(){
+    if [[ ! -d "/etc/letsencrypt/live/${domain}" ]]; then
+        printf "${RED}Ten mien ${domain} chua duoc cai dat Let's Encrypt.${NC}\n"
+    fi
+}
+
+check_is_wordpress(){
+    if [[ ! -d "/home/$1/$2/public_html/wp-content" ]]; then
+        ALERT=$(printf "${RED}Website nay khong so dong WordPress.${NC}\n")
+    fi
+}

@@ -11,17 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
-echo "Thêm SSL - Let's Encrypt"
-echo "-------------------------------------------------------------------------"
+echo "------------------------"
+echo "Them SSL - Let's Encrypt"
+echo "------------------------"
 echo
 
 set_variable(){
@@ -35,27 +31,10 @@ set_variable(){
     brute=""
 }
 
-check_nginx_status(){
-    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-
-    if [[ "$nginx" != "active" ]]; then
-        clear
-        echo "Nginx hiện tại không hoạt động. Vui lòng kiểm tra lại."
-        echo
-        menu_letencrypt
-    fi
-}
-
-check_dns(){
-    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
-    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${domain})
-    if [[ "${a_record}" != "${server_ip}" || "${www_record}" != "${server_ip}" ]]; then
-        echo "Tên miền chưa được trỏ về VPS hoặc DNS chưa được cập nhật. Vui lòng kiểm tra lại.\n"
-        echo "Nếu bạn mới trỏ tên miền vui lòng đợi 30 phút đến 24 tiếng để DNS cập nhật sau đó thử lại."
-        sleep 2
-        echo
-        menu_letencrypt
-    fi
+validate(){
+    check_nginx_status
+    check_domain
+    check_dns
 }
 
 check_plugins_cache(){
@@ -185,26 +164,27 @@ restart_nginx(){
 }
 
 run(){
-    check_nginx_status
     select_domain menu_letencrypt
-    select_source
+    validate
 
-    if [[ "${SOURCE}" == "wordpress" ]]; then
-        plugin_cache
+    if [[ -z "${ALERT}" ]]; then
+        select_source
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            plugin_cache
+        fi
+
+        set_variable
+        sign_ssl
+        auto_renew
+        create_ssl_vhost
+        restart_nginx
+        printf "${GREEN}Tao SSL Let's Encrypt thanh cong.${NC}\n"
+        sleep 2
+    else
+        printf "${ALERT}"
     fi
-
-    set_variable
-    check_dns
-    check_domain_exists
-    sign_ssl
-    auto_renew
-    create_ssl_vhost
-    restart_nginx
 }
 
 run
-
-echo ""
-echo "Tạo SSL Let's Encrypt thành công"
-sleep 2
 menu_letencrypt

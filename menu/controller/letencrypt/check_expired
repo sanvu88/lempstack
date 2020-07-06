@@ -7,12 +7,12 @@ check_expired(){
 	if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
 	    openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
 	else
-		echo "Tên miền này chưa được cài đặt Let's Encrypt."
+		printf "${RED}Ten mien nay chua đuoc cai dat Let's Encrypt.${NC}\n"
 	fi
 }
 
 
-select_domain menu_letencrypt
+select_domain
 check_expired
 echo ""
 menu_letencrypt

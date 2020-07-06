@@ -1,1 +1,53 @@
 #!/bin/bash
+
+CHOICE=1
+
+echo "=========================="
+echo "Quan ly Database - MariaDB"
+echo "=========================="
+
+while [ "${CHOICE}" != "0" ]
+do
+    echo "1. Danh sach Database"
+    echo "2. Tao Database"
+    echo "3. Doi mat khau DB User"
+    echo "4. Xoa Database"
+    echo "5. Backup Database"
+    echo "6. Khoi phuc Database"
+    echo "7. Xoa backup Database"
+    echo "8. Khoi dong lai MariaDB"
+    echo "9. Tat MariaDB"
+    echo "10. Bat MariaDB"
+    echo " ----------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) db_list ;;
+        2) db_create ;;
+        3) db_change_pass ;;
+		4) db_destroy ;;
+        5) echo "Chua co gi" ;;
+        6) echo "Chua co gi" ;;
+		7) echo "Chua co gi" ;;
+        8)
+			systemctl restart mariadb
+			menu_database
+        	;;
+    	9)
+			systemctl stop mariadb
+			systemctl disable mariadb
+			menu_database
+        	;;
+    	10)
+			systemctl start mariadb
+			systemctl enable mariadb
+			menu_database
+        	;;
+        0) menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

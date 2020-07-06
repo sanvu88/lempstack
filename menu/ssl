@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
 echo "==================="
-echo "Quản lý SSL trả phí"
+echo "Quan ly SSL tra phi"
 echo "==================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Cài đặt SSL"
-    echo "2. Gỡ bỏ SSL"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Cai đat SSL"
+    echo "2. Go bo SSL"
+    echo " -------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -25,6 +22,6 @@ do
         1) ssl_create ;;
         2) ssl_remove ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

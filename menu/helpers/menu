@@ -1,7 +1,7 @@
 #!/bin/bash
 
 menu_primary(){
-    hvn
+    hostvn
 }
 
 menu_domain(){
@@ -146,4 +146,24 @@ wp_optimize_db(){
 
 wp_backup(){
 	. /var/hostvn/menu/controller/wordpress/wp_backup
+}
+
+account_info(){
+	. /var/hostvn/menu/controller/info/account_info
+}
+
+db_list(){
+	. /var/hostvn/menu/controller/database/list
+}
+
+db_create(){
+	. /var/hostvn/menu/controller/database/create
+}
+
+db_change_pass(){
+	. /var/hostvn/menu/controller/database/change_pass
+}
+
+db_destroy(){
+	. /var/hostvn/menu/controller/database/destroy_db
 }

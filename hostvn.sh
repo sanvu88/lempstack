@@ -41,35 +41,35 @@ AUTHOR_CONTACT="kythuat@hostvn.net"
 AUTHOR_WEBSITE="https://hostvn.net"
 
 # Set Lang
-ROOT_ERR="Bạn cần chạy script với user root. Chạy lệnh \"sudo su\" để có quyền root!"
-CANCEL_INSTALL="Huỷ cài đặt..."
-OS_WROG="Script chỉ hoạt động trên \"CentOS 7\"!"
-RAM_NOT_ENOUGH="Cảnh báo: Dung lượng RAM quá thấp để cài Script. (Ít nhất 512MB)"
-OTHER_CP_EXISTS="Máy chủ của bạn đã cài đặt Control Panel khác. Vui lòng rebuild để cài đặt Script"
-ENTER_OPTION="Nhập vào lựa chọn của bạn [1-6]: "
-SELECT_PHP="Hãy lựa chọn phiên bản PHP muốn cài đặt:"
-WRONG_PHP_OPTION="Lựa chọn của bạn không chính xác, hệ thống sẽ cài đặt PHP 7.4"
-SELECT_INST_PHP_2="Bạn có muốn cài đặt phiên bản PHP thứ hai không - Multiple PHP ?"
-ENTER_OPTION_PHP_2="Nhập vào lựa chọn của bạn [1-2]: "
-WRONG_PHP_SELECT_2="Bạn nhập sai. Hệ thống sẽ cài một phiên bản PHP."
+ROOT_ERR="Ban can chay script voi user root. Chay lenh \"sudo su\" de co quyen root!"
+CANCEL_INSTALL="Huy cai dat..."
+OS_WROG="Script chi hoat dong tren \"CentOS 7\"!"
+RAM_NOT_ENOUGH="Canh bao: Dung luong RAM qua thap de cai Script. (it nhat 512MB)"
+OTHER_CP_EXISTS="May chu cua ban da cai dat Control Panel khac. Vui long rebuild de cai dat Script"
+ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
+SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
+WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat PHP 7.4"
+SELECT_INST_PHP_2="Ban co muon cai dat phien ban PHP thu hai khong - Multiple PHP ?"
+ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
+WRONG_PHP_SELECT_2="Ban nhap sai. He thong se cai mot phien ban PHP."
 WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6"
-SELECT_PHP_2="Lựa chọn phiên bản PHP thứ hai bạn muốn sử dụng:"
-INST_MARIADB_ERR="Cài đặt MariaDB thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
-INST_NGINX_ERR="Cài đặt Nginx thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
-INST_PHP_ERR="Cài đặt PHP thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
-INST_PHP_ERR_2="Cài đặt PHP 2 thất bại, vui lòng liên hệ ${AUTHOR_CONTACT} để được hỗ trợ."
-INST_IGBINARY_ERR="Cài đặt Igbinary không thành công. Vui lòng cài đặt lại: Igbinary, Php memcached ext, Phpredis."
-INST_MEMEXT_ERR="Cài đặt Php memcached extension không thành công. Vui lòng cài đặt lại."
-INST_PHPREDIS_ERR="Cài đặt Phpredis không thành công. Vui lòng cài đặt lại."
-INST_IGBINARY_ERR_2="Cài đặt Igbinary cho PHP 2 không thành công. Vui lòng cài đặt lại: Igbinary, Php memcached ext, Phpredis."
-INST_MEMEXT_ERR_2="Cài đặt Php memcached extension cho PHP 2 không thành công. Vui lòng cài đặt lại."
-INST_PHPREDIS_ERR_2="Cài đặt Phpredis cho PHP 2 không thành công. Vui lòng cài đặt lại."
-NGINX_NOT_WORKING="Nginx không hoạt động."
-MARIADB_NOT_WORKING="MariaDB không hoạt động."
-PUREFTP_NOT_WORKING="Pure-ftp không hoạt động."
-PHP_NOT_WORKING="PHP-FPM không hoạt động."
-LFD_NOT_WORKING="CSF không hoạt động."
-LFD_NOT_WORKING="LFD không hoạt động."
+SELECT_PHP_2="Lua chon phien ban PHP thu hai ban muon su dung:"
+INST_MARIADB_ERR="Cai dtt MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
+INST_NGINX_ERR="Cai dat Nginx that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
+INST_PHP_ERR="Cai dat PHP that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
+INST_PHP_ERR_2="Cai dat PHP 2 that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro"
+INST_IGBINARY_ERR="Cai dat Igbinary that bai. Vui long cai dat lai: Igbinary, Php memcached ext, Phpredis."
+INST_MEMEXT_ERR="Cai dat Php memcached extension khong thanh cong. Vui long cai dat lai."
+INST_PHPREDIS_ERR="Cai dat  Phpredis khong thanh cong. Vui long cai dat lai."
+INST_IGBINARY_ERR_2="Cai dat Igbinary cho PHP 2 khong thanh cong. Vui long cai dat lai: Igbinary, Php memcached ext, Phpredis."
+INST_MEMEXT_ERR_2="Cai dat Php memcached extension cho PHP 2 khong thanh cong. Vui long cai dat lai."
+INST_PHPREDIS_ERR_2="Cai dat Phpredis cho PHP 2 khong thanh cong. Vui long cai dat lai."
+NGINX_NOT_WORKING="Nginx khong hoat dong."
+MARIADB_NOT_WORKING="MariaDB khong hoat dong."
+PUREFTP_NOT_WORKING="Pure-ftp khong hoat dong."
+PHP_NOT_WORKING="PHP-FPM khong hoat dong."
+LFD_NOT_WORKING="CSF khong hoat dong."
+LFD_NOT_WORKING="LFD khong hoat dong."
 LOGIN_NOTI="Cam on ban da su dung dich vu cua ${AUTHOR}. Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
 
 # Service Version
@@ -194,14 +194,14 @@ install_service(){
 set_email(){
     while true
     do
-        read -r -p "Nhập vào email của bạn: " ADMIN_EMAIL
+        read -r -p "Nhap vao email cua ban: " ADMIN_EMAIL
         echo
         if [[ "${ADMIN_EMAIL}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
         then
-            echo "Email của bạn là: ${ADMIN_EMAIL}."
+            echo "Email cua ban la: ${ADMIN_EMAIL}."
             break
         else
-            echo "Email bạn nhập không chính xác vui lòng nhập lại."
+            echo "Email ban nhap khong chinh xac vui long nhap lai."
         fi
     done
 }
@@ -410,7 +410,7 @@ install_php_2(){
 check_duplicate_php(){
     if [[ "$PHP_VERSION_2" == "$PHP_VERSION" ]]; then
         MULTI_PHP="n"
-        echo "Phiên bản PHP thứ 2 trùng với phiên bản mặc định. Hệ thống sẽ cài đặt một phiên bản PHP."
+        echo "Phien ban PHP thứ 2 trung voi phien ban mac dinh. He thong se cai dat mot phien ban PHP."
     fi
 }
 
@@ -3638,9 +3638,9 @@ add_menu(){
     chmod 711 menu && chmod 711 users
 
     # Create Alias Command
-    #echo "alias hvn='/var/hostvn/menu/hvn'" >> ~/.bashrc
+    #echo "alias hostvn='/var/hostvn/menu/hostvn'" >> ~/.bashrc
     #source ~/.bashrc
-    mv "${BASH_DIR}"/menu/hvn /usr/bin/hvn && chmod +x /usr/bin/hvn
+    mv "${BASH_DIR}"/menu/hostvn /usr/bin/hostvn && chmod +x /usr/bin/hostvn
 }
 
 ############################################
@@ -3699,12 +3699,12 @@ clear
 sleep 1
 
 printf "=========================================================================\n"
-echo   "                        Cài đặt thành công                                 "
-printf "                 File lưu thông tin: %s\n" "${FILE_INFO}"
-printf "          Nếu cần hỗ trợ vui lòng liên hệ %s\n" "${AUTHOR_CONTACT}"
+echo   "                        Cai dat thanh cong                                 "
+printf "                 File luu thong tin: %s\n" "${FILE_INFO}"
+printf "          Neu can ho tro vui long lien he %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
-echo "              Lưu lại thông tin dưới đây để truy cập SSH và phpMyAdmin   "
-echo "-------------------------------------------------------------------------"
+echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
+echo "-----------------------------------------------------------------------------"
 echo   "1.  SSH  Port                  : 8282"
 printf "2.  phpMyAdmin                 : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 printf "2.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
@@ -3714,8 +3714,8 @@ echo   "5.  User                       : admin                                  
 printf "6.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
 echo "-------------------------------------------------------------------------"
 printf "=========================================================================\n"
-printf "Kiểm tra file %s để xem có lỗi gì trong quá trình cài đặt hay không.\n " " ${LOG}"
+printf "Kiem tra file %s de xem co loi gi trong qua trình cai dat hay khong.\n " " ${LOG}"
 echo "-------------------------------------------------------------------------"
 
 sleep 3
-#shutdown -r now
+shutdown -r now

@@ -1,12 +1,9 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
 echo "============="
-echo "Quản lý Cache"
+echo "Quan ly Cache"
 echo "============="
 echo
 
@@ -15,8 +12,8 @@ do
     echo "1. Memcached"
     echo "2. Redis"
     echo "2. Xoá Cache"
-    echo " ----------------------------------------------- "
-    read -r -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo " -----------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -27,6 +24,6 @@ do
         2) redis_c ;;
         3) clear_cache ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

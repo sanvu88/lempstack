@@ -4,15 +4,21 @@
 source /var/hostvn/menu/helpers/variable_common
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/menu
 
 check_version(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	#check_is_wordpress
 	cd_dir /home/"${username}"/"${domain}"/public_html/
-	printf "Phiên bản WordPress đang sử dụng: %s\n" "$(wp core version --allow-root)"
+	printf "${GREEN}Phien ban WordPress dang su dung: %s ${NC}\n" "$(wp core version --allow-root)"
 }
 
-select_domain menu_wp
-check_version
+run(){
+	select_domain
+	check_version
+}
+
+run
 echo ""
+sleep 2
 menu_wp

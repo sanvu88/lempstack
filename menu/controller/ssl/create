@@ -11,17 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
-echo "Cài đặt SSL trả phí"
-echo "-------------------------------------------------------------------------"
+echo "-------------------"
+echo "Cai dat SSL tra phi"
+echo "-------------------"
 echo
 
 set_variable(){
@@ -33,17 +29,6 @@ set_variable(){
     cache="include /etc/nginx/extra/staticfiles.conf;"
     wp_secure=""
     brute=""
-}
-
-check_nginx_status(){
-    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-
-    if [[ "$nginx" != "active" ]]; then
-        clear
-        echo "Nginx hiện tại không hoạt động. Vui lòng kiểm tra lại."
-        echo
-        menu_letencrypt
-    fi
 }
 
 check_plugins_cache(){
@@ -93,18 +78,22 @@ remove_letencrypt(){
 }
 
 create_crt(){
-    echo "Để lưu file hãy bấm CTRL + X và nhấn ENTER sau đó bấm tiếp CTRL + O"
-    echo "Đang mở trình soạn thảo ...."
+    echo "De lưu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
+    echo "Dang mo trinh soan thao ...."
     sleep 3
-    mkdir -p /etc/nginx/ssl/"${domain}"
+    if [[ ! -d "/etc/nginx/ssl/${domain}" ]]; then
+        mkdir -p /etc/nginx/ssl/"${domain}"
+    fi
     nano /etc/nginx/ssl/"${domain}"/fullchain.pem
 }
 
 create_private_key(){
-	echo "Để lưu file hãy bấm CTRL + X và nhấn ENTER sau đó bấm tiếp CTRL + O"
-    echo "Đang mở trình soạn thảo ...."
+	echo "De lưu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
+    echo "Dang mo trinh soan thao ...."
     sleep 3
-    mkdir -p /etc/nginx/ssl/"${domain}"
+    if [[ ! -d "/etc/nginx/ssl/${domain}" ]]; then
+        mkdir -p /etc/nginx/ssl/"${domain}"
+    fi
     nano /etc/nginx/ssl/"${domain}"/privkey.pem
 }
 
@@ -176,27 +165,29 @@ restart_nginx(){
 
 run(){
     check_nginx_status
-    select_domain menu_ssl
-    select_source
+    select_domain
+    check_domain
 
-    if [[ "${SOURCE}" == "wordpress" ]]; then
-        plugin_cache
+    if [[ -z "${ALERT}" ]]; then
+        select_source
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            plugin_cache
+        fi
+
+        set_variable
+        remove_letencrypt
+        create_crt
+        create_private_key
+        create_ssl_vhost
+        restart_nginx
+        echo ""
+        printf "${GREEN}Cau hinh SSL thanh cong.${NC}\n"
+    else
+        printf "${ALERT}"
     fi
-
-    set_variable
-    check_domain_exists
-    remove_letencrypt
-
-    create_crt
-	create_private_key
-
-    create_ssl_vhost
-    restart_nginx
 }
 
 run
-
-echo ""
-echo "Cấu hình SSL thành công"
 sleep 2
 menu_ssl

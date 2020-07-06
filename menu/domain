@@ -1,22 +1,19 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
-echo "=============="
-echo "Quản lý Domain"
-echo "=============="
-echo
+echo "==================="
+echo "   Quan ly Domain  "
+echo "==================="
+echo ""
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Danh sách Domain"
-    echo "2. Thêm Domain"
-    echo "3. Xóa Domain"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Danh sach Domain"
+    echo "2. Them Domain"
+    echo "3. Xoa Domain"
+    echo " ------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -27,6 +24,6 @@ do
         2) domain_create ;;
         3) domain_destroy ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

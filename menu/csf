@@ -1,33 +1,27 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
-IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 
-echo "=================================================="
-echo "Quản lý CSF Firewall"
-echo "=================================================="
-printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port}"
-echo "--------------------------------------------------"
+echo "============================="
+echo "    Quan ly CSF Firewall     "
+echo "============================="
+printf "CSF GUI: %s\n" "${RED}https://${IPADDRESS}:${csf_port}${NC}"
+echo "-----------------------------"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Kiểm tra Block IP"
+    echo "1. Kiem tra Block IP"
     echo "2. Block IP"
-    echo "3. Gỡ Block IP"
-    echo "4. Gỡ Block toàn bộ IP"
+    echo "3. Go Block IP"
+    echo "4. Go Block toan bo IP"
     echo "5. Allow IP"
-    echo "6. Cấp quyền truy cập CSF GUI"
+    echo "6. Cap quyen truy cap CSF GUI"
     echo "7. Restart CSF"
-    echo "8. Tắt CSF"
-    echo "9. Bật CSF"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "8. Tat CSF"
+    echo "9. Bat CSF"
+    echo " ----------------------------"
+    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -35,19 +29,19 @@ do
     fi
     case ${CHOICE} in
         1)
-            read -r -p "Nhập vào IP muốn kiểm tra: " ip
+            read -r -p "Nhap vao IP muon kiem tra: " ip
             csf -g "${ip}"
             echo ""
             menu_csf
             ;;
         2)
-            read -r -p "Nhập vào IP muốn block: " ip
+            read -r -p "Nhap vao IP muon block: " ip
             csf -d "${ip}"
             echo ""
             menu_csf
             ;;
         3)
-            read -r -p "Nhập vào IP muốn gỡ block: " ip
+            read -r -p "Nhap vao IP muon go block: " ip
             csf -dr "${ip}"
             echo ""
             menu_csf
@@ -61,13 +55,13 @@ do
             menu_csf
             ;;
         5)
-            read -r -p "Nhập vào IP muốn allow: " ip
+            read -r -p "Nhap vao IP muon allow: " ip
             csf -a "${ip}"
             echo ""
             menu_csf
             ;;
         6)
-            read -r -p "Nhập vào IP muốn cấp quyền truy cập CSF GUI: " ip
+            read -r -p "Nhap vao IP muon cap quyen truy cap CSF GUI: " ip
             echo "${ip}" >>  /etc/csf/ui/ui.allow
             csf -x
             csf -e
@@ -101,6 +95,6 @@ do
             menu_csf
             ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

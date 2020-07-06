@@ -37,7 +37,7 @@ convert_to_mb(){
 select_domain(){
     domain=""
     if [ "$(ls -At ${USER_DIR})" ]; then
-        echo "Danh sách domain"
+        echo "Danh sach domain"
         selects=()
         cd_dir "${USER_DIR}"
         for entry in .*.conf; do
@@ -46,48 +46,22 @@ select_domain(){
                 selects+=(${domain})
             fi
         done
-        PS3="Nhập lựa chọn của bạn [0=Exit]: "
+        PS3="Nhap lua chon cua ban [0=Exit]: "
         select select in "${selects[@]}"
         do
             domain=$select
             break
         done
     else
-    clear
-    echo "Không có Domain nào tồn tại trên hệ thống"
-    "$1"
-    fi
-}
-
-check_domain_exists(){
-    if [ "${domain}" = '' ]; then
-        clear
-        echo "Bạn chưa chọn Domain."
-        echo
-        menu_primary
-    fi
-
-    if [ "${domain}" = "${domain/.}" ]; then
-        clear
-        echo "Domain bạn chọn không đúng định dạng."
-        echo
-        menu_primary
-    fi
-
-    path="${USER_DIR}/.${domain}.conf"
-    if [[ ! -f "${path}" ]]; then
-        clear
-        echo "Domain không tồn tại trên VPS."
-        echo
-        menu_primary
+        ALERT=$(printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n")
     fi
 }
 
 # Select Source
 select_source(){
     SOURCE="Other"
-    echo "Lựa chọn mã nguồn để tạo Rewrite Url"
-    PS3='Nhập lựa chọn của bạn (1-14): '
+    echo "Lua chon ma nguon đe tao Rewrite Url"
+    PS3='Nhap lua chon cua ban (1-14): '
     options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
     select opt in "${options[@]}"
     do
@@ -106,7 +80,7 @@ select_source(){
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
-            *) printf "Bạn nhập sai, hệ thống sẽ tạo Rewrite Url mặc định.\n"; break;;
+            *) printf "${RED}Ban nhap sai, he thong se tao Rewrite Url mac dinh.${NC}\n"; break;;
         esac
     done
 }

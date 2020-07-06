@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-
 show_info(){
 	printf "PHP default version     : %s\n" "$(rpm -qa php-fpm | cut -f3 -d'-')"
 	if [[ "${php2_release}" == "yes" ]]; then

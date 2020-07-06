@@ -2,25 +2,22 @@
 
 CHOICE=1
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
-echo "============="
-echo "Quản lý Nginx"
-echo "============="
+echo "============================="
+echo "        Quan ly Nginx        "
+echo "============================="
 printf "%s\n" "$(nginx -v)"
-echo "-------------------------------------------------------------------------"
+echo "-----------------------------"
 echo "Trạng thái: $(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-echo "-------------------------------------------------------------------------"
+echo "-----------------------------"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Khởi động lại nginx"
-    echo "2. Kiểm tra cấu hình Nginx"
-    echo "3. Cập nhật Nginx"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Khoi đong lai nginx"
+    echo "2. Kiem tra cau hinh Nginx"
+    echo "3. Cap nhat Nginx"
+    echo " -------------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then
@@ -30,7 +27,7 @@ do
     case ${CHOICE} in
         1)
             clear
-            echo "Đang khởi động lại..."
+            echo "Đang khoi đong lai..."
             sleep 1
             systemctl restart nginx
             sleep 2
@@ -51,6 +48,6 @@ do
             menu_nginx
             ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

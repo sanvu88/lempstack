@@ -11,17 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
+echo "----------"
 echo "Xóa Domain"
-echo "-------------------------------------------------------------------------"
+echo "----------"
 
 set_var(){
 	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -31,6 +27,11 @@ set_var(){
     vhost_config="${VHOST_DIR}/${domain}.conf"
     php_config_path="/etc/php-fpm.d/${domain}.conf"
 }
+
+validate(){
+    check_domain
+}
+
 
 destroy_user(){
 	userdel -f -r "$1"
@@ -59,10 +60,8 @@ remove_path(){
 }
 
 confirm(){
-	read -r -p "Bạn thực sự muốn xoá ${domain}? "
-
-	echo "Bạn thực sự muốn xoá ${domain}?  "
-    PS3="Nhập vào lựa chọn của bạn [1-3]"
+	echo "Ban thuc su muon xoa ${domain}? "
+    PS3="Nhap vao lua chon cua ban [1-3]"
     options=("Yes" "No" "Cancel")
     select opt in "${options[@]}"
     do
@@ -70,12 +69,12 @@ confirm(){
             "Yes") confirm_destroy_domain="y"; break;;
             "No") confirm_destroy_domain="N"; break;;
 			"Cancel") menu_domain; break;;
-            *) printf "Bạn nhập sai, vui lòng nhập lại\n";;
+            *) printf "Ban nhap sai, vui long nhap lai\n";;
         esac
     done
 
-	echo "Bạn có muốn xóa database ${db_name}? (y/n): "
-    PS3="Nhập vào lựa chọn của bạn [1-3]"
+	echo "Ban co muon xoa database ${db_name}? (y/n): "
+    PS3="Nhap vao lua chon cua ban [1-3]"
     options=("Yes" "No" "Cancel")
     select opt in "${options[@]}"
     do
@@ -83,34 +82,37 @@ confirm(){
             "Yes") confirm_destroy_db="y"; break;;
             "No") confirm_destroy_db="N"; break;;
 			"Cancel") menu_domain; break;;
-            *) printf "Bạn nhập sai, vui lòng nhập lại\n";;
+            *) printf "Ban nhap sai, vui long nhap lai\n";;
         esac
     done
 }
 
 run(){
 	select_domain menu_domain
-	check_domain_exists
-	set_var
-	confirm
+	validate
+    if [[ -z "${ALERT}" ]]; then
+        set_var
+        confirm
 
-	if [[ "${confirm_destroy_domain}" =~ ^([nN])$ ]]; then
-		echo "Bạn đã chọn huỷ xoá domain. Bye bye"
-		menu_domain
-	fi
+        if [[ "${confirm_destroy_domain}" =~ ^([nN])$ ]]; then
+            echo "Ban đa chon huy xoa domain. Bye bye"
+            menu_domain
+        fi
 
-	if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
-		destroy_db
-	fi
+        if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
+            destroy_db
+        fi
 
-	destroy_user "$username"
-	destroy_ftp_user "$username"
-	remove_path
-	restart_service
+        destroy_user "$username"
+        destroy_ftp_user "$username"
+        remove_path
+        restart_service
+        printf "${GREEN}Xoa Domain thanh cong.${NC}\n"
+    else
+        printf "${ALERT}"
+    fi
 }
 
 run
 clear
-echo "Xóa Domain thành công."
-echo
 menu_domain

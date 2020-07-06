@@ -1,34 +1,23 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
-# check_is_wordpress(){
-#     if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
-#         echo "Website này không sử dụng WordPress"
-#         sleep 1
-#         menu_wp
-#     fi
-# }
-
-echo "================="
-echo "Quản lý WordPress"
-echo "================="
+echo "========================================="
+echo "            Quan ly WordPress            "
+echo "========================================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Kiểm tra phiên bản WordPress"
-    echo "2. Cập nhật WordPress"
-    echo "3. Cập nhật plugins (Trừ plugins trả phí)"
-    echo "4. Tối ưu database"
+    echo "1. Kiem tra phien ban WordPress"
+    echo "2. Cap nhat phien ban WordPress"
+    echo "3. Cap nhat plugins (Tru plugins tra phi)"
+    echo "4. Toi ưu database"
     echo "5. Repair database"
-    echo "6. Sao lưu dữ liệu"
-    echo "7. Khôi phục dữ liệu"
-    echo " ----------------------------------------------- "
-    read -r -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "6. Sao lưu du lieu"
+    echo "7. Khoi phuc du lieu"
+    echo " ----------------------------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -36,13 +25,13 @@ do
     fi
     case ${CHOICE} in
         1) wp_version ;;
-        2) update_wp ;;
+        2) wp_update ;;
 		3) wp_update_plugins ;;
 		4) wp_optimize_db ;;
 		5) wp_repair_db ;;
 		6) wp_backup ;;
-		7) echo "Đang nghĩ..."; sleep 2; menu_wp ;;
+		7) echo "Dang nghi..."; sleep 2; menu_wp ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

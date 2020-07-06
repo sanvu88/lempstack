@@ -1,39 +1,48 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
 set_var(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-backup_alert(){
-	read -r -p "Bạn có muốn backup dữ liệu trước khi update không ? (y/n) " backup_confirm
+backup_confirm(){
+	read -r -p "Ban co muon backup du lieu truoc khi toi uu khong? (y/n) " promt_backup
 }
 
 backup(){
-	backup_alert
-	if [[ "${backup_confirm}" == "y" || "${backup_confirm}" == "Y" ]]; then
-		db_name="$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
-		cd_dir /home/"${username}"/"${domain}"/public_html
-		wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
-	else
-		echo "Bạn đã chọn không backup. Điều này là không an toàn. Hệ thống sẽ huỷ cập nhật WordPress."
-		menu_wp
-	fi
+	cd_dir /home/"${username}"/"${domain}"/public_html
+	wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
 }
 
 optimize_db(){
 	wp db optimize --allow-root
-	echo "Tối ưu database thành công."
+	printf "${GREEN}Toi uu database thanh cong.${NC}\n"
 }
 
-select_domain menu_wp
-set_var
-backup
-optimize_db
+run(){
+	backup_confirm
+
+	if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
+		select_domain
+		set_var
+		check_is_wordpress ${username} ${domain}
+		if [[ -z "${ALERT}" ]]; then
+			backup
+			optimize_db
+		else
+			printf "${ALERT}"
+		fi
+	else
+		printf "${RED}Ban da chon khong backup. Dieu nay khong an toan.\n He thong se huy toi uu Database.${NC}\n"
+	fi
+}
+
+run
 echo ""
-sleep 1
+sleep 2
 menu_wp

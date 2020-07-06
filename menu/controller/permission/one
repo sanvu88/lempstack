@@ -1,46 +1,45 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "========================================================================="
-echo "Phân quyền Chown/Chmod"
-echo "========================================================================="
+echo "======================"
+echo "Phan quyen Chown/Chmod"
+echo "======================"
 echo
 
 action(){
-   read -r -p "Xác nhận phân lại quyền cho domain: ${domain}? (y/n): " confirm
-
+    read -r -p "Xac nhan phan quyen cho ten mien: ${domain}? (y/n): " confirm
     if [[ "$confirm" =~ ^([yY])$ ]]; then
         username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         path="/home/${username}"
-        if [[ -d "${path}" ]]; then
-            chmod 711 /home/"${username}"
-            chmod 711 /home/"${username}"/"${domain}"
-            chmod 711 /home/"${username}"/"${domain}"/logs
-            chmod 755 /home/"${username}"/"${domain}"/public_html
-            chown -R "${username}":"${username}" /home/"${username}"
-            echo "-------------------------------------------------------------------------"
-            echo "Đã phân lại quyền cho domain: ${domain}"
-            sleep 2
-            echo "Đang quay lại menu..."
-            sleep 2
-            menu_primary
-        else
-            echo
-            echo "Domain không tồn tại trên VPS"
-            menu_permission
-        fi
+        chmod 711 /home/"${username}"
+        chmod 711 /home/"${username}"/"${domain}"
+        chmod 711 /home/"${username}"/"${domain}"/logs
+        chmod 755 /home/"${username}"/"${domain}"/public_html
+        chown -R "${username}":"${username}" /home/"${username}"
+        echo ""
+        printf "${GREEN}Da phan quyen cho website: ${domain}.${NC}\n"
+        echo ""
     else
-        echo
-        menu_permission
+        printf "${RED}Huy phan quyen.${NC}\n"
+    fi
+
+}
+
+run(){
+    confirm
+    select_domain
+    check_domain
+
+    if [[ -z "${ALERT}" ]]; then
+        action
+    else
+        printf "${ALERT}"
     fi
 }
 
-select_domain menu_permission
-check_domain_exists
-action
+run
+menu_permission

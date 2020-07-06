@@ -1,0 +1,54 @@
+#!/bin/bash
+
+
+echo "------------------"
+echo "Doi Password Mysql"
+echo "------------------"
+echo ""
+
+input(){
+	read -p "Nhap Mysql user: " db_user
+	read -p "Nhập DB_Password: " password
+	read -p "Xac nhan thay doi password cho user ${db_user}? (y/n): " confirm
+}
+
+validate(){
+	if [[ "${db_user}" = "" ]]; then
+		ALERT=$(printf "${RED}Mysql user khong duoc de trong.${NC}\n")
+	fi
+
+	if [[ "${password}" = "" ]]; then
+		ALERT=$(printf "${RED}Mat khau khong duoc de trong.${NC}\n")
+	fi
+
+	if [ "${db_user}" = "admin" ]; then
+	    ALERT=$(printf "${RED}Ban khong duoc phep thay doi mat khau tai khoan admin.${NC}\n")
+	fi
+}
+
+
+change_pass(){
+	if [[ "${confirm}" =~ ^([yY])$ ]]; then
+		printf "${GREEN}Dang thay đoi password...${NC}\n"
+		sleep 1
+	    mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
+	    clear
+	    printf "${GREEN}Thay doi mat khau thanh cong.${NC}\n"
+    else
+    	printf "${GREEN}Ban da huy thay doi mat khau.${NC}\n"
+	fi
+}
+
+run(){
+	input
+	validate
+
+	if [[ -z "${ALERT}" ]]; then
+		change_pass
+	else
+		printf "${ALERT}"
+	fi
+}
+
+run
+menu_database

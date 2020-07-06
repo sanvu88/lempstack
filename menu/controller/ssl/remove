@@ -11,17 +11,13 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
-echo "Gỡ bỏ SSL"
-echo "-------------------------------------------------------------------------"
+echo "-----------------"
+echo "Go bo SSL tra phi"
+echo "-----------------"
 echo
 
 set_variable(){
@@ -126,22 +122,26 @@ restart_nginx(){
 
 run(){
     check_nginx_status
-    select_domain menu_ssl
-    check_domain_exists
-    select_source
+    select_domain
+    check_domain
 
-    if [[ "${SOURCE}" == "wordpress" ]]; then
-        plugin_cache
+    if [[ -z "${ALERT}" ]]; then
+        select_source
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            plugin_cache
+        fi
+
+        set_variable
+        create_vhost
+        restart_nginx
+        echo ""
+        printf "${GREEN}Go bo SSL thanh cong.${NC}\n"
+    else
+        printf "${ALERT}"
     fi
-
-    set_variable
-    create_vhost
-    restart_nginx
 }
 
 run
-
-echo ""
-echo "Gỡ bỏ SSL thành công"
 sleep 2
 menu_ssl

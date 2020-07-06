@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
 echo "======================"
-echo "Phân quyền Chown/Chmod"
+echo "Phan quyen Chown/Chmod"
 echo "======================"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Phân quyền website"
-    echo "2. Phân quyền toàn bộ website"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Phan quyen website        "
+    echo "2. Phan quyen toan bo website"
+    echo " ----------------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then
@@ -26,6 +23,6 @@ do
         1) permission_one ;;
         2) permission_all ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

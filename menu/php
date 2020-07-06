@@ -1,25 +1,20 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
 CHOICE=1
 
-echo "==========="
-echo "Quản lý PHP"
-echo "==========="
+echo "=================================="
+echo "           Quan ly PHP            "
+echo "=================================="
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Kiểm tra phiên bản PHP mặc định"
-    echo "2. Cập nhật phiên bản PHP mặc định"
-    echo "3. Khởi động lại PHP"
-    echo "4. Cấu hình thông số PHP"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Kiem tra phien ban PHP mac dinh"
+    echo "2. Cap nhat phien ban PHP mac dinh"
+    echo "3. Khoi đong lai PHP              "
+    echo "4. Cau hinh thong so PHP          "
+    echo " ---------------------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1
@@ -37,6 +32,6 @@ do
             ;;
         4) php_setting ;;
         0) menu_primary ;;
-        *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

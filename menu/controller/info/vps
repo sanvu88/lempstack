@@ -32,4 +32,5 @@ show_info(){
 }
 
 show_info
+sleep 2
 menu_info

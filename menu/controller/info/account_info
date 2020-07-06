@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set_var(){
+	ssh_port=$(grep "ssh_port" "${FILE_INFO}" | cut -f2 -d'=')
+	admin_port=$(grep "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+	csf_port=$(grep "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+	admin_pwd=$(grep "admin_pwd" "${FILE_INFO}" | cut -f2 -d'=')
+}
+
+show_info(){
+	printf "SSH PORT         : %s\n" "${ssh_port}"
+	printf "Admin PORT       : %s\n"  "${admin_port}"
+	printf "CSF GUI PORT     : %s\n"  "${csf_port}"
+	printf "Mat khau Admin   : %s\n"  "${admin_pwd}"
+	printf "phpMyAdmin       : %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
+	printf "Opcache Dashboard: %s\n" "http://${IPADDRESS}:${admin_port}/opcache"
+	printf "Server Info      : %s\n" "http://${IPADDRESS}:${admin_port}/serverinfo"
+	printf "Link CSF GUI     : %s\n" "https://${IPADDRESS}:${csf_port}"
+}
+
+show_info
+sleep 3
+menu_primary

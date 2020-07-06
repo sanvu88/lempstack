@@ -10,54 +10,25 @@ debug_(){
 
 debug_
 
-
-# shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_php
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
-echo "Thêm domain mới"
-echo "-------------------------------------------------------------------------"
+echo "---------------"
+echo "Them domain moi"
+echo "---------------"
 echo ""
 
-check_service(){
-    nginx_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    phpfpm_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    mariadb_status="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-
-    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd_status}" != 'active' ]]; then
-        clear
-        echo "-------------------------------------------------------------------------"
-        echo "Có lỗi xảy ra:"
-        echo "-------------------------------------------------------------------------"
-        echo "Vui lòng kiểm tra lại các service trước khi thêm tên miền:"
-        echo "-------------------------------------------------------------------------"
-        printf "Nginx: %s\n" "${nginx_status}"
-        printf "PHP-FPM: %s\n" "${phpfpm_status}"
-        printf "MariaDB: %s\n" "${mariadb_status}"
-        printf "Pure-ftp: %s\n" "${pureftpd_status}"
-        echo "-------------------------------------------------------------------------"
-        echo
-        menu_domain
-    fi
+input(){
+    read -r -p "Nhap domain (Khong có www) [ENTER]: " domain
 }
 
 # Set variables
-prepare(){
-    read -r -p "Nhập domain (Không có www) [ENTER]: " domain
+set_var(){
     username=${domain//[-._]/}
     user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
-    SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
-    wp_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
@@ -68,55 +39,12 @@ prepare(){
     brute=""
 }
 
-# Check Conditions
-check_domain(){
-    if [ "$domain" = '' ]; then
-        clear
-        echo "Bạn chưa nhập Domain."
-        echo
-        menu_domain
-    fi
-
-    if [ "$domain" = "${domain/.}" ]; then
-        clear
-        echo "Domain bạn nhập không đúng định dạng."
-        echo
-        menu_domain
-    fi
-
-    if [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "${USER_DIR}/.${domain}.conf" ]]; then
-        clear
-        echo "Domain đã tồn tại trên VPS."
-        echo
-        menu_domain
-    fi
-}
-
-check_user(){
-    RESULT_USER=$(grep -c "^${username}:" /etc/passwd)
-    if [[ "${RESULT_USER}" != 0 ]]; then
-        echo "User đã tồn tại trên VPS."
-        echo ""
-        menu_domain
-    fi
-}
-
-check_database(){
-    RESULT_DB=$(mysqlshow "${db_name}" | grep -v Wildcard | grep -o "${db_name}")
-    if [ "$RESULT_DB" == "${db_name}" ]; then
-        echo "Database đã tồn tại trên VPS."
-        echo ""
-        menu_domain
-    fi
-}
-
-check_mysql_user(){
-    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$db_user')")"
-    if [[ "${RESULT_VARIABLE}" = 1 ]]; then
-        echo "Mysql User đã tồn tại trên VPS."
-        echo ""
-        menu_domain
-    fi
+validate(){
+    check_service
+    check_domain
+    check_user
+    check_database
+    check_mysql_user
 }
 
 set_php_version(){
@@ -127,34 +55,36 @@ set_php_version(){
 select_php(){
     set_php_version
 
-    echo "Lựa chọn phiên bản PHP bạn muốn sử dụng"
-    PS3='Nhập lựa chọn của bạn (1-2): '
+    echo "Lua chon phien ban PHP ban muon su dung"
+    PS3='Nhap lua chon cua ban (1-2): '
     options=("${php1}" "${php2}")
     select opt in "${options[@]}"
     do
         case $opt in
             "${php1}") php_mode="1"; break;;
             "${php2}") php_mode="2"; break;;
-            *) printf "Bạn nhập sai, hệ thống sẽ sử dụng phiên bản PHP mặc định.\n"; break;;
+            *) printf "${RED}Ban nhap sai, he thong se su dung phien ban PHP mac đinh.${NC}\n"; break;;
         esac
     done
 }
 
 auto_install_wp(){
     auto_inst_wp="n"
-    echo "Bạn có muốn tự động cài đặt WordPress mới không ?"
-    PS3='Nhập lựa chọn của bạn (1-2): '
+    echo "Ban co muon tu đong cai dat WordPress moi khong ?"
+    PS3='Nhap lua chon cua ban (1-2): '
     options=("Yes" "No")
     select opt in "${options[@]}"
     do
         case $opt in
             "Yes") auto_inst_wp="y"; break;;
             "No") auto_inst_wp="n"; break;;
-            *) printf "Bạn nhập sai, huỷ tự động cài đặt WordPress.\n"; break;;
+            *) printf "${RED}Ban nhap sai, huy tu đong cai đat WordPress..${NC}\n"; break;;
         esac
     done
 
     if [[ "${auto_inst_wp}" == "y" ]]; then
+        SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
+        wp_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
         cd_dir "/home/${username}/${domain}/public_html"
         wget https://wordpress.org/latest.tar.gz
         tar -xvf latest.tar.gz
@@ -200,8 +130,8 @@ END
 
 plugin_cache(){
     plugins_cache="n"
-    echo "Lựa chọn Plugins cache mà bạn sử dụng ?"
-    PS3='Nhập lựa chọn của bạn (1-2): '
+    echo "Lua chon Plugins cache ma ban su dung ?"
+    PS3='Nhap lua chin cua ban (1-2): '
     options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
     select opt in "${options[@]}"
     do
@@ -214,7 +144,7 @@ plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "Bạn nhập sai, huỷ tự động config cấu hình cho plugins cache.\n"; break;;
+            *) printf "Ban nhap sai, huy tu đong config Nginx cho plugins cache.\n"; break;;
         esac
     done
 }
@@ -263,7 +193,6 @@ browser_cache(){
 
 # Create
 create_user(){
-    check_user
     useradd --shell /sbin/nologin "${username}"
 }
 
@@ -276,9 +205,6 @@ EOF
 }
 
 create_db(){
-    check_database
-    check_mysql_user
-
     MYSQL=$(which mysql)
     Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
     Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
@@ -450,47 +376,56 @@ restart_service(){
     systemctl restart php-fpm.service
 }
 
+show_info(){
+    clear
+    echo ""
+    echo "Ban đa them domain thanh cong. Hay luu lai thong tin de su dung"
+    echo "---------------------------------------------------------------"
+    printf "1.  Domain                : %s\n" "${domain}"
+    printf "2.  DB_Name               : %s\n" "${db_name}"
+    printf "3.  DB_User               : %s\n" "${db_user}"
+    printf "4.  DB_Password           : %s\n" "${db_pass}"
+    printf "5.  Username (FTP)        : %s\n" "${username}"
+    printf "6.  Password (FTP)        : %s\n" "$user_pass"
+    printf "7.  FTP Host              : %s\n" "${IPADDRESS}"
+    echo "8.  FTP Port              : 21"
+    printf "9.  Public_html           : %s\n" "/home/${username}/${domain}/public_html"
+    echo "---------------------------------------------------------------"
+}
+
 run(){
     check_service
-    prepare "$@"
-    check_domain
-    select_source
+    input
+    set_var "$@"
+    validate
 
-    if [[ "${php2_release}" == "yes" ]]; then
-        select_php
+    if [[ -z "${ALERT}" ]]; then
+        select_source
+
+        if [[ "${php2_release}" == "yes" ]]; then
+            select_php
+        fi
+
+        create_user
+        create_ftp
+        create_db
+        create_docrot
+        create_phpconfig
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            auto_install_wp "$@"
+            plugin_cache
+        fi
+
+        create_vhost
+        save_user_config
+        restart_service
+        show_info
+    else
+        printf "${ALERT}"
     fi
-
-    create_user
-    create_ftp
-    create_db
-    create_docrot
-    create_phpconfig
-
-    if [[ "${SOURCE}" == "wordpress" ]]; then
-        auto_install_wp "$@"
-        plugin_cache
-    fi
-
-    create_vhost
-    save_user_config
-    restart_service
 }
 
 run "$@"
-
-clear
-echo ""
-echo "Bạn đã thêm domain thành công. Hãy lưu lại thông tin để sử dụng"
-echo "-------------------------------------------------------------------------"
-printf "1.  Domain                : %s\n" "${domain}"
-printf "2.  DB_Name               : %s\n" "${db_name}"
-printf "3.  DB_User               : %s\n" "${db_user}"
-printf "4.  DB_Password           : %s\n" "${db_pass}"
-printf "5.  Username (FTP)        : %s\n" "${username}"
-printf "6.  Password (FTP)        : %s\n" "$user_pass"
-printf "7.  FTP Host              : %s\n" "${IPADDRESS}"
-echo "8.  FTP Port              : 21"
-printf "9.  Public_html           : %s\n" "/home/${username}/${domain}/public_html"
-echo "-------------------------------------------------------------------------"
 echo ""
 menu_domain

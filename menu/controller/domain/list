@@ -1,31 +1,27 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 list_domain(){
 	if [ "$(ls -At ${USER_DIR})" ]; then
     	clear
-    	echo "Danh sách Domain trên VPS:"
+    	echo "Danh sach Domain tren VPS:"
     	echo
     	i=1
     	cd_dir "${USER_DIR}"
     	for entry in .*.conf; do
     		[[ -e "${entry}" ]] || break
     	    domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
-    	    echo "$i) $domain"
+    	    printf "$i) ${GREEN}${domain}${NC}\n"
     		i=$((i+1));
     	done
         echo "-------------------------------------------------------------------------"
-    	echo "Tổng Domain: $((i-1))"
+    	echo "Tong Domain: $((i-1))"
         menu_domain
     else
     	clear
-    	echo "Không có Domain nào tồn tại trên hệ thống"
+    	printf "${RED}Khong co Domain nao ton toi tren he thong.${NC}\n"
     fi
 }
 

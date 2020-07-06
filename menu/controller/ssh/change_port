@@ -1,55 +1,38 @@
 #!/bin/bash
 
-# shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-
-echo "-------------------------------------------------------------------------"
-echo "Thay đổi port SSH hiện tại"
-echo "-------------------------------------------------------------------------"
+echo "-----------------"
+echo "Thay đoi port SSH"
+echo "-----------------"
 
 set_var(){
 	current_port=$(grep "Port " /etc/ssh/sshd_config | cut -f2 -d" ")
 }
 
 input(){
-	read -r -p "Nhập vào port bạn muốn đổi: " port_new
+	read -r -p "Nhap vao port ban muon đoi: " port_new
 }
 
-check(){
+check_port(){
 	set_var
 	if [ "$port_new" = '' ]; then
-	    clear
-	    echo "Bạn chưa nhập Port."
-	    echo
-	    menu_ssh
+	    ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
 	fi
 
 	if [[ ! $port_new =~ ^-?[0-9]+$ ]]; then
-	    clear
-	    echo "Port không đúng định dạng, vui lòng nhập lại"
-	    echo
-	    menu_ssh
+	    ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
 	fi
 
 	if [[ "${port_new}" == "${current_port}" ]]; then
-		clear
-	    echo "Port bạn nhập trùng với Port SSH hiện tại."
-	    echo
-	    menu_ssh
+	    ALERT=$(printf "${RED}Port ban nhap trung vui Port SSH hiun tai.${NC}\n")
 	fi
 
 	if [[ "${port_new}" == "${admin_port}" ]]; then
-		clear
-	    echo "Port bạn nhập trùng với Port Admin tool."
-	    echo
-	    menu_ssh
+	    ALERT=$(printf "${RED}Port ban nhap trung vui Port Admin tool.${NC}\n")
 	fi
 }
 
 change_port(){
-	echo "Đang tiến hành thay đổi port SSH..."
+	echo "Dang tien hanh thay đoi port SSH..."
    	echo ""
    	sleep 1
     sed -i 's/Port '${port_open}'/Port '${port_new}'/g' /etc/ssh/sshd_config
@@ -61,16 +44,20 @@ change_port(){
     csf -e
     systemctl restart csf
     systemctl restart lfd
+    printf "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}\n"
 }
 
 run(){
 	input
-	check
-	change_port
+	check_port
+	if [[ -z "${ALERT}" ]]; then
+		change_port
+	else
+		printf "${ALERT}"
+	fi
 }
 
 run
-
-echo "Đã thay đổi Port SSH sang $port_new thành công"
 echo ""
+sleep 2
 menu_ssh

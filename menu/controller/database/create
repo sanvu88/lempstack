@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
+
+input(){
+	read -r -p "1. Nhap ten database: " db_name
+	read -r -p "2. Nhap Mysql User: " db_user
+	read -r -p "3. Nhap Mysql Password: " password
+	read -r -p "Xac nhan them database? (y/n): " confirm
+}
+
+validate_input(){
+	if [ "$db_name" = "" ] || [ "$db_user" = "" ] || [ "$password" = "" ]; then
+	    ALERT=$(printf "${RED}Vui long nhap day du thong tin.${NC}\n")
+	fi
+}
+
+create_db(){
+	printf "${GREEN}Dang tao database moi...${NC}\n"
+	mysql -e "CREATE DATABASE IF NOT EXISTS ${db_name}"
+    mysql -e "CREATE USER IF NOT EXISTS '${db_user}'@'localhost' IDENTIFIED BY '$password'"
+    mysql -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost'"
+    mysql -e "FLUSH PRIVILEGES"
+    clear
+    printf "${GREEN}Da them databse thanh cong.${NC}\n"
+}
+
+show_info(){
+	echo ""
+    printf "DB_Name    : s%\n" "${RED}${database}${NC}"
+    printf "DB_User    : s%\n" "${RED}${username}${NC}"
+    printf "DB_Password: s%\n" "${RED}${password}${NC}"
+    echo ""
+}
+
+run(){
+	input
+	validate_input
+	check_database
+	check_mysql_user
+
+	if [[ -z "${ALERT}" ]]; then
+		create_db
+		show_info
+	else
+		printf "${ALERT}"
+	fi
+}
+
+run
+sleep 3
+menu_database

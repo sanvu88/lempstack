@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo "------------"
+echo "Xoa database"
+echo "------------"
+echo ""
+
+list_db(){
+	echo "Danh sach Database"
+	mysql -e "show databases where \`database\` not in('information_schema', 'test', 'sys', 'phpmyadmin', 'mysql', 'performance_schema')"
+	echo
+}
+
+input(){
+	read -r -p "Nhap ten database ban can xoa: " db_name
+	read -r -p "Xac nhan xoa database? (y/n): " confirm
+}
+
+validate(){
+	if [ "${db_name}" = "" ]; then
+	    ALERT=$(printf "${RED}Database khong duoc bo trong.${NC}\n")
+	fi
+}
+
+delete_db(){
+	if [[ "${confirm}" =~ ^([yY])$ ]]; then
+		printf "${GREEN}Dang tien hanh xoa database...${NC}\n"
+		sleep 1
+	    mysql -e "DROP DATABASE IF EXISTS ${db_name}"
+	    clear
+	    printf "${GREEN}Xoa database thanh cong.${NC}\n"
+    else
+    	printf "${RED}Ban da huy xoa database.${NC}\n"
+	fi
+}
+
+run(){
+	list_db
+	input
+	validate
+
+	if [[ -z "${ALERT}" ]]; then
+		delete_db
+	else
+		printf "${ALERT}"
+	fi
+}
+
+run
+menu_database

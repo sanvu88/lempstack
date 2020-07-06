@@ -11,18 +11,20 @@ debug_(){
 debug_
 
 # shellcheck disable=SC1091
-source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/variable_common
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 
-echo "-------------------------------------------------------------------------"
-echo "Gỡ bỏ SSL - Let's Encrypt"
-echo "-------------------------------------------------------------------------"
+echo "-------------------------"
+echo "Go bo SSL - Let's Encrypt"
+echo "-------------------------"
 echo
+
+validate(){
+    check_nginx_status
+    check_le_exists
+    check_domain
+}
 
 set_variable(){
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
@@ -33,14 +35,6 @@ set_variable(){
     cache="include /etc/nginx/extra/staticfiles.conf;"
     wp_secure=""
     brute=""
-}
-
-check_le_exists(){
-    if [[ ! -d "/etc/letsencrypt/live/${domain}" ]]; then
-        echo "Tên miền ${domain} chưa được cài đặt Let's Encrypt"
-        sleep 2
-        menu_letencrypt
-    fi
 }
 
 check_plugins_cache(){
@@ -137,25 +131,27 @@ restart_nginx(){
 }
 
 run(){
-    check_nginx_status
-    select_domain menu_letencrypt
-    check_domain_exists
-    check_le_exists
-    select_source
 
-    if [[ "${SOURCE}" == "wordpress" ]]; then
-        plugin_cache
+    select_domain
+    validate
+
+    if [[ -z "${ALERT}" ]]; then
+        select_source
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            plugin_cache
+        fi
+
+        set_variable
+        create_vhost
+        remove_ssl_cert
+        restart_nginx
+        printf "${GREEN}Go bo SSL Let's Encrypt thanh cong.${NC}\n"
+    else
+        printf "${ALERT}"
     fi
-
-    set_variable
-    create_vhost
-    remove_ssl_cert
-    restart_nginx
 }
 
 run
-
-echo ""
-echo "Gỡ bỏ SSL Let's Encrypt thành công"
 sleep 2
 menu_letencrypt
