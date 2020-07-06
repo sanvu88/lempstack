@@ -72,12 +72,20 @@ redis_c(){
 	. /var/hostvn/menu/controller/cache/redis
 }
 
+clear_cache(){
+	. /var/hostvn/menu/controller/cache/clear_cache
+}
+
 le_create(){
 	. /var/hostvn/menu/controller/letencrypt/create
 }
 
 le_remove(){
 	. /var/hostvn/menu/controller/letencrypt/remove
+}
+
+le_check_expired(){
+	. /var/hostvn/menu/controller/letencrypt/check_expired
 }
 
 permission_one(){
@@ -114,4 +122,28 @@ info_vps(){
 
 info_other(){
 	. /var/hostvn/menu/controller/info/other
+}
+
+wp_version(){
+	. /var/hostvn/menu/controller/wordpress/version
+}
+
+wp_update(){
+	. /var/hostvn/menu/controller/wordpress/update_wp
+}
+
+wp_update_plugins(){
+	. /var/hostvn/menu/controller/wordpress/update_plugins
+}
+
+wp_repair_db(){
+	. /var/hostvn/menu/controller/wordpress/repair_db
+}
+
+wp_optimize_db(){
+	. /var/hostvn/menu/controller/wordpress/optimize_db
+}
+
+wp_backup(){
+	. /var/hostvn/menu/controller/wordpress/wp_backup
 }

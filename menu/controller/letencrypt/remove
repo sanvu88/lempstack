@@ -138,7 +138,7 @@ restart_nginx(){
 
 run(){
     check_nginx_status
-    select_domain
+    select_domain menu_letencrypt
     check_domain_exists
     check_le_exists
     select_source

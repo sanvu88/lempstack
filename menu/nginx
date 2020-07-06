@@ -5,9 +5,9 @@ CHOICE=1
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
 
-echo "========================================================================="
+echo "============="
 echo "Quản lý Nginx"
-echo "========================================================================="
+echo "============="
 printf "%s\n" "$(nginx -v)"
 echo "-------------------------------------------------------------------------"
 echo "Trạng thái: $(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"

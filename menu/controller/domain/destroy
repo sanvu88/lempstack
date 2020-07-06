@@ -89,7 +89,7 @@ confirm(){
 }
 
 run(){
-	select_domain
+	select_domain menu_domain
 	check_domain_exists
 	set_var
 	confirm

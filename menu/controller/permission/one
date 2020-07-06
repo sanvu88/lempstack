@@ -41,6 +41,6 @@ action(){
     fi
 }
 
-select_domain
+select_domain menu_permission
 check_domain_exists
 action

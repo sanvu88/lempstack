@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+check_version(){
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	#check_is_wordpress
+	cd_dir /home/"${username}"/"${domain}"/public_html/
+	printf "Phiên bản WordPress đang sử dụng: %s\n" "$(wp core version --allow-root)"
+}
+
+select_domain menu_wp
+check_version
+echo ""
+menu_wp

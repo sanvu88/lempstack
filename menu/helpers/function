@@ -55,7 +55,7 @@ select_domain(){
     else
     clear
     echo "Không có Domain nào tồn tại trên hệ thống"
-    menu_primary
+    "$1"
     fi
 }
 

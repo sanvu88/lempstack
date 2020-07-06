@@ -2,14 +2,12 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/function
 
 CHOICE=1
 
-echo "========================================================================="
+echo "====================="
 echo "Quản lý Let's Encrypt"
-echo "========================================================================="
+echo "====================="
 echo
 
 while [ "${CHOICE}" != "0" ]
@@ -26,11 +24,7 @@ do
     fi
     case ${CHOICE} in
         1) le_create ;;
-        2)
-            select_domain
-            echo
-            openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
-            ;;
+        2) le_check_expired ;;
         3) le_remove ;;
         0) menu_primary ;;
         *) clear; echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;

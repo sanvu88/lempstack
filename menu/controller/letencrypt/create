@@ -186,7 +186,7 @@ restart_nginx(){
 
 run(){
     check_nginx_status
-    select_domain
+    select_domain menu_letencrypt
     select_source
 
     if [[ "${SOURCE}" == "wordpress" ]]; then

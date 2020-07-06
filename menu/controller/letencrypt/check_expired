@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+check_expired(){
+	if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
+	    openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
+	else
+		echo "Tên miền này chưa được cài đặt Let's Encrypt."
+	fi
+}
+
+
+select_domain menu_letencrypt
+check_expired
+echo ""
+menu_letencrypt

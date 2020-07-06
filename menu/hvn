@@ -8,15 +8,15 @@ source /var/hostvn/menu/helpers/menu
 CHOICE=1
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 
-echo "========================================================================="
+echo "================================================================="
 echo "                  HOSTVN Scripts - Công cụ quản lý VPS"
 echo "                              HOSTVN.NET"
-echo "========================================================================="
+echo "================================================================="
 printf "IP VPS: %s\n" "${IPADDRESS}"
 printf "phpMyAdmin: %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
 printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port}"
 echo "Phím tắt: Ctrl + C hoặc nhập 0 để thoát"
-echo "-------------------------------------------------------------------------"
+echo "-----------------------------------------------------------------"
 
 while [ "${CHOICE}" != "0" ]
 do

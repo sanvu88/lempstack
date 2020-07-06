@@ -11,12 +11,12 @@ debug_(){
 
 debug_
 
-############################################
-# Auto Install & Optimize LEMP Stack on CentOS 7
-# Version: 1.0
-# Author: Sanvv - HOSTVN Technical
-#
-############################################
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+#################################################
 
 # Set variables
 OS_VER=$(rpm -E %centos)
@@ -946,7 +946,7 @@ location ~* /wp-json/wp/v2/users {
 location /wp-content/cache {
 # Cache css & js files
     location ~* \.(?:css(\.map)?|js(\.map)?|.html)\$ {
-        more_set_headers 'Access-Control-Allow-Origin : *';
+        add_header Access-Control-Allow-Origin *;
         access_log off;
         log_not_found off;
         expires 30d;

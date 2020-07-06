@@ -7,9 +7,9 @@ source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
 
-echo "========================================================================="
+echo "==========="
 echo "Quản lý PHP"
-echo "========================================================================="
+echo "==========="
 echo
 
 while [ "${CHOICE}" != "0" ]
@@ -33,6 +33,7 @@ do
             if [[ "${php2_release}" == "yes" ]]; then
                 systemctl restart "${php2_version}"-php-fpm
             fi
+            menu_php
             ;;
         4) php_setting ;;
         0) menu_primary ;;
