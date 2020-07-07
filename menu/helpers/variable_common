@@ -11,6 +11,7 @@ NC='\033[0m'
 
 # other varialbe
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
+DATE=$(date +%d-%m-%Y)
 ALERT=""
 
 # Set directory variables

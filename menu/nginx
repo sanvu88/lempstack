@@ -47,7 +47,7 @@ do
             echo
             menu_nginx
             ;;
-        0) menu_primary ;;
+        0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

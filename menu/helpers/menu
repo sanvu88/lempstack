@@ -37,7 +37,11 @@ menu_info(){
 }
 
 menu_ssl(){
-    . /var/hostvn/menu/ssl
+    . /var/hostvn/menu/ssl_manage
+}
+
+menu_sslpaid(){
+    . /var/hostvn/menu/ssl_paid
 }
 
 menu_php(){
@@ -50,6 +54,10 @@ menu_database(){
 
 menu_wp(){
     . /var/hostvn/menu/wordpress
+}
+
+menu_lemp(){
+	. /var/hostvn/menu/lemp
 }
 
 domain_list(){
@@ -148,6 +156,10 @@ wp_backup(){
 	. /var/hostvn/menu/controller/wordpress/wp_backup
 }
 
+wp_change_domain(){
+	. /var/hostvn/menu/controller/wordpress/change_domain
+}
+
 account_info(){
 	. /var/hostvn/menu/controller/info/account_info
 }
@@ -166,4 +178,16 @@ db_change_pass(){
 
 db_destroy(){
 	. /var/hostvn/menu/controller/database/destroy_db
+}
+
+db_backup(){
+	. /var/hostvn/menu/controller/database/backup
+}
+
+db_destroy_backup(){
+	. /var/hostvn/menu/controller/database/destroy_backup
+}
+
+db_restore(){
+	. /var/hostvn/menu/controller/database/restore
 }

@@ -21,31 +21,31 @@ check_service(){
 }
 
 check_domain(){
-    if [ "$domain" = '' ]; then
+    if [ -z "${1}" ]; then
         ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
-    elif [[ "$domain" = "${domain/.}" ]]; then
+    elif [[ "${1}" = "${1}/.}" ]]; then
         ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
-    elif [[ -f "/etc/nginx/conf.d/${domain}.conf" || -f "${USER_DIR}/.${domain}.conf" ]]; then
+    elif [[ -f "/etc/nginx/conf.d/${1}.conf" || -f "${USER_DIR}/.${1}.conf" ]]; then
         ALERT=$(printf "${RED}Domain khong ton tai tren vps.${NC}\n")
     fi
 }
 
 check_user(){
-    RESULT_USER=$(grep -c "^${username}:" /etc/passwd)
+    RESULT_USER=$(grep -c "^${1}:" /etc/passwd)
     if [[ "${RESULT_USER}" != 0 ]]; then
         ALERT=$(printf "${RED}User da ton tai tren VPS.${NC}\n")
     fi
 }
 
 check_database(){
-    RESULT_DB=$(mysqlshow "${db_name}" | grep -v Wildcard | grep -o "${db_name}")
-    if [ "$RESULT_DB" == "${db_name}" ]; then
+    RESULT_DB=$(mysqlshow "${1}" | grep -v Wildcard | grep -o "${1}")
+    if [ "$RESULT_DB" == "${1}" ]; then
         ALERT=$(printf "${RED}Database da ton tai tren VPS.${NC}\n")
     fi
 }
 
 check_mysql_user(){
-    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$db_user')")"
+    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
     if [[ "${RESULT_VARIABLE}" = 1 ]]; then
         ALERT=$(printf "${RED}Mysql User da ton tai tren VPS.${NC}\n")
     fi
@@ -60,8 +60,8 @@ check_nginx_status(){
 }
 
 check_dns(){
-    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${domain})
-    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${domain})
+    a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${1})
+    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${1})
     if [[ "${a_record}" != "${IPADDRESS}" || "${www_record}" != "${IPADDRESS}" ]]; then
         ALERT=$(
             printf "${RED}Ten mien chua đuoc tro ve VPS hoac DNS chua đuoc cap nhat. Vui long kiem tra lai.${NC}\n"
@@ -71,13 +71,22 @@ check_dns(){
 }
 
 check_le_exists(){
-    if [[ ! -d "/etc/letsencrypt/live/${domain}" ]]; then
-        printf "${RED}Ten mien ${domain} chua duoc cai dat Let's Encrypt.${NC}\n"
+    if [[ ! -d "/etc/letsencrypt/live/${1}" ]]; then
+        printf "${RED}Ten mien ${1} chua duoc cai dat Let's Encrypt.${NC}\n"
     fi
 }
 
 check_is_wordpress(){
-    if [[ ! -d "/home/$1/$2/public_html/wp-content" ]]; then
-        ALERT=$(printf "${RED}Website nay khong so dong WordPress.${NC}\n")
+    if [[ ! -d "/home/${1}/${2}/public_html/wp-content" ]]; then
+        ALERT=$(printf "${RED}Website nay khong su dung WordPress.${NC}\n")
+    fi
+}
+
+if_is_wordpress(){
+    if [[ -d "/home/${1}/${2}/public_html/wp-content" ]]; then
+        ALERT=$(
+            printf "${RED}Website nay dang su dung WordPress.${NC}\n"
+            printf "${RED}Vui long su dung menu Quan ly WordPress de thuc hien chuc nang nay.${NC}\n"
+        )
     fi
 }

@@ -37,8 +37,8 @@ show_info(){
 run(){
 	input
 	validate_input
-	check_database
-	check_mysql_user
+	check_database ${db_name}
+	check_mysql_user ${db_user}
 
 	if [[ -z "${ALERT}" ]]; then
 		create_db

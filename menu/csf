@@ -94,7 +94,7 @@ do
             echo ""
             menu_csf
             ;;
-        0) menu_primary ;;
+        0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

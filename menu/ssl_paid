@@ -19,9 +19,9 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) ssl_create ;;
-        2) ssl_remove ;;
-        0) menu_primary ;;
+        1) clear; ssl_create ;;
+        2) clear; ssl_remove ;;
+        0) clear; menu_ssl ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

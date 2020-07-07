@@ -30,8 +30,8 @@ do
             fi
             menu_php
             ;;
-        4) php_setting ;;
-        0) menu_primary ;;
+        4) clear; php_setting ;;
+        0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

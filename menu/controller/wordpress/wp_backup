@@ -11,9 +11,12 @@ set_var(){
 
 backup(){
 	cd_dir /home/"${username}"
-	tar -cpzvf /home/"${username}"/backup/"$(date +%F)"_"${domain}".tar.gz "${domain}"
+	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
+		mkdir -p /home/"${username}"/backup/"${DATE}"
+	fi
+	tar -cpzvf /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${domain}".tar.gz "${domain}"
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+	wp db export --allow-root /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${db_name}".sql
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 	echo ""
 }

@@ -16,6 +16,7 @@ do
     echo "5. Repair database"
     echo "6. Sao lưu du lieu"
     echo "7. Khoi phuc du lieu"
+    echo "8. Thay doi ten mien"
     echo " ----------------------------------------"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -24,14 +25,15 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) wp_version ;;
-        2) wp_update ;;
-		3) wp_update_plugins ;;
-		4) wp_optimize_db ;;
-		5) wp_repair_db ;;
-		6) wp_backup ;;
+        1) clear; wp_version ;;
+        2) clear; wp_update ;;
+		3) clear; wp_update_plugins ;;
+		4) clear; wp_optimize_db ;;
+		5) clear; wp_repair_db ;;
+		6) clear; wp_backup ;;
 		7) echo "Dang nghi..."; sleep 2; menu_wp ;;
-        0) menu_primary ;;
+        8) clear; wp_change_domain ;;
+        0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

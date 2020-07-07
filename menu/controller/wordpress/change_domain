@@ -1,0 +1,164 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
+
+set_var(){
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [[ -z "${username}" ]]; then
+		read -r -p "Nhap vao user mysql: " username
+	fi
+
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [[ -z "${db_name}" ]]; then
+		read -r -p "Nhap vao database name: " db_name
+	fi
+
+	php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+	plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+}
+
+input(){
+	read -r -p "Nhap vao ten mien moi: " newdomain
+}
+
+valid_domain(){
+	if [[ -z "${newdomain}" ]]; then
+		ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
+	fi
+
+	if [[ "${newdomain}" = "${newdomain}/.}" ]]; then
+		ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
+	fi
+}
+
+check_plugins_cache(){
+    if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
+        rewrite=""
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
+        cache="include /etc/nginx/wordpress/swift2.conf;"
+    else
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+    fi
+}
+
+change_path(){
+	mv /home/"${username}"/"${domain}" /home/"${username}"/"${newdomain}"
+}
+
+backup_vhost(){
+    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
+        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
+    fi
+
+    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+}
+
+change_vhost(){
+	backup_vhost
+	check_plugins_cache
+	fastcgi
+
+	cat >> "${VHOST_DIR}/${newdomain}.conf" << END
+server {
+    listen 80;
+    server_name ${newdomain} www.${newdomain};
+
+    #access_log off;
+    #access_log /home/${username}/${newdomain}/logs/access.log;
+    #error_log off;
+    error_log /home/${username}/${newdomain}/logs/error.log;
+    root /home/${username}/${newdomain}/public_html/public;
+    index index.php index.html index.htm;
+
+    ${rewrite}
+    ${cache}
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            ${fastcgi_pass}
+        }
+    }
+
+    location = /wp-login.php {
+        limit_req zone=two burst=1 nodelay;
+        include /etc/nginx/fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        ${fastcgi_pass}
+    }
+    include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/extra/security.conf;
+}
+END
+}
+
+change_phpconfig(){
+	php_conf_path="/etc/php-fpm.d"
+	if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+        php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+    fi
+
+    mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${newdomain}".conf
+    sed -i 's/${domain}/${newdomain}/g' "${php_conf_path}"/"${newdomain}".conf
+}
+
+change_in_db(){
+	MYSQL=$(which mysql)
+	Q1="UPDATE ${db_name}.wp_posts SET guid = replace(guid, '${domain}','${newdomain}');"
+	Q2="UPDATE ${db_name}.wp_posts SET post_content = replace(post_content, '${domain}', '${newdomain}');"
+	Q3="UPDATE ${db_name}.wp_links SET link_url = replace(link_url, '${domain}', '${newdomain}');"
+	Q4="UPDATE ${db_name}.wp_links SET link_image = replace(link_image, '${domain}', '${newdomain}');"
+	Q5="UPDATE ${db_name}.wp_postmeta SET meta_value = replace(meta_value, '${domain}', '${newdomain}');"
+	Q6="UPDATE ${db_name}.wp_usermeta SET meta_value = replace(meta_value, '${domain}', '${newdomain}');"
+	Q7="UPDATE ${db_name}.wp_options SET option_value = replace(option_value, '${domain}', '${newdomain}');"
+	SQL="${Q1}${Q2}${Q3}${Q4}${Q5}${Q6}${Q7}"
+	${MYSQL} -e "${SQL}"
+}
+
+
+run(){
+	select_domain
+	set_var
+	check_is_wordpress ${username} ${domain}
+	input
+	valid_domain
+
+	if [[ -z "${ALERT}" ]]; then
+		change_path
+		change_vhost
+		change_phpconfig
+		change_in_db
+		printf "${GREEN}Doi domain thanh cong.${NC}\n"
+	else
+		printf "${ALERT}"
+	fi
+}
+
+run
+menu_wp

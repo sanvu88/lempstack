@@ -32,7 +32,7 @@ action(){
 run(){
     confirm
     select_domain
-    check_domain
+    check_domain ${domain}
 
     if [[ -z "${ALERT}" ]]; then
         action

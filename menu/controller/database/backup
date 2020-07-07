@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set_var(){
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [[ -z "${username}" ]]; then
+		username=${domain//[-._]/}
+	fi
+
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [[ -z "${db_name}" ]]; then
+		read -r -p "Nhap vao ten Database muon sao luu: " db_name
+	fi
+}
+
+make_backup_dir(){
+	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
+		mkdir -p /home/"${username}"/backup/"${DATE}"
+	fi
+}
+
+backup(){
+	cd_dir /home/"${username}"/backup/"${DATE}"
+	mysqldump -uadmin -p${admin_pwd} "${db_name}" | gzip -9 > "${DATE}"_"${db_name}".sql.gz
+	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
+}
+
+run(){
+	select_domain
+	set_var
+	if_is_wordpress $username $domain
+
+	if [[ -z "${ALERT}" ]]; then
+		make_backup_dir
+		backup
+	else
+		printf "${ALERT}"
+	fi
+}
+
+run
+menu_database

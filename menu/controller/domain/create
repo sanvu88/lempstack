@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%F)_create_domain.log
+    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_create_domain.log
     exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
@@ -12,6 +12,8 @@ debug_
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_php
 # shellcheck disable=SC1091
 source /var/hostvn/menu/validate/rule
 
@@ -41,10 +43,10 @@ set_var(){
 
 validate(){
     check_service
-    check_domain
-    check_user
-    check_database
-    check_mysql_user
+    check_domain ${domain}
+    check_user ${username}
+    check_database ${db_name}
+    check_mysql_user ${db_user}
 }
 
 set_php_version(){
@@ -131,7 +133,7 @@ END
 plugin_cache(){
     plugins_cache="n"
     echo "Lua chon Plugins cache ma ban su dung ?"
-    PS3='Nhap lua chin cua ban (1-2): '
+    PS3='Nhap lua chon cua ban (1-2): '
     options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
     select opt in "${options[@]}"
     do
@@ -406,18 +408,17 @@ run(){
             select_php
         fi
 
-        create_user
-        create_ftp
-        create_db
-        create_docrot
-        create_phpconfig
-
         if [[ "${SOURCE}" == "wordpress" ]]; then
             auto_install_wp "$@"
             plugin_cache
         fi
 
+        create_docrot
+        create_phpconfig
         create_vhost
+        create_user
+        create_ftp
+        create_db
         save_user_config
         restart_service
         show_info

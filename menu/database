@@ -26,13 +26,13 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) db_list ;;
-        2) db_create ;;
-        3) db_change_pass ;;
-		4) db_destroy ;;
-        5) echo "Chua co gi" ;;
-        6) echo "Chua co gi" ;;
-		7) echo "Chua co gi" ;;
+        1) clear; db_list ;;
+        2) clear; db_create ;;
+        3) clear; db_change_pass ;;
+		4) clear; db_destroy ;;
+        5) clear; db_backup ;;
+        6) clear; db_restore ;;
+        7) clear; destroy_backup ;;
         8)
 			systemctl restart mariadb
 			menu_database
@@ -40,14 +40,16 @@ do
     	9)
 			systemctl stop mariadb
 			systemctl disable mariadb
+            printf "{GREEN}Tat MariaDB thanh cong.${NC}\n"
 			menu_database
         	;;
     	10)
 			systemctl start mariadb
 			systemctl enable mariadb
+            printf "{GREEN}Bat MariaDB thanh cong.${NC}\n"
 			menu_database
         	;;
-        0) menu_primary ;;
+        0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

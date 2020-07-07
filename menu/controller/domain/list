@@ -4,24 +4,23 @@
 source /var/hostvn/menu/helpers/function
 
 list_domain(){
-	if [ "$(ls -At ${USER_DIR})" ]; then
-    	clear
-    	echo "Danh sach Domain tren VPS:"
-    	echo
-    	i=1
-    	cd_dir "${USER_DIR}"
-    	for entry in .*.conf; do
-    		[[ -e "${entry}" ]] || break
-    	    domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
-    	    printf "$i) ${GREEN}${domain}${NC}\n"
-    		i=$((i+1));
-    	done
+    if [ "$(ls -At ${USER_DIR})" ]; then
+        clear
+        echo "Danh sach Domain tren VPS:"
+        echo
+        i=1
+        cd_dir "${USER_DIR}"
+        for entry in .*.conf; do
+            [[ -e "${entry}" ]] || break
+            domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
+            printf "$i) ${GREEN}${domain}${NC}\n"
+            i=$((i+1));
+        done
         echo "-------------------------------------------------------------------------"
-    	echo "Tong Domain: $((i-1))"
-        menu_domain
+        echo "Tong Domain: $((i-1))"
     else
-    	clear
-    	printf "${RED}Khong co Domain nao ton toi tren he thong.${NC}\n"
+        clear
+        printf "${RED}Khong co Domain nao ton toi tren he thong.${NC}\n"
     fi
 }
 

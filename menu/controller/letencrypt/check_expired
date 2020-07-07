@@ -11,8 +11,15 @@ check_expired(){
 	fi
 }
 
+run(){
+	select_domain
+	if [[ -z "${ALERT}" ]]; then
+		check_expired
+	else
+        printf "${ALERT}"
+    fi
+}
 
-select_domain
-check_expired
+run
 echo ""
 menu_letencrypt

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%F)_create_le.log
+    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_create_le.log
     exec 5> "${LOG_FILE}"
     BASH_XTRACEFD="5"
     PS4='$LINENO: '
@@ -33,8 +33,8 @@ set_variable(){
 
 validate(){
     check_nginx_status
-    check_domain
-    check_dns
+    check_domain ${domain}
+    check_dns ${domain}
 }
 
 check_plugins_cache(){
@@ -64,7 +64,7 @@ check_plugins_cache(){
         cache="include /etc/nginx/wordpress/swift2.conf;"
         wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
     else
-        plugin_cache="other"
+        cache="include /etc/nginx/extra/staticfiles.conf;"
         wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
     fi
 }
@@ -164,7 +164,7 @@ restart_nginx(){
 }
 
 run(){
-    select_domain menu_letencrypt
+    select_domain
     validate
 
     if [[ -z "${ALERT}" ]]; then

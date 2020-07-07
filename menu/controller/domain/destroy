@@ -28,10 +28,37 @@ set_var(){
     php_config_path="/etc/php-fpm.d/${domain}.conf"
 }
 
-validate(){
-    check_domain
-}
+confirm(){
+    echo "Ban thuc su muon xoa ${domain}? "
+    PS3="Nhap vao lua chon cua ban [1-3]"
+    options=("Yes" "No" "Cancel")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") confirm_destroy_domain="y"; break;;
+            "No") confirm_destroy_domain="N"; break;;
+            "Cancel") menu_domain; break;;
+            *) printf "${RED}Ban nhap sai, vui long nhap lai${NC}\n";;
+        esac
+    done
 
+    if [[ "${confirm_destroy_domain}" =~ ^([yY])$ ]]; then
+        echo "Ban co muon xoa database ${db_name}? (y/n): "
+        PS3="Nhap vao lua chon cua ban [1-3]"
+        options=("Yes" "No" "Cancel")
+        select opt in "${options[@]}"
+        do
+            case $opt in
+                "Yes") confirm_destroy_db="y"; break;;
+                "No") confirm_destroy_db="N"; break;;
+                "Cancel") menu_domain; break;;
+                *) printf "${RED}Ban nhap sai, vui long nhap lai${NC}\n";;
+            esac
+        done
+    else
+        ALERT=$(printf "${RED}Ban đa chon huy xoa domain. Bye bye...${NC}\n")
+    fi
+}
 
 destroy_user(){
 	userdel -f -r "$1"
@@ -59,45 +86,13 @@ remove_path(){
     rm -rf "${php_config_path}"
 }
 
-confirm(){
-	echo "Ban thuc su muon xoa ${domain}? "
-    PS3="Nhap vao lua chon cua ban [1-3]"
-    options=("Yes" "No" "Cancel")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "Yes") confirm_destroy_domain="y"; break;;
-            "No") confirm_destroy_domain="N"; break;;
-			"Cancel") menu_domain; break;;
-            *) printf "Ban nhap sai, vui long nhap lai\n";;
-        esac
-    done
-
-	echo "Ban co muon xoa database ${db_name}? (y/n): "
-    PS3="Nhap vao lua chon cua ban [1-3]"
-    options=("Yes" "No" "Cancel")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "Yes") confirm_destroy_db="y"; break;;
-            "No") confirm_destroy_db="N"; break;;
-			"Cancel") menu_domain; break;;
-            *) printf "Ban nhap sai, vui long nhap lai\n";;
-        esac
-    done
-}
-
 run(){
-	select_domain menu_domain
-	validate
+	select_domain
+	check_domain ${domain}
+        
     if [[ -z "${ALERT}" ]]; then
-        set_var
         confirm
-
-        if [[ "${confirm_destroy_domain}" =~ ^([nN])$ ]]; then
-            echo "Ban đa chon huy xoa domain. Bye bye"
-            menu_domain
-        fi
+        set_var
 
         if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
             destroy_db

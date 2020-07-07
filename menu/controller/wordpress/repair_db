@@ -15,8 +15,11 @@ backup_confirm(){
 }
 
 backup(){
+	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
+		mkdir -p /home/"${username}"/backup/"${DATE}"
+	fi
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp db export --allow-root /home/"${username}"/backup/"$(date +%F)"_"${db_name}".sql
+	wp db export --allow-root /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${db_name}".sql
 }
 
 repair_db(){

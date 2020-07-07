@@ -1,0 +1,29 @@
+#!/bin/bash
+
+CHOICE=1
+
+echo "==================="
+echo "Quan ly LEMP Stack "
+echo "==================="
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    echo "1. Quan ly Nginx"
+    echo "2. Quan ly PHP"
+    echo "3. Quan ly Database"
+    echo " ------------------"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; menu_nginx;;
+        2) clear; menu_php;;
+        3) clear; menu_database;;
+        0) clear; menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done
