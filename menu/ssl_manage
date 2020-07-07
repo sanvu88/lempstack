@@ -21,7 +21,7 @@ do
     case ${CHOICE} in
         1) clear; menu_letencrypt;;
         2) clear; menu_sslpaid;;
-        0) clear; menu_ssl ;;
+        0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done
