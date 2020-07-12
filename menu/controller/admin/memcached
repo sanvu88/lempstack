@@ -1,0 +1,15 @@
+#!/bin/bash
+
+update(){
+	cd /usr/share/nginx/html
+	rm -rf ./memcached
+	git clone https://github.com/elijaa/phpmemcachedadmin.git
+    rm -rf /usr/share/nginx/html/phpmemcachedadmin/docker
+    mv phpmemcachedadmin memcached
+    chown -R nginx:nginx /usr/share/nginx/html/memcached
+	clear
+	printf "${GREEN}Update Memcached Dashboard thanh cong.${NC}\n"
+}
+
+update
+menu_admin

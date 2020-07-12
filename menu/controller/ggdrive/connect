@@ -1,0 +1,26 @@
+#!/bin/bash
+
+install_rclone(){
+	curl https://rclone.org/install.sh | sudo bash
+}
+
+config_rclone(){
+	rclone config
+}
+
+run(){
+	if [[ -f "/root/.config/rclone/rclone.conf" ]]; then
+		ALERT=$(printf "${RED}Rclone da duoc cai dat.${NC}\n")
+	fi
+
+	if [[ -z "${ALERT}" ]]; then
+		install_rclone
+		config_rclone
+	else
+		printf "${ALERT}\n"
+	fi
+
+}
+
+run
+menu_backup

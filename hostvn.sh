@@ -70,7 +70,8 @@ PUREFTP_NOT_WORKING="Pure-ftp khong hoat dong."
 PHP_NOT_WORKING="PHP-FPM khong hoat dong."
 LFD_NOT_WORKING="CSF khong hoat dong."
 LFD_NOT_WORKING="LFD khong hoat dong."
-LOGIN_NOTI="Cam on ban da su dung dich vu cua ${AUTHOR}. Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
+LOGIN_NOTI1="Cam on ban da su dung dich vu cua ${AUTHOR}."
+LOGIN_NOTI2="Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
 
 # Service Version
 PHPMYADMIN_VERSION="5.0.2"
@@ -110,7 +111,7 @@ EEV4="/opt/easyengine"
 yum -y install epel-release
 yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
 yum -y update
-yum -y install gawk git bc wget lsof htop curl zip unzip nano gcc gcc-c++ yum-utils shc
+yum -y install gawk git bc wget lsof htop curl zip unzip nano gcc gcc-c++ yum-utils shc dos2unix
 
 # Get info VPS
 CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
@@ -135,6 +136,8 @@ cd_dir(){
 # Prepare install
 ############################################
 create_bash_dir(){
+    mkdir -p /home/backup
+    chmod 710 /home/backup
     chmod 711 /home
     mkdir -p "${BASH_DIR}"
 }
@@ -213,7 +216,10 @@ create_log(){
 }
 
 ssh_login_noti(){
-    echo 'echo "'${LOGIN_NOTI}'"' >> ~/.bash_profile
+    {
+        echo 'echo "'${LOGIN_NOTI1}'"'
+        echo 'echo "'${LOGIN_NOTI2}'"'
+    } >> ~/.bash_profile
 }
 
 prepare_install(){
@@ -269,6 +275,12 @@ check_control_panel(){
     fi
 
     if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}"  ]]; then
+        printf "%s\n" "${OTHER_CP_EXISTS}"
+        printf "%s\n" "${CANCEL_INSTALL}"
+        exit
+    fi
+
+    if [[ -f "${FILE_INFO}" ]]; then
         printf "%s\n" "${OTHER_CP_EXISTS}"
         printf "%s\n" "${CANCEL_INSTALL}"
         exit
@@ -332,6 +344,7 @@ EOMARIADBREPO
 
 # Install php-fpm
 select_php_ver(){
+    clear
     printf "%s\n" "${SELECT_PHP}"
     PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
@@ -360,6 +373,7 @@ install_php(){
 }
 
 select_php_multi(){
+    clear
     printf "%s\n" "${SELECT_INST_PHP_2}"
     PS3="${ENTER_OPTION_PHP_2}"
     options=("Yes" "No")
@@ -374,6 +388,7 @@ select_php_multi(){
 }
 
 select_php_ver_2(){
+    clear
     printf "%s\n" "${SELECT_PHP_2}"
     PS3="${ENTER_OPTION}"
     options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
@@ -408,7 +423,7 @@ install_php_2(){
 }
 
 check_duplicate_php(){
-    if [[ "$PHP_VERSION_2" == "$PHP_VERSION" ]]; then
+    if [[ "${PHP_VERSION_2}" == "${PHP_VERSION}" ]]; then
         MULTI_PHP="n"
         echo "Phien ban PHP thứ 2 trung voi phien ban mac dinh. He thong se cai dat mot phien ban PHP."
     fi
@@ -449,7 +464,7 @@ install_lemp(){
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
         install_php_2
 
-        if [[ ! -f "${PHP2_PATH}/usr/lib/systemd/system/php-fpm.service" ]]; then
+        if [[ ! -f "/usr/lib/systemd/system/${PHP_VERSION_2}-php-fpm.service" ]]; then
             clear
             printf "%s\n" "${INST_PHP_ERR_2}"
         fi
@@ -1949,9 +1964,183 @@ EOyii
 default_vhost(){
     NGINX_VHOST_PATH="/etc/nginx/conf.d"
     mkdir -p "${USR_DIR}"/nginx/auth
+    mkdir -p /etc/nginx/apps
     if [[ -f "${NGINX_VHOST_PATH}/default.conf" ]]; then
         rm -rf "${NGINX_VHOST_PATH}"/default.conf
     fi
+
+cat >> "/etc/nginx/apps/phpmyadmin.conf" <<EOphpmyadmin_vhost
+location ^~ /phpmyadmin {
+    root /usr/share/nginx/html/;
+    index index.php index.html index.htm;
+    location ~ ^/phpmyadmin/(.+\.php)\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm.sock;
+        }
+    }
+    location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
+        root /usr/share/nginx/html/;
+    }
+}
+location ~ ^/pma {
+    rewrite ^/* /phpmyadmin last;
+}
+location ^~ /phpmyadmin/locale/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/doc/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/log/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/tmp/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/libraries/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/templates/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/sql/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+location ^~ /phpmyadmin/vendor/ {
+    deny all;
+}
+location ^~ /phpmyadmin/examples/ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+EOphpmyadmin_vhost
+
+cat >> "/etc/nginx/apps/opcache.conf" <<EOopcache_vhost
+location ^~ /opcache {
+    root /usr/share/nginx/html/;
+    index index.php index.html index.htm;
+
+    auth_basic "Restricted";
+    auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
+
+    location ~ ^/opcache/(.+\.php)\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm.sock;
+        }
+    }
+    location ~* ^/opcache/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
+        root /usr/share/nginx/html/;
+    }
+}
+EOopcache_vhost
+
+cat >> "/etc/nginx/apps/serverinfo.conf" <<EOserverinfo_vhost
+location ^~ /serverinfo {
+    root /usr/share/nginx/html/;
+    index index.php index.html index.htm;
+
+    auth_basic "Restricted";
+    auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
+
+    location ~ ^/serverinfo/(.+\.php)\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm.sock;
+        }
+    }
+    location ~* ^/serverinfo/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
+        root /usr/share/nginx/html/;
+    }
+}
+EOserverinfo_vhost
+
+cat >> "/etc/nginx/apps/memcached.conf" <<EOmemcached_vhost
+location ^~ /memcached {
+    root /usr/share/nginx/html/;
+    index index.php index.html index.htm;
+
+    auth_basic "Restricted";
+    auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
+
+    location ~ ^/memcached/(.+\.php)\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm.sock;
+        }
+    }
+    location ~* ^/memcached/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
+        root /usr/share/nginx/html/;
+    }
+}
+EOmemcached_vhost
+
+cat >> "/etc/nginx/apps/redis.conf" <<EOredis_vhost
+location ^~ /redis {
+    root /usr/share/nginx/html/;
+    index index.php index.html index.htm;
+
+    auth_basic "Restricted";
+    auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
+
+    location ~ ^/redis/(.+\.php)\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass unix:/var/run/php-fpm.sock;
+        }
+    }
+    location ~* ^/redis/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
+        root /usr/share/nginx/html/;
+    }
+}
+EOredis_vhost
+
 cat >> "${NGINX_VHOST_PATH}/web_apps.conf" << EOdefault_vhost
 server {
     listen 80 default_server;
@@ -1970,120 +2159,11 @@ server {
     root /usr/share/nginx/html/;
     index index.php index.html index.htm;
 
-    location ^~ /phpmyadmin {
-        root /usr/share/nginx/html/;
-        index index.php index.html index.htm;
-        location ~ ^/phpmyadmin/(.+\.php)\$ {
-            try_files \$uri =404;
-            fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-            fastcgi_index index.php;
-            include /etc/nginx/fastcgi_params;
-            include /etc/nginx/extra/nginx_limits.conf;
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-            if (-f \$request_filename)
-            {
-                fastcgi_pass unix:/var/run/php-fpm.sock;
-            }
-        }
-        location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-            root /usr/share/nginx/html/;
-        }
-    }
-
-    location ^~ /opcache {
-        root /usr/share/nginx/html/;
-        index index.php index.html index.htm;
-
-        auth_basic "Restricted";
-        auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
-
-        location ~ ^/opcache/(.+\.php)\$ {
-            try_files \$uri =404;
-            fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-            fastcgi_index index.php;
-            include /etc/nginx/fastcgi_params;
-            include /etc/nginx/extra/nginx_limits.conf;
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-            if (-f \$request_filename)
-            {
-                fastcgi_pass unix:/var/run/php-fpm.sock;
-            }
-        }
-        location ~* ^/opcache/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-            root /usr/share/nginx/html/;
-        }
-    }
-
-    location ^~ /serverinfo {
-        root /usr/share/nginx/html/;
-        index index.php index.html index.htm;
-
-        auth_basic "Restricted";
-        auth_basic_user_file ${USR_DIR}/nginx/auth/.htpasswd;
-
-        location ~ ^/serverinfo/(.+\.php)\$ {
-            try_files \$uri =404;
-            fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-            fastcgi_index index.php;
-            include /etc/nginx/fastcgi_params;
-            include /etc/nginx/extra/nginx_limits.conf;
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-            if (-f \$request_filename)
-            {
-                fastcgi_pass unix:/var/run/php-fpm.sock;
-            }
-        }
-        location ~* ^/serverinfo/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-            root /usr/share/nginx/html/;
-        }
-    }
-
-    location ~ ^/pma {
-        rewrite ^/* /phpmyadmin last;
-    }
-    location ^~ /phpmyadmin/locale/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/doc/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/log/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/tmp/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/libraries/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/templates/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/sql/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    location ^~ /phpmyadmin/vendor/ {
-        deny all;
-    }
-    location ^~ /phpmyadmin/examples/ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
+    include /etc/nginx/apps/phpmyadmin.conf;
+    include /etc/nginx/apps/opcache.conf;
+    include /etc/nginx/apps/serverinfo.conf;
+    include /etc/nginx/apps/memcached.conf;
+    include /etc/nginx/apps/redis.conf;
 
     location /nginx_status {
         stub_status on;
@@ -2985,7 +3065,7 @@ EOF
 
 create_mysql_user(){
     cat > "/tmp/mysql_query.temp" <<EOquery_temp
-    CREATE USER 'admin'@'localhost' IDENTIFIED BY '${ADMIN_TOOL_PWD}';
+    CREATE USER 'admin'@'localhost' IDENTIFIED BY '${SQLPASS}';
     GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
     FLUSH PRIVILEGES;
 EOquery_temp
@@ -3343,7 +3423,7 @@ unzip_phpmyadmin(){
 
 #Config phpMyAdmin
 config_phpmyadmin(){
-    BLOWFISH_SECRET=$(date +%s | sha256sum | base64 | head -c 32)
+    BLOWFISH_SECRET=$(date +%s | sha256sum | base64 | head -c 64)
     mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
     rm -rf "${USR_DIR}"/phpmyadmin/setup
     mkdir -p "${USR_DIR}"/phpmyadmin/tmp
@@ -3374,6 +3454,7 @@ ${DECLARE}
 EOCONFIGINC
 
     chown -R nginx:nginx "${USR_DIR}"/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/phpmyadmin
 }
 
 create_phpmyadmin_db(){
@@ -3398,7 +3479,8 @@ install_phpmyadmin(){
     fi
 
     wget -O "${USR_DIR}"/phpmyadmin.zip  "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
-    unzip_phpmyadmin
+    cd_dir "${USR_DIR}"
+    unzip phpmyadmin.zip
     rm -rf "${USR_DIR}"/phpmyadmin.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
     ln -s "${USR_DIR}"/phpmyadmin "${DEFAULT_DIR_WEB}"/phpmyadmin
@@ -3521,6 +3603,38 @@ php_sys_info(){
 }
 
 ############################################
+# phpmemcachedadmin
+############################################
+phpmemcachedadmin(){
+    cd_dir /usr/share/nginx/html
+    git clone https://github.com/elijaa/phpmemcachedadmin.git
+    rm -rf /usr/share/nginx/html/phpmemcachedadmin/docker
+    mv phpmemcachedadmin memcached
+    chown -R nginx:nginx /usr/share/nginx/html/memcached
+    cd_dir ${DIR}
+}
+
+############################################
+# phpmemcachedadmin
+############################################
+redisdadmin(){
+    cd_dir /usr/share/nginx/html
+    git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
+    mv phpRedisAdmin redis
+    cd redis
+    git clone https://github.com/nrk/predis.git vendor
+    cd .. && chown -R nginx:nginx redis
+    cd_dir ${DIR}
+}
+
+install_admin_tool(){
+    opcache_dashboard
+    php_sys_info
+    phpmemcachedadmin
+    redisdadmin
+}
+
+############################################
 # Install CSF Firewall
 ############################################
 csf_gui(){
@@ -3632,10 +3746,15 @@ check_service_status(){
 add_menu(){
     echo ""
     cd_dir "${BASH_DIR}"
-    wget "${EXT_LINK}"/menu.tar.gz
-    tar -xvf menu.tar.gz && rm -rf menu.tar.gz
+    wget "${EXT_LINK}"/menu.zip  > /dev/null
+    unzip menu.zip && rm -rf menu.zip  > /dev/null
     mkdir -p "${BASH_DIR}"/users
+    mkdir -p /var/log/hostvn
     chmod 711 menu && chmod 711 users
+    chmod +x ./menu/* ./menu/*/* ./menu/*/*/* > /dev/null
+    dos2unix ./menu/* > /dev/null
+    dos2unix ./menu/*/* > /dev/null
+    dos2unix ./menu/*/*/* > /dev/null
 
     # Create Alias Command
     #echo "alias hostvn='/var/hostvn/menu/hostvn'" >> ~/.bashrc
@@ -3649,15 +3768,19 @@ add_menu(){
 write_info(){
     touch "${FILE_INFO}"
     {
+        echo "script_version=1.0"
         echo "ssh_port=8282"
         echo "admin_port=${RANDOM_ADMIN_PORT}"
         echo "csf_port=${CSF_UI_PORT}"
+        echo "ftp_port=21"
         echo "admin_pwd=${ADMIN_TOOL_PWD}"
+        echo "mysql_pwd=${SQLPASS}"
         echo "admin_email=${ADMIN_EMAIL}"
         echo "php1_release=yes"
         echo "php2_release=${PHP2_RELEASE}"
         echo "php1_version=${PHP_VERSION}"
         echo "php2_version=${PHP_VERSION_2}"
+        echo "lang=vi"
     } >> "${FILE_INFO}"
 
     chmod 600 "${FILE_INFO}"
@@ -3668,26 +3791,34 @@ write_info(){
 # Run Script
 ############################################
 main(){
+    # Prepare before install
     check_before_install
     prepare_install
     create_bash_dir
+
+    # Install
     install_lemp
     install_composer
     install_wpcli
     memory_calculation
     install_cache
+
+    # Config
     config_nginx
     config_php
     config_mariadb
     other_config
     log_rotation
+
+    # Install other tool
     install_phpmyadmin
     install_pure_ftpd
     change_ssh_port
     install_certbot_auto
     install_csf
-    opcache_dashboard
-    php_sys_info
+    install_admin_tool
+
+    # End install
     start_service
     add_menu
     write_info
@@ -3705,16 +3836,19 @@ printf "          Neu can ho tro vui long lien he %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
 echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
 echo "-----------------------------------------------------------------------------"
-echo   "1.  SSH  Port                  : 8282"
-printf "2.  phpMyAdmin                 : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
-printf "2.  Link Opcache Dashboard     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
-printf "3.  Link Server Info           : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
-printf "4.  Link CSF GUI               : %s\n" "https://${IPADDRESS}:${CSF_UI_PORT}"
-echo   "5.  User                       : admin                                   "
-printf "6.  Password                   : %s\n" "${ADMIN_TOOL_PWD}"
+echo   "1.  SSH  Port                    : 8282"
+printf "2.  phpMyAdmin                   : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
+printf "3.  Link Opcache Dashboard       : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
+printf "4.  Link Server Info             : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
+printf "5.  Link php Memcached Admin     : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/memcached"
+printf "5.  Link Redis Admin             : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/redis"
+printf "6.  Link CSF GUI                 : %s\n" "https://${IPADDRESS}:${CSF_UI_PORT}"
+echo   "7.  User phpMyAdmin va Admin Tool: admin                                   "
+printf "8.  Password Admin tool          : %s\n" "${ADMIN_TOOL_PWD}"
+printf "9.  Password phpMyAdmin          : %s\n" "${SQLPASS}"
 echo "-------------------------------------------------------------------------"
 printf "=========================================================================\n"
-printf "Kiem tra file %s de xem co loi gi trong qua trình cai dat hay khong.\n " " ${LOG}"
+printf "Ban co the xem lai thong tin trong file /var/hostvn/hostvn.conf.\n "
 echo "-------------------------------------------------------------------------"
 
 sleep 3

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+show_info(){
+	printf "PHP default version     : %s\n" "$(rpm -qa php-fpm | cut -f3 -d'-')"
+	if [[ "${php2_release}" == "yes" ]]; then
+		printf "PHP 2 version           : %s\n" "${php2_version}"
+	fi
+	printf "MariaDB version         : %s\n" "$(mysql --version | cut -f6 -d' ' | cut -f1 -d'-')"
+	printf "Nginx version           : %s\n"     "$(echo "$(nginx -v 2>&1)" | grep -o '[0-9.]*$')"
+	echo ""
+}
+
+show_info
+menu_vps

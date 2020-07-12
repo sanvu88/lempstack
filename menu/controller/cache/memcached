@@ -4,20 +4,19 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
+redis_status="$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+memcached_status="$(systemctl status memcahed.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-echo "-------------------------------------------------------------------------"
-echo "Quản lý Memcached"
-echo "-------------------------------------------------------------------------"
-status=$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-printf "Trạng thái: %s\n" "${status}"
-echo "-------------------------------------------------------------------------"
+printf "${GREEN}-----------------${NC}\n"
+printf "Quan ly Memcached${NC}\n"
+printf "${GREEN}-----------------${NC}\n"
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Mở Memcached"
-    echo "2. Tắt Memcached"
+    printf "${GREEN}1. Mo Memcached${NC}\n"
+    printf "${GREEN}2. Tat Memcached${NC}\n"
     echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then
@@ -26,26 +25,34 @@ do
     fi
     case ${CHOICE} in
         1)
-            echo "Đang tiến hành mở Memcached..."
-            sleep 1
-            systemctl start memcached
-            systemctl enable memcached
-            clear
-            echo "Đã bật Memcached"
-            echo
+            if [ "${redis_status}" == "active" ]; then
+                printf "${RED}Ban dang su dung Redis Cache.${NC}\n"
+            else
+                printf "${GREEN}Dang tien hanh mo Memcached...${NC}\n"
+                sleep 1
+                systemctl start memcached
+                systemctl enable memcached
+                clear
+                printf "${GREEN}Da bat Memcached.${NC}\n"
+            fi
+
             menu_cache
             ;;
         2)
-            echo "Đang tiến hành tắt Memcached..."
-            sleep 1
-            systemctl stop memcached
-            systemctl disable memcached
-            clear
-            echo "Đã tắt Memcached"
-            echo
+            if [ "${memcached_status}" == "active" ]; then
+                printf "${GREEN}Dang tien hanh tat Memcached...${NC}\n"
+                sleep 1
+                systemctl stop memcached
+                systemctl disable memcached
+                clear
+                printf "${GREEN}Da tat Memcached.${NC}\n"
+            else
+                printf "${RED}Memcached hien khong hoat dong.${NC}\n"
+            fi
+
             menu_cache
             ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

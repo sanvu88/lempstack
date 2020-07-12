@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 echo "------------"
 echo "Xoa database"
 echo "------------"
@@ -30,6 +33,7 @@ delete_db(){
 	    clear
 	    printf "${GREEN}Xoa database thanh cong.${NC}\n"
     else
+    	clear
     	printf "${RED}Ban da huy xoa database.${NC}\n"
 	fi
 }
@@ -39,10 +43,11 @@ run(){
 	input
 	validate
 
-	if [[ -z "${ALERT}" ]]; then
+	if [ -z "${ALERT}" ]; then
 		delete_db
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

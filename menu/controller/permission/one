@@ -2,8 +2,6 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
 echo "======================"
 echo "Phan quyen Chown/Chmod"
@@ -20,24 +18,24 @@ action(){
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
         chown -R "${username}":"${username}" /home/"${username}"
-        echo ""
+        clear
         printf "${GREEN}Da phan quyen cho website: ${domain}.${NC}\n"
-        echo ""
     else
+        clear
         printf "${RED}Huy phan quyen.${NC}\n"
     fi
 
 }
 
 run(){
-    confirm
     select_domain
-    check_domain ${domain}
+    #validate_domain ${domain}
 
-    if [[ -z "${ALERT}" ]]; then
+    if [ -z "${ALERT}" ]; then
         action
     else
-        printf "${ALERT}"
+        clear
+        printf "${ALERT}\n"
     fi
 }
 

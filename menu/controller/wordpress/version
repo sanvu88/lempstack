@@ -2,22 +2,23 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
 check_version(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 	cd_dir /home/"${username}"/"${domain}"/public_html/
+	clear
 	printf "${GREEN}Phien ban WordPress dang su dung: %s ${NC}\n" "$(wp core version --allow-root)"
 }
 
 run(){
 	select_domain
+	#validate_domain ${domain}
 	check_is_wordpress ${username} ${domain}
-	if [[ -z "${ALERT}" ]]; then
+	if [ -z "${ALERT}" ]; then
 		check_version
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

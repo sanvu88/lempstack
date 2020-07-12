@@ -4,21 +4,19 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
+redis_status="$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+memcached_status="$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-echo "-------------------------------------------------------------------------"
-echo "Quản lý Redis Cache"
-echo "-------------------------------------------------------------------------"
-status=$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-printf "Trạng thái: %s\n" "${status}"
-echo "-------------------------------------------------------------------------"
-echo
+echo "-------------------"
+echo "Quan ly Redis Cache"
+echo "-------------------"
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Bật Redis Cache"
-    echo "2. Tắt Redis Cache"
-    echo " ----------------------------------------------- "
-    read -p " Nhập vào lựa chọn của bạn [0 = Thoát] " CHOICE
+    echo "1. Bat Redis Cache"
+    echo "2. Tat Redis Cache"
+    echo " -----------------"
+    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then
@@ -27,26 +25,34 @@ do
     fi
     case ${CHOICE} in
         1)
-            echo "Đang tiến hành mở Redis Cache..."
-            sleep 1
-            systemctl enable redis.service
-            systemctl start redis.service
-            clear
-            echo "Đã bật Redis Cache"
-            echo
+            if [ "${memcached_status}" == "active" ]; then
+                printf "${RED}Ban dang su dung Memcached.${NC}\n"
+            else
+                printf "${GREEN}Dang tien hanh mo Redis Cache...${NC}\n"
+                sleep 1
+                systemctl enable redis.service
+                systemctl start redis.service
+                clear
+                printf "${GREEN}Da bat Redis Cache.${NC}\n"
+            fi
+
             menu_cache
             ;;
         2)
-            echo "Đang tiến hành tắt Redis Cache..."
-            sleep 1
-            systemctl stop redis.service
-            systemctl disable redis.service
-            clear
-            echo "Đã tắt Redis Cache"
-            echo
+            if [ "${redis_status}" == "active" ]; then
+                printf "${GREEN}Dang tien hanh tat Redis Cache...${NC}\n"
+                sleep 1
+                systemctl stop redis.service
+                systemctl disable redis.service
+                clear
+                printf "${GREEN}Da tat Redis Cache.${NC}\n"
+            else
+                printf "${RED}Redis cache hien khong hoat dong.${NC}\n"
+            fi
+
             menu_cache
             ;;
         0) menu_primary ;;
-        *) echo -e "Lựa chọn của bạn không chính xác. Vui lòng chọn lại.";;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

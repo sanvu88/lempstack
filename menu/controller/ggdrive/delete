@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+rclone delete hostvn:/${IPADDRESS}/${date}/${domain} --rmdirs
+rclone cleanup hostvn:${IPADDRESS}
+
+rm -rf /home/backup/${date}/${domain}

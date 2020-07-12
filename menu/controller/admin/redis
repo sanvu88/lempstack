@@ -1,0 +1,16 @@
+#!/bin/bash
+
+update(){
+	cd /usr/share/nginx/html
+	rm -rf ./redis
+	git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
+    mv phpRedisAdmin redis
+    cd redis
+    git clone https://github.com/nrk/predis.git vendor
+    cd .. && chown -R nginx:nginx redis
+	clear
+	printf "${GREEN}Update Redis Dashboard thanh cong.${NC}\n"
+}
+
+update
+menu_admin

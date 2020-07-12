@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set_var(){
+	phpsysinfo_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
+}
+
+check_dir(){
+	if [ -d "/usr/share/nginx/html/serverinfo" ]; then
+		rm -rf /usr/share/nginx/html/serverinfo
+	fi
+}
+
+update(){
+	cd /usr/share/nginx/html
+	wget https://github.com/phpsysinfo/phpsysinfo/archive/v"${phpsysinfo_v}".zip &> /dev/null
+	unzip v"${phpsysinfo_v}".zip &> /dev/null
+	mv phpsysinfo-"${phpsysinfo_v}" serverinfo
+	rm -rf v"${phpsysinfo_v}".zip
+	mv serverinfo/phpsysinfo.ini.new serverinfo/phpsysinfo.ini
+	chown -R nginx:nginx serverinfo
+	clear
+	printf "${GREEN}Update phpSysInfo thanh cong.${NC}\n"
+}
+
+run(){
+	set_var
+	check_dir
+	update
+}
+
+run
+menu_admin

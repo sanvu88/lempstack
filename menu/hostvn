@@ -9,32 +9,31 @@ source /var/hostvn/menu/helpers/variable_common
 
 CHOICE=1
 
-echo "=================================================="
-echo "       HOSTVN Scripts - Cong cu quan ly VPS       "
-echo "                  HOSTVN.NET                      "
-echo "=================================================="
-printf "IP VPS: %s\n" "${IPADDRESS}"
-printf "phpMyAdmin: %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
-printf "CSF GUI: %s\n" "https://${IPADDRESS}:${csf_port} "
-echo "Phim tat: Ctrl + C hoac nhap 0 đe thoat            "
-echo "---------------------------------------------------"
+printf "${GREEN}==================================================${NC}\n"
+printf "${GREEN}       ${AUTHOR} Scripts - Cong cu quan ly VPS    ${NC}\n"
+printf "${GREEN}                  ${AUTHOR_WEB}                   ${NC}\n"
+printf "${GREEN}==================================================${NC}\n"
+printf "${GREEN}IP VPS: %s${NC}\n" "${IPADDRESS}"
+printf "${GREEN}phpMyAdmin: %s${NC}\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
+printf "${GREEN}CSF GUI: %s${NC}\n" "https://${IPADDRESS}:${csf_port} "
+printf "${GREEN}Phim tat: Ctrl + C hoac nhap 0 đe thoat            ${NC}\n"
+printf "${GREEN}---------------------------------------------------${NC}\n"
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "---------------------------------------------------"
-    echo "1. Quan ly ten mien"
-    echo "2. Quan ly SSL"
-    echo "3. Quan ly SSH"
-    echo "4. Quan ly Cache"
-    echo "5. Quan ly LEMP (Nginx - MariaDB - PHP)"
-    echo "6. Quan ly CSF Firewall"
-    echo "7. Phan quyen Chown/Chmod"
-    echo "8. Quan ly WordPress"
-    echo "9. Sao luu du lieu"
-    echo "10. Application"
-    echo "11. Quan ly VPS"
-    echo "12. Xem thong tin tai khoan"
-    echo "--------------------------------------------------"
+    printf "${GREEN}---------------------------------------------------${NC}\n"
+    printf "${GREEN}1. Quan ly ten mien${NC}\n"
+    printf "${GREEN}2. Quan ly SSL${NC}\n"
+    printf "${GREEN}3. Quan ly Cache${NC}\n"
+    printf "${GREEN}4. Quan ly LEMP (Nginx - MariaDB - PHP - FTP - Log)${NC}\n"
+    printf "${GREEN}5. Quan ly CSF Firewall${NC}\n"
+    printf "${GREEN}6. Phan quyen Chown/Chmod${NC}\n"
+    printf "${GREEN}7. Quan ly WordPress${NC}\n"
+    printf "${GREEN}8. Sao luu du lieu${NC}\n"
+    printf "${GREEN}9. Admin Tool${NC}\n"
+    printf "${GREEN}10. Quan ly VPS${NC}\n"
+    printf "${GREEN}11. Xem thong tin tai khoan${NC}\n"
+    printf "${GREEN}--------------------------------------------------${NC}\n"
     read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -44,16 +43,15 @@ do
     case ${CHOICE} in
         1) clear; menu_domain;;
         2) clear; menu_ssl;;
-        3) clear; menu_ssh;;
-        4) clear; menu_cache;;
-        5) clear; menu_lemp;;
-        6) clear; menu_csf;;
-        7) clear; menu_permission;;
-        8) clear; menu_wp;;
-        9) echo "Waitting..."; hostvn ;;
-        10) echo "Waitting..."; hostvn ;;
-        11) clear; menu_info;;
-        12) clear; account_info ;;
+        3) clear; menu_cache;;
+        4) clear; menu_lemp;;
+        5) clear; menu_csf;;
+        6) clear; menu_permission;;
+        7) clear; menu_wp;;
+        8) clear; menu_backup ;;
+        9) clear; menu_admin ;;
+        10) clear; menu_vps;;
+        11) clear; menu_account ;;
         0) clear; echo -e "${GREEN}Bye Bye...${NC}\n";;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

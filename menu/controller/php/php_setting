@@ -3,13 +3,12 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-printf "======================\n"
-printf "Chinh sua thong so php\n"
-printf "======================\n"
+printf "${GREEN}======================${NC}\n"
+printf "${GREEN}Chinh sua thong so php${NC}\n"
+printf "${GREEN}======================${NC}\n"
 
-printf "Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.\n"
-printf "Can suy nghi ky truoc khi thay doi bat ky thong so nao.\n"
-printf "Lua chon cac thong so ban muon thay doi: \n"
+printf "${RED}Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.${NC}\n"
+printf "${RED}Can suy nghi ky truoc khi thay doi bat ky thong so nao.${NC}\n"
 
 set_variable(){
 	ini_1="/etc/php.d/00-hostvn-custom.ini"

@@ -12,12 +12,10 @@ debug_
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
-echo "----------"
-echo "Xóa Domain"
-echo "----------"
+printf "${GREEN}----------${NC}\n"
+printf "${GREEN}Xoa Domain${NC}\n"
+printf "${GREEN}----------${NC}\n"
 
 set_var(){
 	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -25,11 +23,11 @@ set_var(){
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     vhost_config="${VHOST_DIR}/${domain}.conf"
-    php_config_path="/etc/php-fpm.d/${domain}.conf"
+    php_config_file="/etc/php-fpm.d/${domain}.conf"
 }
 
 confirm(){
-    echo "Ban thuc su muon xoa ${domain}? "
+    printf "${RED}Ban thuc su muon xoa ${domain}? ${NC}\n"
     PS3="Nhap vao lua chon cua ban [1-3]"
     options=("Yes" "No" "Cancel")
     select opt in "${options[@]}"
@@ -61,12 +59,18 @@ confirm(){
 }
 
 destroy_user(){
-	userdel -f -r "$1"
+    if if_user_exists ${username};
+    then
+	   userdel -f -r "$1"
+    fi
 }
 
 destroy_ftp_user(){
-	pure-pw userdel "$1"
-	pure-pw mkdb
+    if if_pureftpd_user_exists ${username};
+    then
+        pure-pw userdel "$1"
+        pure-pw mkdb
+    fi
 }
 
 destroy_db(){
@@ -77,20 +81,32 @@ destroy_db(){
 
 remove_path(){
 	if [[ "{$php_mode}" == 2 ]]; then
-    	php_config_path="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+    	php_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
 	fi
 
-	rm -rf /home/"${username:?}"
-	rm -rf "${vhost_config}"
-	rm -rf "${USER_DIR}"/."${domain}".conf
-    rm -rf "${php_config_path}"
+	if [ -d "/home/${username}" ]; then
+        rm -rf /home/"${username:?}"
+    fi
+    if [ -f "${vhost_config}" ]; then
+        rm -rf "${vhost_config}"
+    fi
+    if [ -f "${USER_DIR}/.${domain}.conf" ]; then
+        rm -rf "${USER_DIR}"/."${domain}".conf
+    fi
+    if [ -f "${php_config_file}" ]; then
+        rm -rf "${php_config_file}"
+    fi
 }
 
 run(){
 	select_domain
-	check_domain ${domain}
-        
-    if [[ -z "${ALERT}" ]]; then
+	#validate_domain ${domain}
+
+    if ! if_domain_exists ${domain}; then
+        ALERT=$(printf "${RED}Domain khong ton tai tren VPS.${NC}\n")
+    fi
+
+    if [ -z "${ALERT}" ]; then
         confirm
         set_var
 
@@ -98,16 +114,17 @@ run(){
             destroy_db
         fi
 
-        destroy_user "$username"
-        destroy_ftp_user "$username"
+        destroy_user $username
+        destroy_ftp_user $username
         remove_path
         restart_service
+        clear
         printf "${GREEN}Xoa Domain thanh cong.${NC}\n"
     else
-        printf "${ALERT}"
+        clear
+        printf "${ALERT}\n"
     fi
 }
 
 run
-clear
 menu_domain

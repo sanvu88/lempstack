@@ -1,0 +1,13 @@
+#!/bin/bash
+
+update(){
+	cd /usr/share/nginx/html/opcache
+	rm -rf ./*
+	wget -q https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_WEB}"/opcache/index.php &> /dev/null
+	chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/opcache
+	clear
+	printf "${GREEN}Update Opcache Dashboard thanh cong.${NC}\n"
+}
+
+update
+menu_admin

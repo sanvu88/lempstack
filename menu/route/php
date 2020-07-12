@@ -1,0 +1,37 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}==================================${NC}\n"
+printf "${GREEN}           Quan ly PHP            ${NC}\n"
+printf "${GREEN}==================================${NC}\n"
+echo
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Kiem tra phien ban PHP mac dinh${NC}\n"
+    printf "${GREEN}2. Cap nhat phien ban PHP mac dinh${NC}\n"
+    printf "${GREEN}3. Khoi đong lai PHP              ${NC}\n"
+    printf "${GREEN}4. Cau hinh thong so PHP          ${NC}\n"
+    printf "${GREEN} ---------------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) php -v; menu_php ;;
+        2) yum -y update php php-fpm; menu_php ;;
+        3)
+            systemctl restart php-fpm
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            menu_php
+            ;;
+        4) clear; php_setting ;;
+        0) clear; menu_lemp ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

@@ -10,6 +10,10 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 # other varialbe
+MENU_NAME="hostvn"
+AUTHOR="HOSTVN"
+AUTHOR_WEB="HOSTVN.NET"
+UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
 DATE=$(date +%d-%m-%Y)
 ALERT=""
@@ -20,3 +24,4 @@ USER_DIR="/var/hostvn/users"
 VHOST_DIR="/etc/nginx/conf.d"
 MYSQL_DIR="/var/lib/mysql"
 FILE_INFO="${BASH_DIR}/hostvn.conf"
+DEFAULT_DIR_WEB="/usr/share/nginx/html"

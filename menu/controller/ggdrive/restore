@@ -1,0 +1,16 @@
+#!/bin/bash
+
+download(){
+	rclone copy "hostvn:/${IPADDRESS}/${date}/${domain}" /home/backup
+}
+
+run(){
+	list_backup
+	select_domain
+
+	if [[ -z "${ALERT}" ]]; then
+		download
+	fi
+
+
+}

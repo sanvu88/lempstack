@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+set_var(){
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+}
+
+backup(){
+	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
+		mkdir -p /home/backup/${DATE}/${domain}
+	fi
+	cd_dir /home/backup/${DATE}/${domain}
+	mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
+}
+
+run(){
+	select_domain
+
+	if [[ -z "${ALERT}" ]]; then
+		set_var
+		backup
+		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
+		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${DATE}/${domain}/${domain}${NC}\n"
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+run
+select_backup

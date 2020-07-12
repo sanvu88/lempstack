@@ -6,4 +6,5 @@ echo "------------------"
 echo ""
 mysql -e "show databases where \`database\` not in('information_schema', 'test', 'sys', 'phpmyadmin', 'mysql', 'performance_schema')"
 echo
+CHOICE=0
 menu_database

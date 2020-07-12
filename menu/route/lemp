@@ -1,0 +1,33 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}Quan ly LEMP Stack ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Quan ly Nginx${NC}\n"
+    printf "${GREEN}2. Quan ly PHP${NC}\n"
+    printf "${GREEN}3. Quan ly Database${NC}\n"
+    printf "${GREEN}4. Quan ly FTP${NC}\n"
+    printf "${GREEN}5. Quan ly Log${NC}\n"
+    printf "${GREEN} ------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; menu_nginx;;
+        2) clear; menu_php;;
+        3) clear; menu_database;;
+        4) clear; menu_ftp;;
+        5) clear; menu_log;;
+        0) clear; menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

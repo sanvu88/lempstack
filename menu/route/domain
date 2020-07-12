@@ -1,0 +1,29 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}   Quan ly Domain  ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Danh sach Domain${NC}\n"
+    printf "${GREEN}2. Them Domain${NC}\n"
+    printf "${GREEN}3. Xoa Domain${NC}\n"
+    printf "${GREEN} ------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; domain_list;;
+        2) clear; domain_create ;;
+        3) clear; domain_destroy ;;
+        0) clear; menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

@@ -1,5 +1,14 @@
 #!/bin/bash
 
+valid_number(){
+    REGEX_NUMBER='^[0-9]+$'
+    if ! [[ $1 =~ ${REGEX_NUMBER} ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 check_service(){
     nginx_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     phpfpm_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
@@ -20,49 +29,120 @@ check_service(){
     fi
 }
 
-check_domain(){
+validate_domain(){
+    # if [ -z "${1}" ]; then
+    #     ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
+    # elif [ "${1}" = "${1/.}" ]; then
+    #     ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
+    # fi
     if [ -z "${1}" ]; then
         ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
-    elif [[ "${1}" = "${1}/.}" ]]; then
+    elif [[ ! ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
         ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
-    elif [[ -f "/etc/nginx/conf.d/${1}.conf" || -f "${USER_DIR}/.${1}.conf" ]]; then
-        ALERT=$(printf "${RED}Domain khong ton tai tren vps.${NC}\n")
     fi
 }
 
-check_user(){
-    RESULT_USER=$(grep -c "^${1}:" /etc/passwd)
-    if [[ "${RESULT_USER}" != 0 ]]; then
-        ALERT=$(printf "${RED}User da ton tai tren VPS.${NC}\n")
+check_domain_exists(){
+    if [[ -f "${USER_DIR}/.${1}.conf" || -f "${VHOST_DIR}/${1}.conf" ]]; then
+        ALERT=$(
+                    printf "${RED}Domain da ton tai tren vps.${NC}\n"
+                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                )
+    fi
+}
+
+if_domain_exists(){
+    if [[ -f "${USER_DIR}/.${1}.conf" || -f "${VHOST_DIR}/${1}.conf" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+validate_user(){
+    if ! [[ $user =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}User ban nhap khong dung dinh dang.${NC}\n")
+    fi
+}
+
+if_user_exists(){
+    RESULT_FTP_USER=$(grep -c "^${1}:" /etc/passwd)
+    if [ "${RESULT_FTP_USER}" != 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+if_pureftpd_user_exists(){
+    RESULT_FTP_USER=$(grep -c "${1}" "/etc/pure-ftpd/pureftpd.passwd")
+    if [[ "${RESULT_FTP_USER}" != 0 ]]; then
+        return 0
+    else
+        return 1
     fi
 }
 
 check_database(){
     RESULT_DB=$(mysqlshow "${1}" | grep -v Wildcard | grep -o "${1}")
     if [ "$RESULT_DB" == "${1}" ]; then
-        ALERT=$(printf "${RED}Database da ton tai tren VPS.${NC}\n")
+        ALERT=$(
+                    printf "${RED}Database da ton tai tren VPS.${NC}\n"
+                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                )
+    fi
+}
+
+if_db_exists(){
+    RESULT_DB=$(mysqlshow "${1}" | grep -v Wildcard | grep -o "${1}")
+    if [ "$RESULT_DB" == "${1}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+if_db_not_empty(){
+    COUNT_TABLE=$(mysql -e "SELECT CASE COUNT(*) WHEN '0' THEN 'empty' ELSE 'not empty' END AS contents FROM information_schema.tables
+                                WHERE table_type = 'BASE TABLE' AND table_schema = '${1}}';" | grep "empty")
+    if [ "${COUNT_TABLE}" == "empty" ]; then
+        return 0
+    else
+        return 1
     fi
 }
 
 check_mysql_user(){
-    RESULT_VARIABLE="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
-    if [[ "${RESULT_VARIABLE}" = 1 ]]; then
-        ALERT=$(printf "${RED}Mysql User da ton tai tren VPS.${NC}\n")
+    RESULT_MYSQL_USER="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
+    if [ "${RESULT_MYSQL_USER}" = 1 ]; then
+        ALERT=$(
+                    printf "${RED}Mysql User da ton tai tren VPS.${NC}\n"
+                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                )
+    fi
+}
+
+if_mysql_user_exists(){
+    RESULT_MYSQL_USER="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
+    if [ "${RESULT_MYSQL_USER}" = 1 ]; then
+        return 0
+    else
+        return 1
     fi
 }
 
 check_nginx_status(){
     nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-    if [[ "$nginx" != "active" ]]; then
+    if [ "$nginx" != "active" ]; then
         ALERT=$(printf "${RED}Nginx hien tai khong hoat đong. Vui long kiem tra lai.${NC}\n")
     fi
 }
 
-check_dns(){
+check_a_record(){
     a_record=$(dig -4 +nocomments @8.8.8.8 +short A ${1})
-    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${1})
-    if [[ "${a_record}" != "${IPADDRESS}" || "${www_record}" != "${IPADDRESS}" ]]; then
+
+    if [[ "${a_record}" != "${IPADDRESS}" ]]; then
         ALERT=$(
             printf "${RED}Ten mien chua đuoc tro ve VPS hoac DNS chua đuoc cap nhat. Vui long kiem tra lai.${NC}\n"
             printf "${RED}Neu ban moi tro ten mien vui long đoi 30 phut đen 24 tieng đe DNS cap nhat sau đo thu lai.${NC}\n"
@@ -70,23 +150,69 @@ check_dns(){
     fi
 }
 
+check_www_record(){
+    www_record=$(dig -4 +nocomments @8.8.8.8 +short A www.${1})
+
+    if [[ "${www_record}" != "${IPADDRESS}" ]]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
 check_le_exists(){
-    if [[ ! -d "/etc/letsencrypt/live/${1}" ]]; then
-        printf "${RED}Ten mien ${1} chua duoc cai dat Let's Encrypt.${NC}\n"
+    if [ ! -d "/etc/letsencrypt/live/${1}" ]; then
+        ALERT=$(printf "${RED}Ten mien ${1} chua duoc cai dat Let's Encrypt.${NC}\n")
     fi
 }
 
 check_is_wordpress(){
-    if [[ ! -d "/home/${1}/${2}/public_html/wp-content" ]]; then
+    if [ ! -d "/home/${1}/${2}/public_html/wp-content" ]; then
         ALERT=$(printf "${RED}Website nay khong su dung WordPress.${NC}\n")
     fi
 }
 
 if_is_wordpress(){
-    if [[ -d "/home/${1}/${2}/public_html/wp-content" ]]; then
+    if [ -d "/home/${1}/${2}/public_html/wp-content" ]; then
         ALERT=$(
             printf "${RED}Website nay dang su dung WordPress.${NC}\n"
             printf "${RED}Vui long su dung menu Quan ly WordPress de thuc hien chuc nang nay.${NC}\n"
         )
+    fi
+}
+
+check_backup_exists(){
+    if [ ! -d "/home/backup/${1}/${2}" ]; then
+        ALERT=$(printf "${RED}Ten mien nay khong co backup.${NC}\n")
+    fi
+}
+
+check_backup_empty(){
+    if [ "$(ls -At /home/backup/${1}/${2})" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+yes_no_confirm(){
+    if [[ "${1}" =~ ^([yY])$ ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_docroot_empty(){
+    if [ "$(ls -At /home/${1}/${2})/public_html" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_wpconfig(){
+    if [[ ! -f "/home/${1}/${2}/public_html/wp-config.php" ]]; then
+        ALERT=$(printf "${RED}File wp-config.php khong ton tai. vui long kiem tra lai.${NC}")
     fi
 }

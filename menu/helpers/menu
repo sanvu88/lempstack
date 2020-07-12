@@ -4,60 +4,80 @@ menu_primary(){
     hostvn
 }
 
+menu_admin(){
+	. /var/hostvn/menu/route/admin_tool
+}
+
+menu_account(){
+	. /var/hostvn/menu/route/account
+}
+
+menu_backup(){
+	. /var/hostvn/menu/route/backup
+}
+
 menu_domain(){
-    . /var/hostvn/menu/domain
+    . /var/hostvn/menu/route/domain
 }
 
 menu_letencrypt(){
-    . /var/hostvn/menu/letencrypt
+    . /var/hostvn/menu/route/letencrypt
 }
 
 menu_ssh(){
-    . /var/hostvn/menu/ssh
+    . /var/hostvn/menu/route/ssh
 }
 
 menu_cache(){
-    . /var/hostvn/menu/cache
+    . /var/hostvn/menu/route/cache
 }
 
 menu_nginx(){
-    . /var/hostvn/menu/nginx
+    . /var/hostvn/menu/route/nginx
 }
 
 menu_csf(){
-    . /var/hostvn/menu/csf
+    . /var/hostvn/menu/route/csf
 }
 
 menu_permission(){
-    . /var/hostvn/menu/permission
+    . /var/hostvn/menu/route/permission
 }
 
-menu_info(){
-    . /var/hostvn/menu/info
+menu_vps(){
+    . /var/hostvn/menu/route/vps_manage
 }
 
 menu_ssl(){
-    . /var/hostvn/menu/ssl_manage
+    . /var/hostvn/menu/route/ssl_manage
 }
 
 menu_sslpaid(){
-    . /var/hostvn/menu/ssl_paid
+    . /var/hostvn/menu/route/ssl_paid
 }
 
 menu_php(){
-    . /var/hostvn/menu/php
+    . /var/hostvn/menu/route/php
 }
 
 menu_database(){
-    . /var/hostvn/menu/database
+    . /var/hostvn/menu/route/database
 }
 
 menu_wp(){
-    . /var/hostvn/menu/wordpress
+    . /var/hostvn/menu/route/wordpress
 }
 
 menu_lemp(){
-	. /var/hostvn/menu/lemp
+	. /var/hostvn/menu/route/lemp
+}
+
+menu_ftp(){
+	. /var/hostvn/menu/route/ftp
+}
+
+menu_log(){
+	. /var/hostvn/menu/route/log
 }
 
 domain_list(){
@@ -121,15 +141,15 @@ php_setting(){
 }
 
 info_webserver(){
-	. /var/hostvn/menu/controller/info/webserver
+	. /var/hostvn/menu/controller/vps/webserver
 }
 
 info_vps(){
-	. /var/hostvn/menu/controller/info/vps
+	. /var/hostvn/menu/controller/vps/vps_info
 }
 
 info_other(){
-	. /var/hostvn/menu/controller/info/other
+	. /var/hostvn/menu/controller/vps/other
 }
 
 wp_version(){
@@ -160,8 +180,20 @@ wp_change_domain(){
 	. /var/hostvn/menu/controller/wordpress/change_domain
 }
 
+wp_change_pass_admin(){
+	. /var/hostvn/menu/controller/wordpress/change_pass_admin
+}
+
+wp_restore(){
+	. /var/hostvn/menu/controller/wordpress/restore
+}
+
+wp_auto_install(){
+	. /var/hostvn/menu/controller/wordpress/auto_install
+}
+
 account_info(){
-	. /var/hostvn/menu/controller/info/account_info
+	. /var/hostvn/menu/controller/vps/account_info
 }
 
 db_list(){
@@ -190,4 +222,104 @@ db_destroy_backup(){
 
 db_restore(){
 	. /var/hostvn/menu/controller/database/restore
+}
+
+update_phpmyadmin(){
+	. /var/hostvn/menu/controller/admin/phpmyadmin
+}
+
+update_phpsysinfo(){
+	. /var/hostvn/menu/controller/admin/phpsysinfo
+}
+
+update_opcache_panel(){
+	. /var/hostvn/menu/controller/admin/opcache
+}
+
+update_memcached_panel(){
+	. /var/hostvn/menu/controller/admin/memcached
+}
+
+update_redis_panel(){
+	. /var/hostvn/menu/controller/admin/redis
+}
+
+change_port_admin(){
+	. /var/hostvn/menu/controller/admin/change_port
+}
+
+update_script(){
+	. /var/hostvn/menu/controller/vps/update_script
+}
+
+c_tool(){
+	. /var/hostvn/menu/controller/account/tool
+}
+
+pma_info(){
+	. /var/hostvn/menu/controller/account/phpmyadmin
+}
+
+ssh_info(){
+	. /var/hostvn/menu/controller/account/ssh
+}
+
+user_info(){
+	. /var/hostvn/menu/controller/account/user
+}
+
+select_backup(){
+	. /var/hostvn/menu/controller/backup/select_backup
+}
+
+backup_source(){
+	. /var/hostvn/menu/controller/backup/backup_source
+}
+
+backup_db(){
+	. /var/hostvn/menu/controller/backup/backup_db
+}
+
+backup_full(){
+	. /var/hostvn/menu/controller/backup/backup_all
+}
+
+select_restore(){
+	. /var/hostvn/menu/controller/backup/select_restore
+}
+
+restore_source(){
+	. /var/hostvn/menu/controller/backup/restore_source
+}
+
+restore_db(){
+	. /var/hostvn/menu/controller/backup/restore_db
+}
+
+resstore_full(){
+	. /var/hostvn/menu/controller/backup/restore_all
+}
+
+delete_backup(){
+	. /var/hostvn/menu/controller/backup/delete_backup
+}
+
+ftp_create_user(){
+	. /var/hostvn/menu/controller/ftp/create
+}
+
+ftp_change_pwd(){
+	. /var/hostvn/menu/controller/ftp/change_pwd
+}
+
+ftp_destroy(){
+	. /var/hostvn/menu/controller/ftp/destroy
+}
+
+ftp_port(){
+	. /var/hostvn/menu/controller/ftp/change_port
+}
+
+domain_log(){
+	. . /var/hostvn/menu/controller/log/doamain_log
 }

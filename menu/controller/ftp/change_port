@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set_var(){
+	current_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
+	csf_port=$(grep "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+	admin_port=$(grep "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+	ssh_port=$(grep "Port " /etc/ssh/sshd_config | cut -f2 -d" ")
+}
+
+input(){
+	read -r -p "Nhap vao Port moi: " ftp_port
+}
+
+check_port(){
+	set_var
+	if [ -z "${ftp_port}" ]; then
+	    ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
+	fi
+
+	if [[ ! ${ftp_port} =~ ^-?[0-9]+$ ]]; then
+	    ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
+	fi
+
+	if [[ "${ftp_port}" == "${current_port}" ]]; then
+	    ALERT=$(printf "${RED}Port ban nhap trung vui Port FTP hien tai.${NC}\n")
+	fi
+
+	if [[ "${ftp_port}" == "${ssh_port}" || "${ftp_port}" == "${csf_port}" || "${ftp_port}" == "${admin_port}" ]]; then
+	    ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+	fi
+}
+
+change_port(){
+	sed -i '/Bind/d' /etc/pure-ftpd/pure-ftpd.conf
+	sed -i '/ftp_port=/d' ${FILE_INFO}
+	sed -i 's/,'${current_port}'/,'${ftp_port}'/g' /etc/csf/csf.conf
+	echo "Bind                         ${IPADDRESS},${ftp_port}" >>  /etc/pure-ftpd/pure-ftpd.conf
+	echo "ftp_port=${ftp_port}" >>  ${FILE_INFO}
+	systemctl restart pure-ftpd
+}
+
+run(){
+	input
+	check_port
+
+	if [[ -z "${ALERT}" ]]; then
+		change_port
+		clear
+		printf "${GREEN}Doi port FTP thanh cong.${NC}\n"
+	fi
+}
+
+run
+menu_ftp

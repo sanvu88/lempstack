@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
+
 cd_dir(){
-    cd "$1" || return
+    cd "$1" || exit
 }
 
 # Print space
@@ -11,15 +14,6 @@ printf_s(){
         echo ""
     else
         printf '%0.s ' $(seq 1 $1)
-    fi
-}
-
-valid_number(){
-    REGEX_NUMBER='^[0-9]+$'
-    if ! [[ $1 =~ ${REGEX_NUMBER} ]]; then
-        return 0
-    else
-        return 1
     fi
 }
 
@@ -46,12 +40,14 @@ select_domain(){
                 selects+=(${domain})
             fi
         done
-        PS3="Nhap lua chon cua ban [0=Exit]: "
+        PS3="Nhap lua chon cua ban [0 = Thoat]: "
         select select in "${selects[@]}"
         do
             domain=$select
             break
         done
+
+        validate_domain ${domain}
     else
         ALERT=$(printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n")
     fi
@@ -60,7 +56,7 @@ select_domain(){
 # Select Source
 select_source(){
     SOURCE="Other"
-    echo "Lua chon ma nguon đe tao Rewrite Url"
+    echo "Lua chon ma nguon de tao Rewrite Url"
     PS3='Nhap lua chon cua ban (1-14): '
     options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
     select opt in "${options[@]}"
@@ -126,6 +122,93 @@ fastcgi(){
     fi
 }
 
+restart_service(){
+    systemctl restart nginx.service
+    systemctl restart php-fpm.service
+    if [ "${php2_release}" == "yes" ]; then
+        systemctl restart "${php2_version}"-php-fpm
+    fi
+}
+
+make_backup_dir(){
+    if [[ ! -d "/home/backup/${DATE}/${1}" ]]; then
+        mkdir -p /home/backup/"${DATE}"/"${1}"
+    fi
+}
+
+list_backup(){
+    date=""
+    if [ "$(ls -At /home/backup)" ]; then
+        echo "Danh sach backup"
+        selects=()
+        cd /home/backup
+        for date in * ; do
+            selects+=(${date})
+        done
+        PS3="Nhap lua chon cua ban [0 = Thoat]: "
+        select select in "${selects[@]}"
+        do
+            date=${select}
+            break
+        done
+    else
+        ALERT=$(printf "${RED}Khong co ban backup nao ton tai tren he thong.${NC}\n")
+    fi
+}
+
+empty_db(){
+    tables=$(mysql ${db_name} -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
+    for t in ${tables}
+    do
+        mysql "${db_name}" -e "drop table ${t}"
+    done
+}
+
+select_plugin_cache(){
+    plugins_cache="other"
+    echo "Lua chon Plugins cache ma se ban su dung ?"
+    PS3='Nhap lua chon cua ban (1-2): '
+    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "W3 Total Cache") plugins_cache="w3c"; break;;
+            "WP Fastest Cache") plugins_cache="wpfc"; break;;
+            "WP Rocket") plugins_cache="wprocket"; break;;
+            "WP Super Cache") plugins_cache="wpsc"; break;;
+            "Cache Enabler") plugins_cache="enabler"; break;;
+            "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
+            "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
+            "Other") plugins_cache="other"; break;;
+            *) printf "Ban nhap sai, huy tu đong config Nginx cho plugins cache.\n"; break;;
+        esac
+    done
+}
+
+wp_auto_install_info(){
+    read -r -p "Nhap vao tai khoan wp-admin (Viet lien, khong dau. VD: hostvn: " admin_user
+    read -r -p "Nhap vao mat khau cho tai khoan wp-admin (8 ky tu tro len): " admin_pwd
+    read -r -p "Nhap vao email cua ban: " admin_email
+    read -r -p "Nhap vao ten website: " site_name
+
+    if [ -z "${admin_user}" ]; then
+        admin_user="admin"
+    fi
+
+    if [ -z "${admin_pwd}" ]; then
+        random_pwd=$(date +%s | sha256sum | base64 | head -c 12)
+        admin_pwd="${random_pwd}"
+    fi
+
+    if [ -z "${admin_email}" ]; then
+        admin_email=$(grep "admin_email" "${FILE_INFO}" | cut -f2 -d'=')
+    fi
+
+    if [ -z "${site_name}" ]; then
+        site_name="The web is built on WordPress"
+    fi
+}
+
 brute_force_wp(){
     brute="location = /wp-login.php {
         limit_req zone=two burst=1 nodelay;
@@ -133,9 +216,4 @@ brute_force_wp(){
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         ${fastcgi_pass}
     }"
-}
-
-restart_service(){
-    systemctl restart nginx.service
-    systemctl restart php-fpm.service
 }

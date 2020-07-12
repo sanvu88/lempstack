@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
 
 echo "------------------"
 echo "Doi Password Mysql"
@@ -9,7 +11,7 @@ echo ""
 input(){
 	read -p "Nhap Mysql user: " db_user
 	read -p "Nhập DB_Password: " password
-	read -p "Xac nhan thay doi password cho user ${db_user}? (y/n): " confirm
+	read -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
 }
 
 validate(){
@@ -26,15 +28,15 @@ validate(){
 	fi
 }
 
-
 change_pass(){
 	if [[ "${confirm}" =~ ^([yY])$ ]]; then
-		printf "${GREEN}Dang thay đoi password...${NC}\n"
+		printf "${GREEN}Dang thay đoi mat khau...${NC}\n"
 		sleep 1
 	    mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
 	    clear
 	    printf "${GREEN}Thay doi mat khau thanh cong.${NC}\n"
     else
+    	clear
     	printf "${GREEN}Ban da huy thay doi mat khau.${NC}\n"
 	fi
 }
@@ -43,10 +45,16 @@ run(){
 	input
 	validate
 
-	if [[ -z "${ALERT}" ]]; then
+	if ! if_mysql_user_exists ${db_user};
+	then
+		ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
+	fi
+
+	if [ -z "${ALERT}" ]; then
 		change_pass
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

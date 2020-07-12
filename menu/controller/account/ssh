@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set_var(){
+	ssh_port=$(grep "ssh_port" "${FILE_INFO}" | cut -f2 -d'=')
+}
+
+show_info(){
+	set_var
+	printf "SSH PORT                     : %s\n" "${ssh_port}"
+}
+
+show_info
+sleep 3
+menu_account

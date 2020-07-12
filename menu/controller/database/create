@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
 
 input(){
 	read -r -p "1. Nhap ten database: " db_name
@@ -16,6 +16,12 @@ validate_input(){
 	fi
 }
 
+vaildate(){
+	validate_input
+	check_database ${db_name}
+	check_mysql_user ${db_user}
+}
+
 create_db(){
 	printf "${GREEN}Dang tao database moi...${NC}\n"
 	mysql -e "CREATE DATABASE IF NOT EXISTS ${db_name}"
@@ -27,27 +33,26 @@ create_db(){
 }
 
 show_info(){
-	echo ""
+	clear
     printf "DB_Name    : s%\n" "${RED}${database}${NC}"
     printf "DB_User    : s%\n" "${RED}${username}${NC}"
     printf "DB_Password: s%\n" "${RED}${password}${NC}"
     echo ""
+    sleep 3
 }
 
 run(){
 	input
-	validate_input
-	check_database ${db_name}
-	check_mysql_user ${db_user}
+	vaildate
 
-	if [[ -z "${ALERT}" ]]; then
+	if [ -z "${ALERT}" ]; then
 		create_db
 		show_info
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 
 run
-sleep 3
 menu_database

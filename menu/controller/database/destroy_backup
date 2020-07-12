@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+confirm_delete(){
+	read -r -p "Ban muon xoa backup ? (y\n) " promt_delete
+}
+
+delete(){
+	rm -rf /home/backup/${date}/${domain}/${domain}.sql
+}
+
+run(){
+	confirm_delete
+
+	if [[ "${promt_delete}" =~ ^([yY])$ ]]; then
+		list_backup
+		select_domain
+
+		if ! check_backup_empty ${date} ${domain};
+		then
+			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+		fi
+
+		if [[ -z "${ALERT}" ]]; then
+			delete
+			clear
+			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
+		else
+			printf "${ALERT}\n"
+		fi
+	else
+		printf "${RED}Ban da huy xoa backup.${NC}\n"
+	fi
+}
+
+run
+menu_backup

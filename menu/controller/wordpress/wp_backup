@@ -2,34 +2,35 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
 set_var(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 backup(){
-	cd_dir /home/"${username}"
-	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
-		mkdir -p /home/"${username}"/backup/"${DATE}"
-	fi
-	tar -cpzvf /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${domain}".tar.gz "${domain}"
+	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${DATE}"/"${domain}"
+    fi
+	cd_dir /home/"${username}"/"${domain}"
+	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp db export --allow-root /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${db_name}".sql
+	wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	clear
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
-	echo ""
 }
 
 run(){
 	select_domain
+	#validate_domain ${domain}
 	set_var
 	check_is_wordpress ${username} ${domain}
 
-	if [[ -z "${ALERT}" ]]; then
+	if [ -z "${ALERT}" ]; then
+		make_backup_dir ${domain}
 		backup
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

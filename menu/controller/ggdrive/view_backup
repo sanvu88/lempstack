@@ -1,0 +1,7 @@
+#!/bin/bash
+
+rclone ls hostvn:/${IPADDRESS}
+
+rclone lsd hostvn:${IPADDRESS}
+
+menu_backup

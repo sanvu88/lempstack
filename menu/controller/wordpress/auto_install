@@ -1,0 +1,198 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+set_var(){
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [ -z "${username}" ]; then
+		read -r -p "Nhap vao FTP username: " username
+	fi
+
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+
+	if [ -z "${db_name}" ]; then
+		read -r -p "Nhap vao database name: " db_name
+	fi
+
+	db_pass=$(grep "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+	if [[ -z "${db_pass}" ]]; then
+		read -r -p "Nhap vao mat khau Mysql user: " db_pass
+	fi
+
+	cache="include /etc/nginx/extra/staticfiles.conf;"
+	php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+}
+
+docroot_empty(){
+	if check_docroot_empty $username $domain;
+	then
+		read -r -p "Thu muc public_html dang co du lieu. Ban co muon xoa du lieu khong ? (y/n) " promtp_install
+	else
+		read -r -p "Ban muon cai dat WordPress tu dong ? (y/n) " promtp_install
+	fi
+}
+
+database_empty(){
+	if if_db_not_empty ${db_name};
+	then
+		promtp_install="y"
+	else
+		read -r -p "Database dang co du lieu. Ban co muon xoa du lieu hien co khong ? (y/n) " promtp_install
+	fi
+}
+
+auto_install(){
+	cd_dir "/home/${username}/${domain}/public_html"
+    # Download WordPress
+    wp core download --locale=en_US --allow-root
+    rm -rf license.txt readme.html
+    # Create wp-config.php
+    wp core config --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --allow-root
+    # Install WordPress
+    wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
+    # Create robots.txt
+    cat > "/home/$username/$domain/public_html/robots.txt" <<END
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /search?q=*
+Disallow: *?replytocom
+Disallow: */attachment/*
+Disallow: /images/
+Allow: /wp-admin/admin-ajax.php
+Allow: /*.js$
+Allow: /*.css$
+END
+    chown -R "${username}":"${username}" ./*
+}
+
+set_cache(){
+    if [[ "${plugins_cache}" == "w3c" ]]; then
+        plugin_cache="w3c"
+        cache="include /etc/nginx/wordpress/w3c.conf;"
+    elif [[ "${plugins_cache}" == "wpfc" ]]; then
+        plugin_cache="wpfc"
+        cache="include /etc/nginx/wordpress/wpfc.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wprocket" ]]; then
+        plugin_cache="wprocket"
+        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wpsc" ]]; then
+        plugin_cache="wpsc"
+        cache="include /etc/nginx/wordpress/wpsc.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "enabler" ]]; then
+        plugin_cache="enabler"
+        cache="include /etc/nginx/wordpress/enabler.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "swift1" ]]; then
+        plugin_cache="swift1"
+        cache="include /etc/nginx/extra/staticfiles.conf;"
+    elif [[ "${plugins_cache}" == "swift2" ]]; then
+        plugin_cache="swift2"
+        cache="include /etc/nginx/wordpress/swift2.conf;"
+    else
+    	plugin_cache="other"
+    	cache="include /etc/nginx/extra/staticfiles.conf;"
+    fi
+}
+
+update_user_info(){
+	sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+	sed -i '/username=/d' "${USER_DIR}"/."${domain}".conf
+	sed -i '/db_name=/d' "${USER_DIR}"/."${domain}".conf
+	{
+		echo "plugin_cache=${plugin_cache}"
+		echo "username=${username}"
+		echo "db_name=${db_name}"
+	} >>  "${USER_DIR}"/."${domain}".conf
+}
+
+create_vhost(){
+	if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
+        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
+    fi
+
+    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    fastcgi
+    set_cache
+
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+server {
+    listen 80;
+    server_name ${domain} www.${domain};
+
+    #access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+    root /home/${username}/${domain}/public_html/public;
+    index index.php index.html index.htm;
+
+    ${rewrite}
+    ${cache}
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            ${fastcgi_pass}
+        }
+    }
+
+    location = /wp-login.php {
+        limit_req zone=two burst=1 nodelay;
+        include /etc/nginx/fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        ${fastcgi_pass}
+    }
+    include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/extra/security.conf;
+}
+END
+
+}
+
+run(){
+	select_domain
+	#validate_domain ${domain}
+	set_var
+	docroot_empty
+	database_empty
+
+	if [[ "${promtp_install}" =~ ^([yY])$ ]]; then
+		if ! if_mysql_user_exists ${db_user};
+		then
+			ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
+		fi
+
+		if ! if_db_exists ${db_name};
+		then
+			ALERT=$(printf "${RED}Database khong ton tai.${NC}")
+		fi
+
+		if [ -z "${ALERT}" ]; then
+			wp_auto_install_info
+			rm -rf /home/"$username"/"$domain"/public_html/*
+			empty_db
+			auto_install
+			clear
+			select_plugin_cache
+		else
+			clear
+			printf "${ALERT}\n"
+		fi
+	else
+		clear
+		printf "${RED}Ban da huy cai dat tu dong WordPress.${NC}"
+	fi
+}

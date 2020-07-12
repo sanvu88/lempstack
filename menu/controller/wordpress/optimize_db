@@ -2,8 +2,6 @@
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
 set_var(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
@@ -16,32 +14,44 @@ backup_confirm(){
 
 backup(){
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
-		mkdir -p /home/"${username}"/backup/"${DATE}"
+	if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
+		rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
 	fi
-	wp db export --allow-root /home/"${username}"/backup/"${DATE}"/"${DATE}"_"${db_name}".sql
+	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${DATE}"/"${domain}"
+    fi
+	wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
 }
 
 optimize_db(){
+	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp db optimize --allow-root
+	clear
 	printf "${GREEN}Toi uu database thanh cong.${NC}\n"
 }
 
 run(){
-	backup_confirm
+	select_domain
+	#validate_domain ${domain}
+	set_var
+	check_is_wordpress ${username} ${domain}
 
-	if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
-		select_domain
-		set_var
-		check_is_wordpress ${username} ${domain}
-		if [[ -z "${ALERT}" ]]; then
-			backup
-			optimize_db
-		else
-			printf "${ALERT}"
-		fi
+	backup_confirm
+	if ! yes_no_confirm ${promt_backup}
+    then
+        ALERT=$(
+            printf "${RED}Ban da chon khong backup.${NC}\n"
+            printf "${RED}Dieu nay khong an toan.\n He thong se huy toi uu Database.${NC}\n"
+        )
+    fi
+
+	if [ -z "${ALERT}" ]; then
+		make_backup_dir ${domain}
+		backup
+		optimize_db
 	else
-		printf "${RED}Ban da chon khong backup. Dieu nay khong an toan.\n He thong se huy toi uu Database.${NC}\n"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

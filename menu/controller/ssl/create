@@ -12,12 +12,10 @@ debug_
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
-echo "-------------------"
-echo "Cai dat SSL tra phi"
-echo "-------------------"
+printf "${GREEN}-------------------${NC}\n"
+printf "${GREEN}Cai dat SSL tra phi${NC}\n"
+printf "${GREEN}-------------------${NC}\n"
 echo
 
 set_variable(){
@@ -34,32 +32,32 @@ set_variable(){
 check_plugins_cache(){
     if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
         cache="include /etc/nginx/wordpress/w3c.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wprocket.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
         cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
         cache="include /etc/nginx/wordpress/swift2.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     else
         plugin_cache="other"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     fi
 }
 
@@ -72,9 +70,8 @@ backup_vhost(){
 }
 
 remove_letencrypt(){
-	if [[ -d "/etc/letsencrypt/live/${domain}" ]]; then
-		rm -rf /etc/letsencrypt/live/${domain}
-	fi
+	certbot-auto revoke --cert-path /etc/letsencrypt/live/"${domain}"/cert.pem
+    certbot-auto delete --cert-name "${domain}"
 }
 
 create_crt(){
@@ -166,12 +163,12 @@ restart_nginx(){
 run(){
     check_nginx_status
     select_domain
-    check_domain ${domain}
+    #validate_domain ${domain}
 
-    if [[ -z "${ALERT}" ]]; then
+    if [ -z "${ALERT}" ]; then
         select_source
 
-        if [[ "${SOURCE}" == "wordpress" ]]; then
+        if [ "${SOURCE}" == "wordpress" ]; then
             plugin_cache
         fi
 
@@ -181,10 +178,11 @@ run(){
         create_private_key
         create_ssl_vhost
         restart_nginx
-        echo ""
+        clear
         printf "${GREEN}Cau hinh SSL thanh cong.${NC}\n"
     else
-        printf "${ALERT}"
+        clear
+        printf "${ALERT}\n"
     fi
 }
 

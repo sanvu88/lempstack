@@ -1,0 +1,78 @@
+#!/bin/bash
+
+set_var(){
+	phpmyadmin_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
+}
+
+check_php_version(){
+	php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
+	if [ "${php_v}" < 7 ]; then
+		ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
+	fi
+}
+
+check_dir(){
+	if [ -d "/usr/share/phpmyadmin" ]; then
+		rm -rf /usr/share/phpmyadmin
+		rm -rf "${DEFAULT_DIR_WEB}"/phpmyadmin
+	fi
+}
+
+update(){
+	wget -O /usr/share/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
+	cd_dir /usr/share
+	unzip phpmyadmin.zip
+	rm -rf phpmyadmin.zip
+    mv phpMyAdmin-"${phpmyadmin_v}"-english phpmyadmin
+    ln -s /usr/share/phpmyadmin "${DEFAULT_DIR_WEB}"/phpmyadmin
+}
+
+config_phpmyadmin(){
+    blowfish_secret=$(date +%s | sha256sum | base64 | head -c 64)
+    mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
+    rm -rf /usr/share/phpmyadmin/setup
+    mkdir -p /usr/share/phpmyadmin/tmp
+
+    cat > "/usr/share/phpmyadmin/config.inc.php" <<EOCONFIGINC
+<?php
+declare(strict_types=1);
+\$cfg['blowfish_secret'] = '${blowfish_secret}';
+\$i = 0;
+\$i++;
+\$cfg['Servers'][\$i]['auth_type'] = 'http';
+\$cfg['Servers'][\$i]['host'] = 'localhost';
+\$cfg['Servers'][\$i]['connect_type'] = 'tcp';
+\$cfg['Servers'][\$i]['compress'] = false;
+\$cfg['Servers'][\$i]['AllowNoPassword'] = false;
+\$cfg['UploadDir'] = '';
+\$cfg['SaveDir'] = '';
+\$cfg['PmaNoRelation_DisableWarning'] = true;
+\$cfg['VersionCheck'] = false;
+\$cfg['TempDir'] = '/usr/share/phpmyadmin/tmp';
+\$cfg['CaptchaLoginPublicKey'] = '';
+\$cfg['CaptchaLoginPrivateKey'] = '';
+\$cfg['ExecTimeLimit'] = 600;
+EOCONFIGINC
+
+    chown -R nginx:nginx /usr/share/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/phpmyadmin
+}
+
+run(){
+	set_var
+	check_php_version
+
+	if [ -z "${ALERT}" ]; then
+		check_dir
+		update
+		config_phpmyadmin
+		clear
+		printf "${GREEN}Update phpMyAdmin thanh cong.${NC}"
+	else
+		clear
+		printf "${ALERT}\n"
+	fi
+}
+
+run
+menu_admin

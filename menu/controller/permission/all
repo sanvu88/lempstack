@@ -3,9 +3,9 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-echo "======================"
-echo "Phan quyen Chown/Chmod"
-echo "======================"
+printf "${GREEN}======================${NC}\n"
+printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
+printf "${GREEN}======================${NC}\n"
 echo
 
 if [ "$(ls -At ${USER_DIR})" ]; then

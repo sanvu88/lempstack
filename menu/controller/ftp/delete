@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+input(){
+	read -r -p "Nhap vao user muon xoa: " ftp_user
+}
+
+
+delete(){
+	pure-pw ftp_user
+	pure-pw mkdb
+}
+
+run(){
+	select_domain
+	set_var
+	input
+
+	if ! if_pureftpd_user_exists ftp_user; then
+		ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
+	fi
+
+	validate_user
+
+	if [[ -z "${ALERT}" ]]; then
+		delete
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+run
+menu_ftp

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}Khoi phuc du lieu  ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Khoi phuc ma nguon${NC}\n"
+    printf "${GREEN}2. Khoi phuc database${NC}\n"
+    printf "${GREEN}3. Khoi phuc full${NC}\n"
+    printf "${GREEN} --------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; resstore_source;;
+        2) clear; resstore_db ;;
+        3) clear; resstore_full ;;
+        0) clear; menu_backup ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

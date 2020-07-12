@@ -12,12 +12,10 @@ debug_
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
-source /var/hostvn/menu/validate/rule
 
-echo "------------------------"
-echo "Them SSL - Let's Encrypt"
-echo "------------------------"
+printf "${GREEN}------------------------${NC}\n"
+printf "${GREEN}Them SSL - Let's Encrypt${NC}\n"
+printf "${GREEN}------------------------${NC}\n"
 echo
 
 set_variable(){
@@ -33,39 +31,39 @@ set_variable(){
 
 validate(){
     check_nginx_status
-    check_domain ${domain}
-    check_dns ${domain}
+    #validate_domain ${domain}
+    check_a_record ${domain}
 }
 
 check_plugins_cache(){
     if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
         cache="include /etc/nginx/wordpress/w3c.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wprocket.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
         cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
         cache="include /etc/nginx/wordpress/swift2.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     else
         cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="/etc/nginx/wordpress/wordpress_secure.conf"
+        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     fi
 }
 
@@ -74,11 +72,18 @@ backup_vhost(){
         rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
     fi
 
-    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    cp "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    # mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
 }
 
 sign_ssl(){
-    /usr/local/bin/certbot-auto --nginx --no-bootstrap -d ${domain} -d www.${domain}
+
+    if check_www_record ${domain};
+    then
+        /usr/local/bin/certbot-auto --nginx --no-bootstrap -d ${domain} -d www.${domain}
+    else
+        /usr/local/bin/certbot-auto --nginx --no-bootstrap -d ${domain}
+    fi
 }
 
 auto_renew(){
@@ -98,7 +103,7 @@ auto_renew(){
 
 create_ssl_vhost(){
     backup_vhost
-    set_rewrite
+    #set_rewrite
     fastcgi
 
     if [[ "${SOURCE}" == "wordpress" ]]; then
@@ -167,22 +172,31 @@ run(){
     select_domain
     validate
 
-    if [[ -z "${ALERT}" ]]; then
-        select_source
+    # if [ -d "/etc/letsencrypt/live/${domain}" ]; then
+    #     ALERT=$(
+    #         printf "${RED}Ten mien nay da duoc cai Let's Encrypt.${NC}\n"
+    #         printf "${RED}Ban can go bo Let's Encrypt neu muon cai lai.${NC}\n"
+    #     )
+    # fi
 
-        if [[ "${SOURCE}" == "wordpress" ]]; then
-            plugin_cache
-        fi
+    if [ -z "${ALERT}" ]; then
+        #select_source
+
+        #if [[ "${SOURCE}" == "wordpress" ]]; then
+            #select_plugin_cache
+        #fi
 
         set_variable
         sign_ssl
-        auto_renew
-        create_ssl_vhost
+        sleep 3
+        #auto_renew
+        # create_ssl_vhost
         restart_nginx
-        printf "${GREEN}Tao SSL Let's Encrypt thanh cong.${NC}\n"
+        clear
         sleep 2
     else
-        printf "${ALERT}"
+        clear
+        printf "${ALERT}\n"
     fi
 }
 

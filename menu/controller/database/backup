@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/function
+
 set_var(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
@@ -14,28 +17,34 @@ set_var(){
 	fi
 }
 
-make_backup_dir(){
-	if [[ ! -d "/home/${username}/backup/${DATE}" ]]; then
-		mkdir -p /home/"${username}"/backup/"${DATE}"
-	fi
-}
-
 backup(){
-	cd_dir /home/"${username}"/backup/"${DATE}"
-	mysqldump -uadmin -p${admin_pwd} "${db_name}" | gzip -9 > "${DATE}"_"${db_name}".sql.gz
+	if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
+		rm -rf /home/backup/${DATE}/${domain}/${db_name}.sql
+	fi
+
+	cd_dir /home/backup/"${DATE}"/"${domain}"
+	mysqldump -uadmin -p${mysql_pwd} "${db_name}" > "${db_name}".sql
+	clear
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 }
 
 run(){
 	select_domain
+	#validate_domain ${domain}
 	set_var
 	if_is_wordpress $username $domain
 
-	if [[ -z "${ALERT}" ]]; then
-		make_backup_dir
+	if ! if_db_exists ${db_name} ;
+	then
+		ALERT=$(printf "${RED}Database khong ton tai.${NC}")
+	fi
+
+	if [ -z "${ALERT}" ]; then
+		make_backup_dir $domain
 		backup
 	else
-		printf "${ALERT}"
+		clear
+		printf "${ALERT}\n"
 	fi
 }
 

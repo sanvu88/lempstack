@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rclone copy /home/backup hostvn:${IPADDRESS} >> /var/log/rclone.log 2>&1

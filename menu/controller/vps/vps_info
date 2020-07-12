@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+set_variable(){
+	totalRam=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+	memAvailable=$(grep 'MemAvailable' /proc/meminfo |cut -f2 -d':' | xargs | cut -f1 -d' ')
+	totalSwap=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+	freeSwap=$(grep 'SwapFree' /proc/meminfo |cut -f2 -d':' | xargs | cut -f1 -d' ')
+	disk=$(fdisk -l | grep 'Disk' | cut -f1 -d',' | tr '\n' ' ')
+}
+
+show_info(){
+	set_variable
+	printf "Uptime       : %s\n" "$(uptime | xargs)"
+	printf "CPU loading  : %s\n" "$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')"
+	printf "Ram          : %s\n" "$(convert_to_mb "$totalRam") (available: $(convert_to_mb "$memAvailable"))"
+	printf "Swap         : %s\n" "$(convert_to_mb "$totalSwap") (available: $(convert_to_mb "$freeSwap") )"
+	printf "Disk         : %s\n" "$disk"
+	printf "System OS    : %s\n" "$(hostnamectl | grep "Operating System" | cut -f2 -d":" | xargs)"
+	printf "Virtual      : %s\n" "$(hostnamectl | grep "Virtualization" | cut -f2 -d":" | cut -f2 -d" ")"
+	printf "Kernel       : %s\n" "$(hostnamectl | grep "Kernel" | cut -f2 -d":" | xargs)"
+	echo ""
+	echo "CPU"
+	echo "-------------------------------------------------------------------------"
+	printf "Total Core   : %s\n" "$(grep -c 'processor' /proc/cpuinfo)"
+	printf "CPU Model    : %s\n" "$(grep 'name' /proc/cpuinfo | uniq | cut -f2 -d':' | xargs)"
+	printf "CPU MHz      : %s\n" "$(grep 'cpu MHz' /proc/cpuinfo | cut -f2 -d':' | xargs)"
+	printf "Cache Size   : %s\n" "$(grep 'cache size' /proc/cpuinfo | cut -f2 -d':' | xargs)"
+	echo ""
+}
+
+show_info
+sleep 2
+menu_vps

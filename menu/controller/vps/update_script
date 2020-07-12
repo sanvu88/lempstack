@@ -1,0 +1,59 @@
+#!/bin/bash
+
+debug_(){
+    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_update_script.log
+    exec 5> "${LOG_FILE}"
+    BASH_XTRACEFD="5"
+    PS4='$LINENO: '
+    set -x
+}
+
+debug_
+
+set_var(){
+	script_v=$(curl -s ${UPDATE_LINK}/version | grep "script_version=" | cut -f2 -d'=')
+	current_v=$(grep "script_version" "${FILE_INFO}" | cut -f2 -d'=');
+}
+
+check_update(){
+	if [[ "${script_v}" == "${current_v}" ]]; then
+		ALERT=$(printf "${RED}Ban dang su dung phien ban moi nhat.${NC}\n")
+	fi
+}
+
+confirm_update(){
+	echo "Da phat hien phien ban moi."
+	read -r -p "Ban co muon cap nhat ${AUTHOR} Script khong ? (y/n) " promt_update
+}
+
+update(){
+	cd "${BASH_DIR}"
+	wget -q "${UPDATE_LINK}"/update.txt -O "${BASH_DIR}"/update &> /dev/null
+	dos2unix update &> /dev/null
+	sh update
+	rm -rf update
+	clear
+	printf "${GREEN}Update ${AUTHOR} Script thanh cong.${NC}\n"
+}
+
+run(){
+	set_var
+	check_update
+
+	if [ -z "${ALERT}" ]; then
+		confirm_update
+		if [[ "${promt_update}" =~ ^([yY])$ ]]; then
+			update
+		else
+			clear
+			printf "${GREEN}Ban da huy update ${AUTHOR} Script${NC}\n"
+		fi
+
+	else
+		clear
+		printf "${ALERT}\n"
+	fi
+}
+
+run
+menu_vps
