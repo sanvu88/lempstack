@@ -61,15 +61,15 @@ confirm(){
 destroy_user(){
     if if_user_exists ${username};
     then
-	   userdel -f -r "$1"
+	   userdel -f -r "$1" >/dev/null 2>&1
     fi
 }
 
 destroy_ftp_user(){
     if if_pureftpd_user_exists ${username};
     then
-        pure-pw userdel "$1"
-        pure-pw mkdb
+        pure-pw userdel "$1" >/dev/null 2>&1
+        pure-pw mkdb >/dev/null 2>&1
     fi
 }
 

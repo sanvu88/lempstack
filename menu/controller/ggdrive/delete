@@ -1,7 +1,85 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
 
-rclone delete hostvn:/${IPADDRESS}/${date}/${domain} --rmdirs
-rclone cleanup hostvn:${IPADDRESS}
+confirm_destroy(){
+	read -r -p "Ban muon xoa backup ? (y\n) " promt_destroy
+}
 
-rm -rf /home/backup/${date}/${domain}
+select_remote(){
+    echo "Chon Remote: "
+    selects=$(rclone listremotes)
+    for entry in ${selects}; do
+        select=${entry//:}
+        remotes+=(${select})
+    done
+
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select remote in "${remotes[@]}"
+    do
+        remote=${remote}
+        break
+    done
+}
+
+select_backup(){
+	echo "Chon ngay ban muon khoi phuc: "
+    selects=$(rclone lsf ${remote}:${IPADDRESS})
+    for entry in ${selects}; do
+    	select=${entry///}
+        dates+=(${select})
+    done
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select date in "${dates[@]}"
+    do
+        date=${date}
+        break
+    done
+
+    date "+%d-%m-%Y" -d "${date}" > /dev/null  2>&1
+
+    if [[ $? != 0 ]]; then
+    	ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
+    else
+    	choose_domain
+    fi
+}
+
+choose_domain(){
+	echo "Chon ten mien ban muon khoi phuc: "
+    selects=$(rclone lsf ${remote}:${IPADDRESS}/${date})
+    for entry in ${selects}; do
+    	select=${entry///}
+        domains+=(${select})
+    done
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select domain in "${domains[@]}"
+    do
+        domain=${domain}
+        break
+    done
+
+    validate_domain ${domain}
+}
+
+run(){
+	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
+        select_remote
+		select_backup
+        
+		if [[ -z "${ALERT}" ]]; then
+			rclone delete ${remote}:/${IPADDRESS}/${date}/${domain} --rmdirs > /dev/null  2>&1
+			rclone cleanup ${remote}:${IPADDRESS} > /dev/null  2>&1
+			rm -rf /home/backup/${date}/${domain}
+			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
+		else
+			printf "${ALERT}\n"
+		fi
+	else
+		printf "${GREEN}Ban da huy xoa backup.${NC}\n"
+	fi
+}
+
+run
+menu_ggdrive

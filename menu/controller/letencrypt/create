@@ -87,18 +87,7 @@ sign_ssl(){
 }
 
 auto_renew(){
-    if [[ ! -f /var/spool/cron/root ]]; then
-        echo "45 2 * * 6 /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> /var/spool/cron/root
-        echo "50 2 * * 6 systemctl restart nginx >/dev/null 2>&1" >> /var/spool/cron/root
-        systemctl restart crond
-    else
-        check_cron=$(grep -c "certbot-auto renew" "/var/spool/cron/root")
-        if [[ "${check_cron}" != 1 ]]; then
-            echo "45 2 * * 6 /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> /var/spool/cron/root
-            echo "50 2 * * 6 systemctl restart nginx >/dev/null 2>&1" >> /var/spool/cron/root
-            systemctl restart crond
-        fi
-    fi
+    crontab -l | grep -q 'certbot-auto renew'  && echo 'Cronjob Exits' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
 }
 
 create_ssl_vhost(){
@@ -189,7 +178,7 @@ run(){
         set_variable
         sign_ssl
         sleep 3
-        #auto_renew
+        auto_renew
         # create_ssl_vhost
         restart_nginx
         clear

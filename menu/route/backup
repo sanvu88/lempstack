@@ -24,7 +24,7 @@ do
         1) clear; select_backup;;
         2) clear; select_restore ;;
         3) clear; delete_backup ;;
-        3) clear; echo "Dang phat trien"; menu_backup ;;
+        4) clear; menu_ggdrive ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

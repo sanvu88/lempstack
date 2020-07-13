@@ -66,8 +66,8 @@ validate_user(){
 }
 
 if_user_exists(){
-    RESULT_FTP_USER=$(grep -c "^${1}:" /etc/passwd)
-    if [ "${RESULT_FTP_USER}" != 0 ]; then
+    RESULT_USER=$(grep -c "^${1}:" /etc/passwd)
+    if [ "${RESULT_USER}" != 0 ]; then
         return 0
     else
         return 1

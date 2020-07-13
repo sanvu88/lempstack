@@ -1,7 +1,29 @@
 #!/bin/bash
 
-rclone ls hostvn:/${IPADDRESS}
+select_remote(){
+	echo "Chon Remote: "
+	selects=$(rclone listremotes)
+	for entry in ${selects}; do
+		select=${entry//:}
+	    remotes+=(${select})
+	done
 
-rclone lsd hostvn:${IPADDRESS}
+	PS3="Nhap lua chon cua ban [0 = Thoat]: "
+	select remote in "${remotes[@]}"
+	do
+	    remote=${remote}
+	    break
+	done
+}
 
-menu_backup
+run(){
+	select_remote
+	echo ""
+	echo "Dang load danh sach. Vui long doi..."
+	echo ""
+	printf "${RED}$(rclone lsf ${remote}:${IPADDRESS})${NC}\n"
+	echo ""
+}
+
+run
+menu_ggdrive

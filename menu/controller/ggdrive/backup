@@ -1,3 +1,39 @@
 #!/bin/bash
 
 rclone copy /home/backup hostvn:${IPADDRESS} >> /var/log/rclone.log 2>&1
+
+#!/bin/bash
+# Automated Tarball Backups via Rclone by Mason, 13 Nov 19
+# Tested on Ubuntu 18.04, GNU tar v1.29
+# Note: rclone needs to be installed and remote endpoint configured
+
+HOSTNAME=`hostname` # replace with desired hostname, if not set
+RCLONE_CONF="/backups/rclone.conf" # path to rclone config file
+RCLONE_REMOTE="my-remote-crypt" # rclone remote name to store backup
+RCLONE_REMOTE_PATH="/backups/$HOSTNAME/" # path to store tarball on remote
+NAME=$HOSTNAME-backup-`date +%d%b%y`.tar.gz
+EXCLUDE_STRING=( )
+
+# make sure include and exclude files exist
+touch backup-include.txt backup-exclude.txt
+
+# build "--exclude" options using list of directories to ignore
+# (only needed if parent dir of the excluded dir is being included)
+while IFS="" read -r p || [ -n "$p" ]
+do
+        EXCLUDE_STRING=( "${EXCLUDE_STRING[@]}" --exclude "$p" )
+done < backup-exclude.txt
+
+# captures error code to prevent some non-error warnings from
+# killing the script prematurely (i.e. "file changed as we read it")
+set +e
+tar -cvzf $NAME "${EXCLUDE_STRING[@]}" -T backup-include.txt
+exitcode=$?
+if [ "$exitcode" != "1" ] && [ "$exitcode" != "0" ]; then
+        exit $exitcode
+fi
+set -e
+
+# upload backup to rclone remote and remove file
+rclone --config=$RCLONE_CONF copy $NAME $RCLONE_REMOTE:$RCLONE_REMOTE_PATH
+rm $NAME

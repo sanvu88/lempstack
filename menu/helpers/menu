@@ -80,6 +80,10 @@ menu_log(){
 	. /var/hostvn/menu/route/log
 }
 
+menu_ggdrive(){
+	. /var/hostvn/menu/route/gg_drive
+}
+
 domain_list(){
 	. /var/hostvn/menu/controller/domain/list
 }
@@ -321,5 +325,25 @@ ftp_port(){
 }
 
 domain_log(){
-	. . /var/hostvn/menu/controller/log/doamain_log
+	. /var/hostvn/menu/controller/log/domain_log
+}
+
+ggdrive_connect(){
+	. /var/hostvn/menu/controller/ggdrive/connect
+}
+
+ggdrive_backup(){
+	. /var/hostvn/menu/controller/ggdrive/backup
+}
+
+ggdrive_list_backup(){
+	. /var/hostvn/menu/controller/ggdrive/view_backup
+}
+
+ggdrive_restore(){
+	. /var/hostvn/menu/controller/ggdrive/restore
+}
+
+ggdrive_destroy(){
+	. /var/hostvn/menu/controller/ggdrive/delete
 }

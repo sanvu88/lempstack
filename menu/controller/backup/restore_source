@@ -12,6 +12,9 @@ confirm_restore(){
 }
 
 restore(){
+	if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
+		mkdir -p /home/${username}/${domain}/public_html
+	fi
 	cd_dir /home/backup/${date}/${domain}
 	rm -rf /home/"${username}"/"${backup}"/public_html/*
 	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
