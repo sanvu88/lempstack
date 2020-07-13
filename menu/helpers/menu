@@ -347,3 +347,7 @@ ggdrive_restore(){
 ggdrive_destroy(){
 	. /var/hostvn/menu/controller/ggdrive/delete
 }
+
+ggdrive_del_remote(){
+	. /var/hostvn/menu/controller/ggdrive/delete_remote
+}

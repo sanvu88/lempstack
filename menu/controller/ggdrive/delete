@@ -21,6 +21,10 @@ select_remote(){
         remote=${remote}
         break
     done
+
+    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+    fi
 }
 
 select_backup(){
@@ -63,11 +67,11 @@ choose_domain(){
     validate_domain ${domain}
 }
 
-run(){
+_run(){
 	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
         select_remote
 		select_backup
-        
+
 		if [[ -z "${ALERT}" ]]; then
 			rclone delete ${remote}:/${IPADDRESS}/${date}/${domain} --rmdirs > /dev/null  2>&1
 			rclone cleanup ${remote}:${IPADDRESS} > /dev/null  2>&1
@@ -81,5 +85,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_ggdrive

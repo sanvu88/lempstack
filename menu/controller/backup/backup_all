@@ -20,7 +20,7 @@ backup(){
 	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/${domain}.tar.gz public_html
 }
 
-run(){
+_run(){
 	select_domain
 
 	if [[ -z "${ALERT}" ]]; then
@@ -33,5 +33,5 @@ run(){
 	fi
 }
 
-run
+_run
 select_backup

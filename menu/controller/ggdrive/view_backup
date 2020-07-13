@@ -14,16 +14,47 @@ select_remote(){
 	    remote=${remote}
 	    break
 	done
+
+	if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+		ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+	fi
 }
 
-run(){
+select_date(){
+	echo "Chon ngay: "
+    selects=$(rclone lsf ${remote}:${IPADDRESS})
+    for entry in ${selects}; do
+    	select=${entry///}
+        dates+=(${select})
+    done
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select date in "${dates[@]}"
+    do
+        date=${date}
+        break
+    done
+
+    date "+%d-%m-%Y" -d "${date}" > /dev/null  2>&1
+
+    if [[ $? != 0 ]]; then
+    	ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
+    fi
+}
+
+_run(){
 	select_remote
-	echo ""
-	echo "Dang load danh sach. Vui long doi..."
-	echo ""
-	printf "${RED}$(rclone lsf ${remote}:${IPADDRESS})${NC}\n"
-	echo ""
+	select_date
+
+	if [[ -z "${ALERT}" ]]; then
+		echo ""
+		echo "Dang load danh sach. Vui long doi..."
+		echo ""
+		printf "${RED}$(rclone lsf ${remote}:${IPADDRESS})/${date}${NC}\n"
+		echo ""
+	else
+		printf "${ALERT}\n"
+	fi
 }
 
-run
+_run
 menu_ggdrive

@@ -1,39 +1,74 @@
 #!/bin/bash
 
-rclone copy /home/backup hostvn:${IPADDRESS} >> /var/log/rclone.log 2>&1
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
 
-#!/bin/bash
-# Automated Tarball Backups via Rclone by Mason, 13 Nov 19
-# Tested on Ubuntu 18.04, GNU tar v1.29
-# Note: rclone needs to be installed and remote endpoint configured
+select_remote(){
+    echo "Chon Remote: "
+    selects=$(rclone listremotes)
+    for entry in ${selects}; do
+        select=${entry//:}
+        remotes+=(${select})
+    done
 
-HOSTNAME=`hostname` # replace with desired hostname, if not set
-RCLONE_CONF="/backups/rclone.conf" # path to rclone config file
-RCLONE_REMOTE="my-remote-crypt" # rclone remote name to store backup
-RCLONE_REMOTE_PATH="/backups/$HOSTNAME/" # path to store tarball on remote
-NAME=$HOSTNAME-backup-`date +%d%b%y`.tar.gz
-EXCLUDE_STRING=( )
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select remote in "${remotes[@]}"
+    do
+        remote=${remote}
+        break
+    done
 
-# make sure include and exclude files exist
-touch backup-include.txt backup-exclude.txt
+    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+    fi
+}
 
-# build "--exclude" options using list of directories to ignore
-# (only needed if parent dir of the excluded dir is being included)
-while IFS="" read -r p || [ -n "$p" ]
-do
-        EXCLUDE_STRING=( "${EXCLUDE_STRING[@]}" --exclude "$p" )
-done < backup-exclude.txt
+set_var(){
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+}
 
-# captures error code to prevent some non-error warnings from
-# killing the script prematurely (i.e. "file changed as we read it")
-set +e
-tar -cvzf $NAME "${EXCLUDE_STRING[@]}" -T backup-include.txt
-exitcode=$?
-if [ "$exitcode" != "1" ] && [ "$exitcode" != "0" ]; then
-        exit $exitcode
-fi
-set -e
+backup(){
+	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
+		mkdir -p /home/backup/${DATE}/${domain}
+	fi
+	rm -rf /home/backup/${DATE}/*
+	cd_dir /home/backup/${DATE}/${domain}
+	mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
 
-# upload backup to rclone remote and remove file
-rclone --config=$RCLONE_CONF copy $NAME $RCLONE_REMOTE:$RCLONE_REMOTE_PATH
-rm $NAME
+	cd_dir /home/${user}/${domain}
+	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/${domain}.tar.gz ${public}
+}
+
+_run(){
+	if [[ -z "${ALERT}" ]]; then
+		set_var
+
+		for users in /home/*; do
+			if [[ -d "${users}" ]]; then
+				user=${users##*/}
+				for domains in /home/${user}/*; do
+					if [[ -d "${domains}" ]]; then
+						domain=${domains##*/}
+						for publics in /home/${user}/${domain}/public_html; do
+							if [[ -d "${publics}" ]]; then
+								public=${publics##*/}
+								set_var
+								backup
+							fi
+						done
+					fi
+				done
+			fi
+		done
+
+		rclone copy /home/backup ${remote}:${IPADDRESS} >> /var/log/rclone.log 2>&1
+		rm -rf /home/backup/*
+		clear
+		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+_run
+menu_ggdrive

@@ -16,6 +16,7 @@ debug_
 # Version: 1.0                                  #
 # Author: Sanvv - HOSTVN Technical              #
 #                                               #
+# Please don't remove copyright. Thank!         #
 #################################################
 
 # Set variables
@@ -3615,7 +3616,7 @@ phpmemcachedadmin(){
 }
 
 ############################################
-# phpmemcachedadmin
+# Redis Admin Gui
 ############################################
 redisdadmin(){
     cd_dir /usr/share/nginx/html
@@ -3627,11 +3628,19 @@ redisdadmin(){
     cd_dir ${DIR}
 }
 
+############################################
+# Rclone
+############################################
+install_rclone(){
+    curl https://rclone.org/install.sh | sudo bash
+}
+
 install_admin_tool(){
     opcache_dashboard
     php_sys_info
     phpmemcachedadmin
     redisdadmin
+    install_rclone
 }
 
 ############################################

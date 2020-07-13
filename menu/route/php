@@ -10,9 +10,10 @@ echo
 while [ "${CHOICE}" != "0" ]
 do
     printf "${GREEN}1. Kiem tra phien ban PHP mac dinh${NC}\n"
-    printf "${GREEN}2. Cap nhat phien ban PHP mac dinh${NC}\n"
+    printf "${GREEN}2. Cap nhat phien ban PHP${NC}\n"
     printf "${GREEN}3. Khoi đong lai PHP              ${NC}\n"
     printf "${GREEN}4. Cau hinh thong so PHP          ${NC}\n"
+    printf "${GREEN}5. Thay doi phien ban PHP         ${NC}\n"
     printf "${GREEN} ---------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -22,7 +23,13 @@ do
     fi
     case ${CHOICE} in
         1) php -v; menu_php ;;
-        2) yum -y update php php-fpm; menu_php ;;
+        2)
+            yum -y update php-fpm;
+            if [ "${php2_release}" == "yes" ]; then
+                yum -y update "${php2_version}"-php-fpm
+            fi
+            menu_php
+            ;;
         3)
             systemctl restart php-fpm
             if [ "${php2_release}" == "yes" ]; then
@@ -31,6 +38,7 @@ do
             menu_php
             ;;
         4) clear; php_setting ;;
+        5) clear; echo "To be continue..."; menu_php ;;
         0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

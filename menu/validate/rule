@@ -60,7 +60,7 @@ if_domain_exists(){
 }
 
 validate_user(){
-    if ! [[ $user =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+    if ! [[ ${user} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
         ALERT=$(printf "${RED}User ban nhap khong dung dinh dang.${NC}\n")
     fi
 }

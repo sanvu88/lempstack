@@ -1,0 +1,41 @@
+#!/bin/bash
+
+confirm_destroy(){
+	read -r -p "Ban muon xoa backup ? (y\n) " promt_destroy
+}
+
+select_remote(){
+    echo "Chon Remote: "
+    selects=$(rclone listremotes)
+    for entry in ${selects}; do
+        select=${entry//:}
+        remotes+=(${select})
+    done
+
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select remote in "${remotes[@]}"
+    do
+        remote=${remote}
+        break
+    done
+
+    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+    fi
+}
+
+_run(){
+	confirm_destroy
+	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
+		select_remote
+		if [[ -z "${ALERT}" ]]; then
+			rclone config delete ${remote}
+			printf "${GREEN}Xoa remote thanh cong.${NC}\n"
+		else
+			printf "${ALERT}\n"
+		fi
+	fi
+}
+
+_run
+menu_ggdrive

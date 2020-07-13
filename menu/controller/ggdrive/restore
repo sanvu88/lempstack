@@ -26,6 +26,10 @@ select_remote(){
 	    remote=${remote}
 	    break
 	done
+
+	if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+		ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+	fi
 }
 
 select_backup(){
@@ -86,7 +90,7 @@ restore_db(){
 	mysql -uadmin -p${mysql_pwd} ${db_name} < ${db_name}.sql
 }
 
-run(){
+_run(){
 	confirm_restore
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
 		domain=""
@@ -122,5 +126,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_ggdrive
