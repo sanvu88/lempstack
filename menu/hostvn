@@ -33,6 +33,7 @@ do
     printf "${GREEN}9. Admin Tool${NC}\n"
     printf "${GREEN}10. Quan ly VPS${NC}\n"
     printf "${GREEN}11. Xem thong tin tai khoan${NC}\n"
+    printf "${GREEN}12. Quan ly Cronjob${NC}\n"
     printf "${GREEN}--------------------------------------------------${NC}\n"
     read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -52,6 +53,7 @@ do
         9) clear; menu_admin ;;
         10) clear; menu_vps;;
         11) clear; menu_account ;;
+        12) clear; menu_cronjob ;;
         0) clear; echo -e "${GREEN}Bye Bye...${NC}\n";;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

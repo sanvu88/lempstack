@@ -16,6 +16,10 @@ menu_backup(){
 	. /var/hostvn/menu/route/backup
 }
 
+menu_cronjob(){
+	. /var/hostvn/menu/route/cronjob
+}
+
 menu_domain(){
     . /var/hostvn/menu/route/domain
 }

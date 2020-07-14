@@ -1,1 +1,10 @@
 #!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_php
+
+set_php_mode(){
+	
+}

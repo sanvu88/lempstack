@@ -87,7 +87,7 @@ sign_ssl(){
 }
 
 auto_renew(){
-    crontab -l | grep -q 'certbot-auto renew'  && echo 'Cronjob Exits' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
+    crontab -l | grep -q 'certbot-auto renew' && echo 'Cronjob Exits' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
 }
 
 create_ssl_vhost(){
@@ -178,7 +178,7 @@ run(){
         set_variable
         sign_ssl
         sleep 3
-        auto_renew
+        #auto_renew
         # create_ssl_vhost
         restart_nginx
         clear

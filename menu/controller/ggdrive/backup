@@ -31,7 +31,7 @@ backup(){
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
 		mkdir -p /home/backup/${DATE}/${domain}
 	fi
-	rm -rf /home/backup/${DATE}/*
+	rm -rf /home/backup/${DATE}/${domain}/*
 	cd_dir /home/backup/${DATE}/${domain}
 	mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
 

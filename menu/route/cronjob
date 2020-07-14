@@ -1,0 +1,73 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}==============================================${NC}\n"
+printf "${GREEN}                Quan ly cronjob               ${NC}\n"
+printf "${GREEN}==============================================${NC}\n"
+printf "${GREEN}3. Tao Cronjob tu dong backup len Google Drive${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Kiem tra cac Cronjob tren VPS${NC}\n"
+    printf "${GREEN}2. Tao Cronjob auto renew Let's Encrypt${NC}\n"
+    printf "${GREEN}3. Tao Cronjob tu dong backup tai VPS${NC}\n"
+    printf "${GREEN}4. Tao Cronjob tu dong backup len Google Drive${NC}\n"
+    printf "${GREEN}5. Tao cronjob tuy chinh${NC}\n"
+    printf "${GREEN} ---------------------------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) 
+            echo ""
+            crontab -l
+            echo ""
+            ;;
+        2) 
+            crontab -l | grep -q 'certbot-auto renew' && printf '${RED}Cronjob da ton tai.${NC}\n' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
+            menu_cronjob
+            ;;
+        3) clear; menu_cronjob ;;
+        4) clear; menu_cronjob ;;
+        5) clear; menu_cronjob ;;
+        0) 
+            input -r -p "Nhap vao phut (Bo trong neu chay hang moi phut): " minutes
+            input -r -p "Nhap vao gio (Bo trong neu chay moi gio): " hours
+            input -r -p "Nhap vao ngay (Bo trong neu chay hang ngay): " days
+            input -r -p "Nhap vao thang (Bo trong neu chay hang thang): " months
+            input -r -p "Nhap vao tuan (Bo trong neu chay hang tuan): " weekday
+            input -r -p "Nhap vao lenh: " command
+
+            if [[ -z "${minutes}" ]]; then
+                minutes="*"
+            fi
+
+            if [[ -z "${hours}" ]]; then
+                hours="*"
+            fi
+
+            if [[ -z "${days}" ]]; then
+                days="*"
+            fi
+
+            if [[ -z "${months}" ]]; then
+                months="*"
+            fi
+
+            if [[ -z "${weekday}" ]]; then
+                weekday="*"
+            fi
+
+            crontab -l | grep -q '${command}' && printf '${RED}Cronjob da ton tai.${NC}\n' || cat <(crontab -l) <(echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1") | crontab -
+            printf "${GREEN}Tao Cronjob thanh cong.${NC}\n"
+            echo ""
+            menu_cronjob
+            ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done
