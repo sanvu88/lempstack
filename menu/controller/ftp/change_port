@@ -36,6 +36,10 @@ change_port(){
 	sed -i 's/,'${current_port}'/,'${ftp_port}'/g' /etc/csf/csf.conf
 	echo "Bind                         ${IPADDRESS},${ftp_port}" >>  /etc/pure-ftpd/pure-ftpd.conf
 	echo "ftp_port=${ftp_port}" >>  ${FILE_INFO}
+	semanage port -a -t ftp_port_t -p tcp ${ftp_port}
+	if [[ "${current_port}" != "21" ]]; then
+		semanage port -d -p tcp ${current_port}
+	fi
 	systemctl restart pure-ftpd
 }
 

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}=================================${NC}\n"
+printf "${GREEN}           Google Drive          ${NC}\n"
+printf "${GREEN}=================================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Thiet lap Google Drive${NC}\n"
+    printf "${GREEN}2. Backup len GG Drive${NC}\n"
+    printf "${GREEN}3. Khoi phuc du lieu tu GG Drive${NC}\n"
+    printf "${GREEN}4. Xoa du lieu tren GG Drive${NC}\n"
+    printf "${GREEN}5. Danh sach backup tren GG Drive${NC}\n"
+    printf "${GREEN}6. Xoa Google Drive remote${NC}\n"
+    printf "${GREEN} --------------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; ggdrive_connect;;
+        2) clear; ggdrive_backup ;;
+        3) clear; ggdrive_restore ;;
+        4) clear; ggdrive_destroy ;;
+        5) clear; ggdrive_list_backup ;;
+		6) clear; ggdrive_del_remote ;;
+        0) clear; menu_backup ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}    Quan ly Log    ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Xem Log Nginx${NC}\n"
+    printf "${GREEN}2. Xem Log PHP${NC}\n"
+    printf "${GREEN}3. Xem Log MariaDB${NC}\n"
+    printf "${GREEN}4. Xem theo ten mien${NC}\n"
+    printf "${GREEN} ------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1)
+            clear
+            printf "${RED}Hien thi 10 dong log moi nhat...${NC}\n"
+            echo ""
+            tail /var/log/nginx/error.log
+            printf "${RED}Vi tri file log: /var/log/nginx/error.log${NC}\n"
+            menu_log
+            ;;
+        2)
+            clear
+            printf "${RED}Hien thi 10 dong log moi nhat...${NC}\n"
+            echo ""
+            tail /var/log/php-fpm/error.log
+            printf "${RED}Vi tri file log: /var/log/php-fpm/error.log${NC}\n"
+            menu_log
+            ;;
+        3)
+            clear
+            printf "${RED}Hien thi 20 dong log moi nhat...${NC}\n"
+            echo ""
+            tail /var/log/mysql/mysqld.log
+            printf "${RED}Vi tri file log: /var/log/mysql/mysqld.log${NC}\n"
+            menu_log
+            ;;
+        4) clear; domain_log;;
+        0) clear; menu_lemp ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

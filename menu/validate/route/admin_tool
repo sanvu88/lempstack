@@ -1,0 +1,45 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}Quan ly Admin Tool ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Cap nhat phpMyAdmin${NC}\n"
+    printf "${GREEN}2. Cap nhat phpSysInfo${NC}\n"
+    printf "${GREEN}3. Cap nhat Opcache Panel${NC}\n"
+    printf "${GREEN}4. Cap nhat Memcached Admin${NC}\n"
+    printf "${GREEN}5. Cap nhat Redis Admin${NC}\n"
+    printf "${GREEN}6. Doi mat khau Admin Tool${NC}\n"
+    printf "${GREEN}7. Doi port Admin Tool${NC}\n"
+    printf "${GREEN} -------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) update_phpmyadmin ;;
+        2) update_phpsysinfo ;;
+		3) update_opcache_panel ;;
+        4) update_memcached_panel ;;
+        4) update_redis_panel ;;
+		6)
+			read -r -p "Nhap mat khau moi: " admin_new_pwd
+			htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
+            sed -i '/admin_pwd=/d' ${FILE_INFO}
+            echo "admin_pwd=${admin_new_pwd}" >> ${FILE_INFO}
+			clear
+			printf "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}\n"
+			menu_admin
+			;;
+        7) change_port_admin ;;
+        0) clear; menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

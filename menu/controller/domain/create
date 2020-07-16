@@ -33,6 +33,7 @@ set_var(){
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
     cache="include /etc/nginx/extra/staticfiles.conf;"
+    include_seo=""
     plugin_cache="other"
     php_mode="1"
     wp_secure=""
@@ -93,7 +94,13 @@ wp_auto_install(){
         rm -rf license.txt readme.html
 
         # Create wp-config.php
-        wp core config --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --allow-root
+        db_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+        wp core config --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}_" --extra-php <<PHP
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_LOG', false );
+define( 'FS_METHOD', 'direct');
+define( 'WP_CACHE', true);
+PHP
 
         # Install WordPress
         wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
@@ -223,9 +230,13 @@ set_phpconf_var(){
     open_basedir="/home/${username}/:/dev/urandom:/usr/share/php/:/dev/shm"
 
     if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
-        php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+        php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
         listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
         open_basedir="/home/${username}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
+
+        if [[ "${php2_version}" == "php56" ]]; then
+            php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+        fi
     fi
 
     mkdir -p "${tmp_dir}"
@@ -289,6 +300,13 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         browser_cache
         brute_force_wp
+        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+            include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
+        elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
+            include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
+        else
+            include_seo=""
+        fi
     fi
 
     set_docroot
@@ -320,17 +338,17 @@ server {
             ${fastcgi_pass}
         }
     }
-
+    include /etc/nginx/extra/security.conf;
     ${brute}
     ${wp_secure}
-    include /etc/nginx/extra/security.conf;
+    ${include_seo}
 }
 END
 }
 
 save_user_config(){
     php_ver=${php1_version}
-    php_mode="1"
+
     if [[ "${php_mode}" == "2" ]]; then
         php_ver="${php2_version}"
         php_mode="2"
@@ -348,6 +366,7 @@ public_html=/home/${username}/${domain}/public_html
 plugin_cache=${plugin_cache}
 php_mode=${php_mode}
 php_version=${php_ver}
+plugins_seo=${plugins_seo}
 END
     chmod 600 "${USER_DIR}"/."${domain}".conf
 }
@@ -391,6 +410,14 @@ run(){
             select_php
         fi
 
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            clear
+            wp_auto_install_confirm
+            wp_auto_install "$@"
+            select_plugin_cache
+            select_plugin_seo
+        fi
+
         save_user_config
         create_phpconfig
         create_vhost
@@ -398,13 +425,6 @@ run(){
         create_user
         create_docrot
         create_ftp
-
-        if [[ "${SOURCE}" == "wordpress" ]]; then
-            clear
-            wp_auto_install_confirm
-            wp_auto_install "$@"
-            select_plugin_cache
-        fi
 
         set_owner
         restart_service

@@ -10,8 +10,8 @@ source /var/hostvn/menu/helpers/variable_common
 CHOICE=1
 
 printf "${GREEN}==================================================${NC}\n"
-printf "${GREEN}       ${AUTHOR} Scripts - Cong cu quan ly VPS    ${NC}\n"
-printf "${GREEN}                  ${AUTHOR_WEB}                   ${NC}\n"
+printf "${GREEN}       %s Scripts - Cong cu quan ly VPS    ${NC}\n" "${AUTHOR}"
+printf "${GREEN}                  %s                              ${NC}\n" "${AUTHOR_WEB}"
 printf "${GREEN}==================================================${NC}\n"
 printf "${GREEN}IP VPS: %s${NC}\n" "${IPADDRESS}"
 printf "${GREEN}phpMyAdmin: %s${NC}\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
@@ -54,7 +54,7 @@ do
         10) clear; menu_vps;;
         11) clear; menu_account ;;
         12) clear; menu_cronjob ;;
-        0) clear; echo -e "${GREEN}Bye Bye...${NC}\n";;
+        0) clear; echo -e "${GREEN}Bye Bye... Cam on ban da su dung HOSTVN.NET Script${NC}\n";;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

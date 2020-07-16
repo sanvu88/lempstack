@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    select_domain
+    if [[ -z "${ALERT}" ]]; then
+        username=${domain//[-._]/}
+        cd_dir /home/${username}/${domain}/public_html
+        debug=$(wp config get WP_DEBUG --allow-root)
+        if [[ "${debug}" == 1 ]]; then
+            wp config set WP_DEBUG false --raw --allow-root
+            printf "${GREEN}Tat Debug mode thanh cong.${NC}\n"
+            echo ""
+        else
+            wp config set WP_DEBUG true --raw --allow-root
+            printf "${GREEN}Bat Debug mode thanh cong.${NC}\n"
+            echo ""
+        fi
+    else
+        printf "${ALERT}\n"
+    fi
+}
+
+_run
+menu_wp

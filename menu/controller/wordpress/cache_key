@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+_run(){
+	select_domain
+    if [[ -z "${ALERT}" ]]; then
+        username=${domain//[-._]/}
+        cd_dir /home/${username}/${domain}/public_html
+        sed -i '/WP_CACHE_KEY_SALT/d' /home/${username}/${domain}/public_html/wp-config.php
+        prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+        wp config set WP_CACHE_KEY_SALT ${username}_${prefix} --allow-root
+        printf "${GREEN}Tao WP_CACHE_KEY_SALT thanh cong.${NC}\n"
+    else
+        printf "${ALERT}\n"
+    fi
+}
+
+_run
+menu_wp

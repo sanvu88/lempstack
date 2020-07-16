@@ -38,6 +38,7 @@ backup(){
 }
 
 change_pass_admin(){
+	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp user update "${admin_username}" --user_pass="${new_admin_pwd}"
 }
 

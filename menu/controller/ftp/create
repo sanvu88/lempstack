@@ -21,15 +21,16 @@ show_info(){
 }
 
 create(){
-	pure-pw useradd ${ftp_user} -g ${username} -d ${ftp_path} <<EOF
+	pure-pw useradd ${ftp_user} -u ${username} -g ${username} -d ${ftp_path} <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF
 	pure-pw mkdb
 }
 
-run(){
+_run(){
 	select_domain
+
 	set_var
 	input
 
@@ -41,7 +42,7 @@ run(){
 		ALERT=$(printf "${RED}Duong dan truy cap ban nhap khong ton tai.${NC}\n")
 	fi
 
-	validate_user
+	validate_user ${ftp_user}
 
 	if [[ -z "${ALERT}" ]]; then
 		create
@@ -51,5 +52,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_ftp

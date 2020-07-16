@@ -9,10 +9,10 @@ echo ""
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Danh sach ten mien${NC}\n"
-    printf "${GREEN}2. Them ten mien${NC}\n"
-    printf "${GREEN}3. Xoa ten mien${NC}\n"
-    printf "${GREEN}4. Thay doi ten mien${NC}\n"
+    printf "${GREEN}1. Tao user FTP${NC}\n"
+    printf "${GREEN}2. Doi mat khau FTP${NC}\n"
+    printf "${GREEN}3. Xoa User FTP${NC}\n"
+    printf "${GREEN}4. Doi Port FTP${NC}\n"
     printf "${GREEN} ------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -21,11 +21,11 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) clear; domain_list;;
-        2) clear; domain_create ;;
-        3) clear; domain_destroy ;;
-        4) clear; domain_change ;;
-        0) clear; menu_primary ;;
+        1) clear; ftp_create_user;;
+        2) clear; ftp_change_pwd ;;
+        3) clear; ftp_destroy ;;
+        4) clear; ftp_port ;;
+        0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

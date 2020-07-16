@@ -80,7 +80,10 @@ END
 change_phpconfig(){
 	php_conf_path="/etc/php-fpm.d"
 	if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
-        php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+        php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+        if [[ "${php2_version}" == "php56" ]]; then
+            php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+        fi
     fi
 
     mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${newdomain}".conf

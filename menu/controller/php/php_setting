@@ -12,7 +12,11 @@ printf "${RED}Can suy nghi ky truoc khi thay doi bat ky thong so nao.${NC}\n"
 
 set_variable(){
 	ini_1="/etc/php.d/00-hostvn-custom.ini"
-	ini_2="${php2_version}/etc/php.d/00-hostvn-custom.ini"
+	ini_2="/etc/opt/remi/${php2_version}/php.d/00-hostvn-custom.ini"
+
+	if [[ ${php2_version} == "php56" ]]; then
+        ini_2="/opt/remi/${php2_version}/root/etc/php.d/00-hostvn-custom.ini"
+    fi
 }
 
 select_parameter(){
@@ -69,7 +73,7 @@ restart_php(){
 	fi
 }
 
-run(){
+_run(){
 	set_variable
 	select_parameter
 	input_parameter
@@ -79,6 +83,6 @@ run(){
 	printf "${GREEN}Thay đoi thong so PHP thanh cong.${NC}\n"
 }
 
-run
+_run
 sleep 2
 menu_php

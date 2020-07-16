@@ -1,0 +1,35 @@
+#!/bin/bash
+
+select_time(){
+    echo "Lua chon thoi gian ?"
+    PS3='Nhap lua chon cua ban (1-4): '
+    options=("Backup 1 lan/ngay" "Backup 1 lan/tuan" "Backup 1 lan/thang" "Backup 1 lan/nam" "Huy tao cronjob")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Backup 1 lan/ngay") time="@midnight"; break;;
+            "Backup 1 lan/tuan") time="@weekly"; break;;
+            "Backup 1 lan/thang") time="@monthly"; break;;
+            "Backup 1 lan/nam") time="@yearly"; break;;
+            "Huy tao cronjob") clear; menu_cronjob; break;;
+            *) printf "${RED}Ban nhap sai, vui long nhap lai.${NC}\n";;
+        esac
+    done
+}
+
+create_cron(){
+	crontab -l | grep -q 'backup_local' && ALERT=$(printf '${RED}Cronjob da ton tai.${NC}\n') || cat <(crontab -l) <(echo "${time} ./var/hostvn/menu/cronjob/backup_ggdrive >/dev/null 2>&1") | crontab -
+	if [[ -z "${ALERT}" ]]; then
+		printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+_run(){
+	select_time
+	create_cron
+}
+
+_run
+menu_cronjob

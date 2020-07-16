@@ -81,7 +81,10 @@ destroy_db(){
 
 remove_path(){
 	if [[ "{$php_mode}" == 2 ]]; then
-    	php_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+    	php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
+        if [[ "${php2_version}" == "php56" ]]; then
+            php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+        fi
 	fi
 
 	if [ -d "/home/${username}" ]; then

@@ -30,6 +30,7 @@ backup(){
 }
 
 update_wp(){
+	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp core update --allow-root
 	chown -R "${username}":"${username}" ./*
 	clear

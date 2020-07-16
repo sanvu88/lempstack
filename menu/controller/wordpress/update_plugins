@@ -30,6 +30,7 @@ backup(){
 }
 
 update_plugins(){
+	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp plugin update --all --allow-root
 	chown -R "${username}":"${username}" ./*
 	clear

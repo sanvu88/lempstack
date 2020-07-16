@@ -80,7 +80,17 @@ backup_vhost(){
 change_vhost(){
 	backup_vhost
 	check_plugins_cache
+    clear
+    select_plugin_seo
 	fastcgi
+
+    if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+        include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
+    elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
+        include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
+    else
+        include_seo=""
+    fi
 
 	cat >> "${VHOST_DIR}/${newdomain}.conf" << END
 server {
@@ -116,6 +126,8 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         ${fastcgi_pass}
     }
+
+    ${include_seo}
     include /etc/nginx/wordpress/wordpress_secure.conf;
     include /etc/nginx/extra/security.conf;
 }
@@ -125,7 +137,10 @@ END
 change_phpconfig(){
 	php_conf_path="/etc/php-fpm.d"
 	if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
-        php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+        php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+        if [[ "${php2_version}" == "php56" ]]; then
+            php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+        fi
     fi
 
     mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${newdomain}".conf

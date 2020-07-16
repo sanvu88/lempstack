@@ -1,16 +1,5 @@
 #!/bin/bash
 
-#Debug
-debug_(){
-    LOG_FILE=/opt/$(date +%F)_run.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
-
 #################################################
 # Auto Install & Optimize LEMP Stack on CentOS 7#
 # Version: 1.0                                  #
@@ -28,6 +17,7 @@ BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
 GITHUB_RAW_LINK="https://raw.githubusercontent.com"
 EXT_LINK="https://scripts.sanvu88.net/lemp"
+UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
 GITHUB_URL="https://github.com"
 PECL_PHP_LINK="https://pecl.php.net/get"
 PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
@@ -55,7 +45,7 @@ ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
 WRONG_PHP_SELECT_2="Ban nhap sai. He thong se cai mot phien ban PHP."
 WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6"
 SELECT_PHP_2="Lua chon phien ban PHP thu hai ban muon su dung:"
-INST_MARIADB_ERR="Cai dtt MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
+INST_MARIADB_ERR="Cai dat MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
 INST_NGINX_ERR="Cai dat Nginx that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
 INST_PHP_ERR="Cai dat PHP that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
 INST_PHP_ERR_2="Cai dat PHP 2 that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro"
@@ -75,11 +65,11 @@ LOGIN_NOTI1="Cam on ban da su dung dich vu cua ${AUTHOR}."
 LOGIN_NOTI2="Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
 
 # Service Version
-PHPMYADMIN_VERSION="5.0.2"
-PHP_SYS_INFO_VERSION="3.3.2"
-IGBINARY_VERSION="3.1.2"
-PHP_MEMCACHED_VERSION="3.1.5"
-PHP_REDIS_VERSION="5.2.2"
+PHPMYADMIN_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
+PHP_SYS_INFO_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
+IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
+PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
+PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
 
 # Select Service Version
 MARIADB_VERSION="10.5"
@@ -151,6 +141,16 @@ disable_selinux(){
     systemctl disable firewalld
 }
 
+# Config Selinux
+config_selinux(){
+    yum install policycoreutils-python-utils -y
+    sed -i 's/SELINUX=disabled/SELINUX=enforcing/g' /etc/selinux/config
+    sed -i 's/SELINUX=permissive/SELINUX=enforcing/g' /etc/selinux/config
+    setenforce 1
+    semanage permissive -a httpd_t
+    semanage port -a -t ssh_port_t -p tcp 8282
+}
+
 #Set timezone
 set_timezone(){
     if [[ -f "/etc/localtime" && -f "/usr/share/zoneinfo/Asia/Ho_Chi_Minh" ]]; then
@@ -175,11 +175,7 @@ set_dns(){
     sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
     {
         echo "nameserver 8.8.8.8"
-        echo "nameserver 8.8.4.4"
-        echo "nameserver 4.2.2.2"
-        echo "options rotate"
-        echo "options timeout:1"
-        echo "options attempts:1"
+        echo "nameserver 1.1.1.1"
     } >> /etc/resolv.conf
 }
 
@@ -196,6 +192,7 @@ install_service(){
 
 # Admin Email
 set_email(){
+    clear
     while true
     do
         read -r -p "Nhap vao email cua ban: " ADMIN_EMAIL
@@ -225,7 +222,8 @@ ssh_login_noti(){
 
 prepare_install(){
     echo ""
-    disable_selinux
+    #disable_selinux
+    config_selinux
     set_timezone
     set_os_arch
     set_dns
@@ -281,7 +279,7 @@ check_control_panel(){
         exit
     fi
 
-    if [[ -f "${FILE_INFO}" ]]; then
+    if [[ -f "/etc/hostvn.lock" ]]; then
         printf "%s\n" "${OTHER_CP_EXISTS}"
         printf "%s\n" "${CANCEL_INSTALL}"
         exit
@@ -416,10 +414,13 @@ install_php_2(){
         "${PHP_VERSION_2}"-php-hash "${PHP_VERSION_2}"-php-iconv "${PHP_VERSION_2}"-php-libxml "${PHP_VERSION_2}"-php-pecl-imagick "${PHP_VERSION_2}"-php-mysqlnd "${PHP_VERSION_2}"-php-openssl "${PHP_VERSION_2}"-php-pcre "${PHP_VERSION_2}"-php-posix "${PHP_VERSION_2}"-php-sockets "${PHP_VERSION_2}"-php-spl \
         "${PHP_VERSION_2}"-php-tokenizer "${PHP_VERSION_2}"-php-bz2 "${PHP_VERSION_2}"-php-pgsql "${PHP_VERSION_2}"-php-sqlite3 "${PHP_VERSION_2}"-php-fileinfo
 
-        PHP2_PATH="/opt/remi/${PHP_VERSION_2}/root"
-        PHP_MODULES_DIR_2="${PHP2_PATH}/usr/lib64/php/modules"
-        PHP2_INI_PATH="${PHP2_PATH}/etc/php.d"
         PHP2_RELEASE="yes"
+        PHP2_INI_PATH="/etc/opt/remi/${PHP_VERSION_2}/php.d"
+        PHP_MODULES_DIR_2="/opt/remi/${PHP_VERSION_2}/root/usr/lib64/php/modules"
+
+        if [[ ${PHP_VERSION_2} == "php56" ]]; then
+            PHP2_INI_PATH="/opt/remi/${PHP_VERSION_2}/root/etc/php.d"
+        fi
     fi
 }
 
@@ -503,6 +504,8 @@ install_wpcli(){
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     chmod +x wp-cli.phar
     mv wp-cli.phar /usr/local/bin/wp
+    #wp package install iandunn/wp-cli-rename-db-prefix --allow-root
+    #wp package install markri/wp-sec --allow-root
 }
 
 ############################################
@@ -601,6 +604,7 @@ CACHESIZE="${MAX_MEMORY}mb"
 OPTIONS="-l 127.0.0.1 -U 0"
 EOMEMCACHED
     fi
+    semanage permissive -a memcached_t
 }
 
 # Install Redis
@@ -612,6 +616,7 @@ maxmemory ${MAX_MEMORY}mb
 maxmemory-policy allkeys-lru
 save ""
 EOFREDIS
+    semanage permissive -a redis_t
 }
 
 # Install igbinary
@@ -644,7 +649,7 @@ install_igbinary_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
-    ${PHP2_PATH}/usr/bin/phpize && ./configure --with-php-config="${PHP2_PATH}"/usr/bin/php-config
+    /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
@@ -687,7 +692,7 @@ install_php_memcached_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
-        ${PHP2_PATH}/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config="${PHP2_PATH}"/usr/bin/php-config
+        /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
         make && make install
         cd "${DIR}" && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
@@ -731,7 +736,7 @@ install_php_redis_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
-    ${PHP2_PATH}/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config="${PHP2_PATH}"/usr/bin/php-config
+    /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
@@ -883,7 +888,7 @@ http {
     # Limit Request
     limit_req_status 403;
     limit_conn_zone \$binary_remote_addr zone=one:10m;
-    limit_req_zone \$binary_remote_addr zone=two:10m rate=5r/s;
+    limit_req_zone \$binary_remote_addr zone=two:10m rate=1r/s;
 
     # Custom Response Headers
     add_header X-Powered-By ${AUTHOR};
@@ -978,6 +983,18 @@ location ~ ^/wp-content/uploads/edd/(.*?)\.zip\$ {
     rewrite / permanent;
 }
 
+# webp extension
+location ~ ^/wp-content/uploads/ {
+    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
+        expires 30d;
+        add_header Vary "Accept";
+        add_header Cache-Control "public, no-transform";
+        try_files \$uri\$webp_extension \$uri =404;
+    }
+}
+EOwpsecure
+
+    cat >> "/etc/nginx/wordpress/yoast_seo.conf" <<EOyoast_seo
 #Yoast SEO Sitemaps
 location ~* ^/wp-content/plugins/wordpress-seo(?:-premium)?/css/main-sitemap\.xsl\$ {}
 location ~ ([^/]*)sitemap(.*).x(m|s)l\$ {
@@ -996,21 +1013,13 @@ location ~ ([^/]*)sitemap(.*).x(m|s)l\$ {
     ## Video SEO
     rewrite ^/video-sitemap.xsl\$ /index.php?yoast-sitemap-xsl=video last;
 }
+EOyoast_seo
 
+    cat >> "/etc/nginx/wordpress/rank_math_seo.conf" <<EOrank_math_seo
 # RANK MATH SEO plugin
 rewrite ^/sitemap_index.xml\$ /index.php?sitemap=1 last;
 rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml\$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
-
-# webp extension
-location ~ ^/wp-content/uploads/ {
-    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
-        expires 30d;
-        add_header Vary "Accept";
-        add_header Cache-Control "public, no-transform";
-        try_files \$uri\$webp_extension \$uri =404;
-    }
-}
-EOwpsecure
+EOrank_math_seo
 
     cat >> "/etc/nginx/wordpress/w3c.conf" << EOw3c
 location ~ /wp-content/cache/minify/.*js_gzip\$ {
@@ -2413,26 +2422,39 @@ EOwww_conf
     chown -R nginx:nginx /var/lib/php/session
     chown -R nginx:nginx /var/lib/php/wsdlcache
     chown -R nginx:nginx /var/log/php-fpm
-    chmod 700 /var/lib/php/session
+    chmod 711 /var/lib/php/session
+    chmod 711 /var/lib/php/wsdlcache
 }
 
 php_global_config_2(){
-    if [[ -f "${PHP2_PATH}/etc/php-fpm.conf" ]]; then
-        mv "${PHP2_PATH}"/etc/php-fpm.conf "${PHP2_PATH}"/etc/php-fpm.conf.orig
+    php2_fpm_config_file="/etc/opt/remi/${PHP_VERSION_2}/php-fpm.conf"
+    php2_fpm_config_path="/etc/opt/remi/${PHP_VERSION_2}/php-fpm.d"
+    www2_config_file="/etc/opt/remi/${PHP_VERSION_2}/php-fpm.d/www.conf"
+
+    if [[ ${PHP_VERSION_2} == "php56" ]]; then
+        php2_fpm_config_file="/opt/remi/${PHP_VERSION_2}/root/etc/php-fpm.conf"
+        php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
+        www2_config_file="/opt/remi/${PHP_VERSION_2}/root/etc/php-fpm.d"
     fi
-    if [[ ! -d "${PHP2_PATH}/var/run/php-fpm" ]]; then
-        mkdir -p "${PHP2_PATH}"/var/run/php-fpm
+
+    if [[ -f "${php2_fpm_config_file}" ]]; then
+        mv ${php2_fpm_config_file} ${php2_fpm_config_file}.orig
     fi
-    cat >> "${PHP2_PATH}/etc/php-fpm.conf" << EOphp_fpm_2_conf
+
+    if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm" ]]; then
+        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm
+    fi
+
+    cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
 ;;;;;;;;;;;;;;;;;;;;;
 ; FPM Configuration ;
 ;;;;;;;;;;;;;;;;;;;;;
 
-include=${PHP2_PATH}/etc/php-fpm.d/*.conf
+include=${php2_fpm_config_path}/*.conf
 
 [global]
-pid = ${PHP2_PATH}/var/run/php-fpm/php-fpm.pid
-error_log = ${PHP2_PATH}/var/log/php-fpm/error.log
+pid = /opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm/php-fpm.pid
+error_log = /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm/error.log
 log_level = warning
 emergency_restart_threshold = 10
 emergency_restart_interval = 1m
@@ -2440,12 +2462,12 @@ process_control_timeout = 10s
 daemonize = yes
 EOphp_fpm_2_conf
 
-    if [[ -f "${PHP2_PATH}/etc/php-fpm.d/www.conf" ]]; then
-        mv "${PHP2_PATH}"/etc/php-fpm.d/www.conf "${PHP2_PATH}"/etc/php-fpm.d/www.conf.orig
+    if [[ -f "${www2_config_file}" ]]; then
+        mv ${www2_config_file} ${www2_config_file}.orig
     fi
-cat >> "${PHP2_PATH}/etc/php-fpm.d/www.conf" << EOwww_2_conf
+cat >> "${www2_config_file}" << EOwww_2_conf
 [www]
-listen = ${PHP2_PATH}/var/run/php-fpm.sock;
+listen = /opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm/php-fpm.sock;
 listen.backlog = -1
 listen.allowed_clients = 127.0.0.1
 listen.owner = nginx
@@ -2462,32 +2484,33 @@ pm.max_requests = ${PM_MAX_REQUEST}
 request_terminate_timeout = 300
 rlimit_files = 65536
 rlimit_core = 0
-;slowlog = ${PHP2_PATH}/var/log/php-fpm/www-slow.log
+;slowlog = /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm/www-slow.log
 chdir = /
-php_admin_value[error_log] = ${PHP2_PATH}/var/log/php-fpm/www-error.log
+php_admin_value[error_log] = /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm/www-error.log
 php_admin_flag[log_errors] = on
 php_value[session.save_handler] = files
-php_value[session.save_path]    = ${PHP2_PATH}/var/lib/php/session
-php_value[soap.wsdl_cache_dir]  = ${PHP2_PATH}/var/lib/php/wsdlcache
+php_value[session.save_path]    = /opt/remi/${php2_version}/root/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
 php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
 security.limit_extensions = .php
 EOwww_2_conf
 
-    if [[ ! -d "${PHP2_PATH}/var/lib/php/session" ]]; then
-        mkdir -p "${PHP2_PATH}"/var/lib/php/session
+    if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/lib/php/session" ]]; then
+        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
     fi
-    if [[ ! -d "${PHP2_PATH}/var/lib/php/wsdlcache" ]]; then
-        mkdir -p "${PHP2_PATH}"/var/lib/php/wsdlcache
+    if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache" ]]; then
+        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
     fi
-    if [[ ! -d "${PHP2_PATH}/var/log/php-fpm" ]]; then
-        mkdir -p ${PHP2_PATH}/var/log/php-fpm
+    if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm" ]]; then
+        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm
     fi
-    chown -R nginx:nginx "${PHP2_PATH}"/var/lib/php/session
-    chown -R nginx:nginx "${PHP2_PATH}"/var/lib/php/wsdlcache
-    chown -R nginx:nginx "${PHP2_PATH}"/var/log/php-fpm
-    chmod 700 "${PHP2_PATH}"/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm
+    chmod 711 /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
+    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
 }
 
 # Custom PHP Ini
@@ -2518,7 +2541,7 @@ EOhostvn_custom_ini
 
 hostvn_custom_ini_2(){
     memory_limit_calculation
-    cat > "${PHP2_PATH}/etc/php.d/00-hostvn-custom.ini" <<EOhostvn_custom_ini
+    cat > "${PHP2_INI_PATH}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
 max_input_time = 90
@@ -2570,10 +2593,10 @@ EOopcache_blacklist
 }
 
 php_opcache_2(){
-    if [[ -f "${PHP2_PATH}/etc/php.d/10-opcache.ini" ]]; then
-        mv "${PHP2_PATH}"/etc/php.d/10-opcache.ini "${PHP2_PATH}"/etc/php.d/10-opcache.ini.orig
+    if [[ -f "${PHP2_INI_PATH}/10-opcache.ini" ]]; then
+        mv ${PHP2_INI_PATH}/10-opcache.ini ${PHP2_INI_PATH}/10-opcache.ini.orig
     fi
-    cat > "${PHP2_PATH}/etc/php.d/10-opcache.ini" << EOphp_opcache
+    cat > "${PHP2_INI_PATH}/10-opcache.ini" << EOphp_opcache
 zend_extension=opcache.so
 opcache.enable=1
 opcache.memory_consumption=${OPCACHE_MEM}
@@ -2586,10 +2609,10 @@ opcache.enable_cli=0
 opcache.save_comments=1
 opcache.enable_file_override=1
 opcache.validate_timestamps=1
-opcache.blacklist_filename=${PHP2_PATH}/etc/php.d/opcache-default.blacklist
+opcache.blacklist_filename=${PHP2_INI_PATH}/opcache-default.blacklist
 EOphp_opcache
 
-    cat > "${PHP2_PATH}/etc/php.d/opcache-default.blacklist" << EOopcache_blacklist
+    cat > "${PHP2_INI_PATH}/opcache-default.blacklist" << EOopcache_blacklist
 /home/*/public_html/wp-content/plugins/backwpup/*
 /home/*/public_html/wp-content/plugins/duplicator/*
 /home/*/public_html/wp-content/plugins/updraftplus/*
@@ -3671,7 +3694,7 @@ install_csf(){
     sh install.sh
     cd_dir "${DIR}"
     rm -rf csf*
-    sed -i 's/21,22/21,22,8282/g' /etc/csf/csf.conf
+    #sed -i 's/21,22/21,22,8282/g' /etc/csf/csf.conf
     sed -i 's/443,465/443,'${RANDOM_ADMIN_PORT}',465/g' /etc/csf/csf.conf
     sed -i 's/443,587/443,465,587,'${RANDOM_ADMIN_PORT}'/g' /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
@@ -3792,14 +3815,15 @@ write_info(){
         echo "lang=vi"
     } >> "${FILE_INFO}"
 
-    chmod 600 "${FILE_INFO}"
+    touch /etc/hostvn.lock
+    chmod 600 "${FILE_INFO}" /etc/hostvn.lock
 }
 
 
 ############################################
 # Run Script
 ############################################
-main(){
+_run(){
     # Prepare before install
     check_before_install
     prepare_install
@@ -3833,7 +3857,7 @@ main(){
     write_info
 }
 
-main
+_run
 
 clear
 sleep 1

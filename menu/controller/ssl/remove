@@ -21,10 +21,10 @@ echo
 set_variable(){
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-    php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     cache="include /etc/nginx/extra/staticfiles.conf;"
+    include_seo=""
     wp_secure=""
     brute=""
 }
@@ -69,14 +69,36 @@ backup_vhost(){
     mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
 }
 
+set_docroot(){
+    if [[ "${SOURCE}" == "laravel" ]]; then
+        root="root /home/${username}/${domain}/public_html/public;"
+    else
+        root="root /home/${username}/${domain}/public_html;"
+    fi
+}
+
 create_vhost(){
     backup_vhost
     set_rewrite
     fastcgi
+    set_docroot
 
     if [ "${SOURCE}" == "wordpress" ]; then
         check_plugins_cache
         brute_force_wp
+
+        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+            include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
+            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+            echo "plugins_seo=yoast_seo" >> ${USER_DIR}/.${domain}.conf
+        elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
+            include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
+            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+            echo "plugins_seo=rank_math_seo" >> ${USER_DIR}/.${domain}.conf
+        else
+            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+            echo "plugins_seo=" >> ${USER_DIR}/.${domain}.conf
+        fi
     fi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
@@ -109,6 +131,7 @@ server {
 
     ${brute}
     ${wp_secure}
+    ${include_seo}
     include /etc/nginx/extra/security.conf;
 }
 END
@@ -125,12 +148,12 @@ run(){
 
     if [ -z "${ALERT}" ]; then
         select_source
+        set_variable
 
         if [ "${SOURCE}" == "wordpress" ]; then
-            plugin_cache
+            select_plugin_seo
         fi
 
-        set_variable
         create_vhost
         restart_nginx
         clear

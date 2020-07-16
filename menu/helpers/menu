@@ -100,6 +100,10 @@ domain_destroy(){
 	. /var/hostvn/menu/controller/domain/destroy
 }
 
+domain_change(){
+	. /var/hostvn/menu/controller/domain/change_domain
+}
+
 memcached_c(){
 	. /var/hostvn/menu/controller/cache/memcached
 }
@@ -146,6 +150,14 @@ ssl_remove(){
 
 php_setting(){
 	. /var/hostvn/menu/controller/php/php_setting
+}
+
+php_inst_ver_2(){
+	. /var/hostvn/menu/controller/php/install_php2
+}
+
+php_change(){
+	. /var/hostvn/menu/controller/php/change_php
 }
 
 info_webserver(){
@@ -198,6 +210,30 @@ wp_restore(){
 
 wp_auto_install(){
 	. /var/hostvn/menu/controller/wordpress/auto_install
+}
+
+wp_yoast_seo(){
+	. /var/hostvn/menu/controller/wordpress/yoast_seo
+}
+
+wp_rank_math_seo(){
+	. /var/hostvn/menu/controller/wordpress/rank_math_seo
+}
+
+wp_cache_key(){
+	. /var/hostvn/menu/controller/wordpress/cache_key
+}
+
+wp_debug(){
+	. /var/hostvn/menu/controller/wordpress/debug
+}
+
+wp_maintenance(){
+	. /var/hostvn/menu/controller/wordpress/maintenance
+}
+
+wp_plugin_cache(){
+	. /var/hostvn/menu/controller/wordpress/cache_plugin
 }
 
 account_info(){
@@ -354,4 +390,12 @@ ggdrive_destroy(){
 
 ggdrive_del_remote(){
 	. /var/hostvn/menu/controller/ggdrive/delete_remote
+}
+
+cron_backup_local(){
+	. /var/hostvn/menu/controller/cron/backup_local
+}
+
+cron_backup_gg(){
+	. /var/hostvn/menu/controller/cron/backup_gg
 }

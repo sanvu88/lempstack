@@ -1,0 +1,27 @@
+#!/bin/bash
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}     Quan ly SSL   ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. SSL Let's Encrypt${NC}\n"
+    printf "${GREEN}2. SSL tra phi${NC}\n"
+    printf "${GREEN} ------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; menu_letencrypt;;
+        2) clear; menu_sslpaid;;
+        0) clear; menu_primary ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

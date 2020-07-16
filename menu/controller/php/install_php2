@@ -1,0 +1,372 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_php
+
+set_var(){
+	PECL_PHP_LINK="https://pecl.php.net/get"
+	IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
+	PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
+	PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
+}
+
+memory_calculation(){
+    if [[ "${PHP_MEM}" -le '262144' ]]; then
+        OPCACHE_MEM='32'
+        MAX_MEMORY='48'
+        PHP_REAL_PATH_LIMIT='512k'
+        PHP_REAL_PATH_TTL='14400'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
+        OPCACHE_MEM='80'
+        MAX_MEMORY='96'
+        PHP_REAL_PATH_LIMIT='640k'
+        PHP_REAL_PATH_TTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
+        OPCACHE_MEM='112'
+        MAX_MEMORY='128'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
+        OPCACHE_MEM='144'
+        MAX_MEMORY='160'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
+        OPCACHE_MEM='160'
+        MAX_MEMORY='320'
+        PHP_REAL_PATH_LIMIT='1536k'
+        PHP_REAL_PATH_TTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
+        OPCACHE_MEM='192'
+        MAX_MEMORY='384'
+        PHP_REAL_PATH_LIMIT='2048k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
+        OPCACHE_MEM='224'
+        MAX_MEMORY='512'
+        PHP_REAL_PATH_LIMIT='3072k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
+        OPCACHE_MEM='288'
+        MAX_MEMORY='640'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
+        OPCACHE_MEM='320'
+        MAX_MEMORY='800'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
+        OPCACHE_MEM='480'
+        MAX_MEMORY='1024'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
+        OPCACHE_MEM='600'
+        MAX_MEMORY='1280'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
+        OPCACHE_MEM='800'
+        MAX_MEMORY='2048'
+        PHP_REAL_PATH_LIMIT='8192k'
+        PHP_REAL_PATH_TTL='86400'
+        MAX_INPUT_VARS="10000"
+    fi
+}
+
+check_php2_release(){
+	if [[ "${php2_release}" == "yes" ]]; then
+		ALERT=$(printf "${RED}Phien ban PHP thu 2 da duoc cai dat tren VPS.${NC}\n")
+	fi
+}
+
+select_php_ver(){
+    clear
+    printf "Lua chon phien ban PHP\n"
+    PS3="Nhap vao lua chon cua ban [1-6]: "
+    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "7.4") php2_version="php74"; break;;
+            "7.3") php2_version="php73"; break;;
+            "7.2") php2_version="php72"; break;;
+            "7.1") php2_version="php71"; break;;
+            "7.0") php2_version="php70"; break;;
+            "5.6") php2_version="php56"; break;;
+            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        esac
+    done
+}
+
+check_duplicate_php(){
+    if [[ "${php2_version}" == "${php1_version}" ]]; then
+        ALERT=$(printf "${RED}Phien ban PHP thu 2 trung voi phien ban mac dinh. Huy cai dat.${NC}\n")
+    fi
+}
+
+install_php_2(){
+    yum -y install "${php2_version}" "${php2_version}"-php-fpm "${php2_version}"-php-ldap "${php2_version}"-php-zip "${php2_version}"-php-embedded "${php2_version}"-php-cli "${php2_version}"-php-mysql "${php2_version}"-php-common "${php2_version}"-php-gd "${php2_version}"-php-xml "${php2_version}"-php-mbstring \
+    "${php2_version}"-php-mcrypt "${php2_version}"-php-pdo "${php2_version}"-php-soap "${php2_version}"-php-json "${php2_version}"-php-simplexml "${php2_version}"-php-process "${php2_version}"-php-curl "${php2_version}"-php-bcmath "${php2_version}"-php-snmp "${php2_version}"-php-pspell "${php2_version}"-php-gmp \
+    "${php2_version}"-php-intl "${php2_version}"-php-imap perl-LWP-Protocol-https "${php2_version}"-php-pear-Net-SMTP "${php2_version}"-php-enchant "${php2_version}"-php-pear "${php2_version}"-php-devel "${php2_version}"-php-zlib "${php2_version}"-php-xmlrpc \
+    "${php2_version}"-php-tidy "${php2_version}"-php-opcache "${php2_version}"-php-cli "${php2_version}"-php-pecl-zip "${php2_version}"-php-dom "${php2_version}"-php-ssh2 "${php2_version}"-php-xmlreader "${php2_version}"-php-date "${php2_version}"-php-exif "${php2_version}"-php-filter "${php2_version}"-php-ftp \
+    "${php2_version}"-php-hash "${php2_version}"-php-iconv "${php2_version}"-php-libxml "${php2_version}"-php-pecl-imagick "${php2_version}"-php-mysqlnd "${php2_version}"-php-openssl "${php2_version}"-php-pcre "${php2_version}"-php-posix "${php2_version}"-php-sockets "${php2_version}"-php-spl \
+    "${php2_version}"-php-tokenizer "${php2_version}"-php-bz2 "${php2_version}"-php-pgsql "${php2_version}"-php-sqlite3 "${php2_version}"-php-fileinfo
+
+    php2_release="yes"
+    php2_ini_path="/etc/opt/remi/${php2_version}/php.d"
+    php2_module_dir="/opt/remi/${php2_version}/root/usr/lib64/php/modules"
+
+    if [[ ${php2_version} == "php56" ]]; then
+        php2_ini_path="/opt/remi/${php2_version}/root/etc/php.d"
+    fi
+}
+
+install_igbinary_2(){
+    if [[ "${php2_version}" == "php56" ]]; then
+        IGBINARY_VERSION="2.0.8"
+    fi
+
+    cd_dir /root && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
+    tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
+    cd_dir /root/igbinary-${IGBINARY_VERSION}
+    /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+    make && make install
+    cd_dir /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
+
+    if [[ -f "${php2_module_dir}/igbinary.so" ]]; then
+        cat >> "${php2_ini_path}/40-igbinary.ini" << EOF
+extension=igbinary.so
+EOF
+    fi
+}
+
+install_php_memcached_2(){
+    if [[ "${php2_version}" == "php56" ]]; then
+        PHP_MEMCACHED_VERSION="2.2.0"
+    fi
+
+    cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        cd_dir /root/memcached-${PHP_MEMCACHED_VERSION}
+        /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+        make && make install
+        cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
+
+    if [[ -f "${php2_module_dir}/memcached.so" ]]; then
+        cat >> "${php2_ini_path}/50-memcached.ini" << EOF
+extension=memcached.so
+EOF
+    fi
+}
+
+install_php_redis_2(){
+    if [[ "${php2_version}" == "php56" ]]; then
+        PHP_REDIS_VERSION="4.3.0"
+    fi
+
+    cd /root && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
+    tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
+    cd_dir "/root/redis-${PHP_REDIS_VERSION}"
+    /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+    make && make install
+    cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
+
+    if [[ -f "${php2_module_dir}/redis.so" ]]; then
+        cat >> "${php2_ini_path}/50-redis.ini" << EOF
+extension=redis.so
+EOF
+    fi
+}
+
+php2_global_config(){
+	php2_fpm_config_file="/etc/opt/remi/${php2_version}/php-fpm.conf"
+    php2_fpm_config_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+    www2_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/www.conf"
+
+    if [[ ${php2_version} == "php56" ]]; then
+        php2_fpm_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.conf"
+        php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
+        www2_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+    fi
+
+    if [[ -f "${php2_fpm_config_file}" ]]; then
+        rm -rf ${php2_fpm_config_file}
+    fi
+
+    if [[ ! -d "/opt/remi/${php2_version}/root/var/run/php-fpm" ]]; then
+        mkdir -p /opt/remi/${php2_version}/root/var/run/php-fpm
+    fi
+
+    cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
+;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+include=${php2_fpm_config_path}/*.conf
+
+[global]
+pid = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.pid
+error_log = /opt/remi/${php2_version}/root/var/log/php-fpm/error.log
+log_level = warning
+emergency_restart_threshold = 10
+emergency_restart_interval = 1m
+process_control_timeout = 10s
+daemonize = yes
+EOphp_fpm_2_conf
+
+    if [[ -f "${www2_config_file}" ]]; then
+        rm -rf ${www2_config_file}
+    fi
+cat >> "${www2_config_file}" << EOwww_2_conf
+[www]
+listen = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.sock;
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660
+user = nginx
+group = nginx
+pm = dynamic
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.start_servers = ${PM_START_SERVERS}
+pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
+pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.max_requests = ${PM_MAX_REQUEST}
+request_terminate_timeout = 300
+rlimit_files = 65536
+rlimit_core = 0
+;slowlog = /opt/remi/${php2_version}/root/var/log/php-fpm/www-slow.log
+chdir = /
+php_admin_value[error_log] = /opt/remi/${php2_version}/root/var/log/php-fpm/www-error.log
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = /opt/remi/${php2_version}/root/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
+security.limit_extensions = .php
+EOwww_2_conf
+
+    if [[ ! -d "/opt/remi/${php2_version}/root/var/lib/php/session" ]]; then
+        mkdir -p /opt/remi/${php2_version}/root/var/lib/php/session
+    fi
+    if [[ ! -d "/opt/remi/${php2_version}/root/var/lib/php/wsdlcache" ]]; then
+        mkdir -p /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+    fi
+    if [[ ! -d "/opt/remi/${php2_version}/root/var/log/php-fpm" ]]; then
+        mkdir -p /opt/remi/${php2_version}/root/var/log/php-fpm
+    fi
+    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/log/php-fpm
+    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/session
+    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+}
+
+hostvn_custom_ini_2(){
+	if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
+		rm -rf ${php2_ini_path}/00-hostvn-custom.ini
+	fi
+    cat > "${php2_ini_path}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
+date.timezone = Asia/Ho_Chi_Minh
+max_execution_time = 90
+max_input_time = 90
+short_open_tag = On
+realpath_cache_size = ${PHP_REAL_PATH_LIMIT}
+realpath_cache_ttl = ${PHP_REAL_PATH_TTL}
+memory_limit = ${MAX_MEMORY}M
+upload_max_filesize = ${MAX_MEMORY}M
+post_max_size = ${MAX_MEMORY}M
+expose_php = Off
+display_errors = Off
+mail.add_x_header = Off
+max_input_nesting_level = 128
+max_input_vars = ${MAX_INPUT_VARS}
+mysqlnd.net_cmd_buffer_size = 16384
+mysqlnd.collect_memory_statistics = Off
+mysqlnd.mempool_default_size = 16000
+always_populate_raw_post_data=-1
+;disable_functions=exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+EOhostvn_custom_ini
+}
+
+php_opcache_2(){
+    if [[ -f "${php2_ini_path}/10-opcache.ini" ]]; then
+        rm -rf ${php2_ini_path}/10-opcache.ini
+    fi
+    cat > "${php2_ini_path}/10-opcache.ini" << EOphp_opcache
+zend_extension=opcache.so
+opcache.enable=1
+opcache.memory_consumption=${OPCACHE_MEM}
+opcache.interned_strings_buffer=8
+opcache.max_wasted_percentage=5
+opcache.max_accelerated_files=65407
+opcache.revalidate_freq=180
+opcache.fast_shutdown=0
+opcache.enable_cli=0
+opcache.save_comments=1
+opcache.enable_file_override=1
+opcache.validate_timestamps=1
+opcache.blacklist_filename=${php2_ini_path}/opcache-default.blacklist
+EOphp_opcache
+
+    cat > "${php2_ini_path}/opcache-default.blacklist" << EOopcache_blacklist
+/home/*/public_html/wp-content/plugins/backwpup/*
+/home/*/public_html/wp-content/plugins/duplicator/*
+/home/*/public_html/wp-content/plugins/updraftplus/*
+EOopcache_blacklist
+}
+
+write_info(){
+	sed -i '/php2_release=/d' ${FILE_INFO}
+	sed -i '/php2_version=/d' ${FILE_INFO}
+	{
+        echo "php2_release=${php2_release}"
+        echo "php2_version=${php2_version}"
+    } >> "${FILE_INFO}"
+}
+
+_run(){
+	check_php2_release
+	select_php_ver
+	check_duplicate_php
+
+	if [[ -z "${ALERT}" ]]; then
+		set_var
+		memory_calculation
+		install_php_2
+		install_igbinary_2
+		install_php_memcached_2
+		install_php_redis_2
+		php2_global_config
+		hostvn_custom_ini_2
+		php_opcache_2
+		write_info
+		systemctl start ${php2_version}-php-fpm
+		systemctl enable ${php2_version}-php-fpm
+		clear
+		printf "${GREEN}Cai dat thanh cong.${NC}\n"
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+_run
+menu_php

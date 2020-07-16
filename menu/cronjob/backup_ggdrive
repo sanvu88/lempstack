@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/hostvn.conf
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/menu
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/variable_common
+
+for users in /home/*; do
+	if [[ -d "${users}" ]]; then
+		user=${users##*/}
+		for domains in /home/${user}/*; do
+			if [[ -d "${domains}" ]]; then
+				domain=${domains##*/}
+				for publics in /home/${user}/${domain}/public_html; do
+					if [[ -d "${publics}" ]]; then
+						public=${publics##*/}
+						db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+						if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
+							mkdir -p /home/backup/${DATE}/${domain}
+						fi
+						rm -rf /home/backup/${DATE}/${domain}/*
+						cd_dir /home/backup/${DATE}/${domain}
+						mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
+
+						cd_dir /home/${user}/${domain}
+						tar -cpzvf /home/backup/"${DATE}"/"${domain}"/${domain}.tar.gz ${public}
+					fi
+				done
+			fi
+		done
+	fi
+done
+
+rclone copy /home/backup ${remote}:${IPADDRESS} >> /var/log/rclone.log 2>&1
+rm -rf /home/backup/*

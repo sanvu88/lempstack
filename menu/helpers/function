@@ -167,7 +167,7 @@ empty_db(){
 select_plugin_cache(){
     plugins_cache="other"
     echo "Lua chon Plugins cache ma se ban su dung ?"
-    PS3='Nhap lua chon cua ban (1-2): '
+    PS3='Nhap lua chon cua ban (1-8): '
     options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
     select opt in "${options[@]}"
     do
@@ -180,7 +180,22 @@ select_plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "Ban nhap sai, huy tu đong config Nginx cho plugins cache.\n"; break;;
+            *) printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n"; break;;
+        esac
+    done
+}
+
+select_plugin_seo(){
+    plugins_seo=""
+    echo "Lua chon Plugins SEO ma se ban su dung ?"
+    PS3='Nhap lua chon cua ban (1-2): '
+    options=("Yoast Seo" "Rank Math Seo")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yoast Seo") plugins_seo="yoast_seo"; break;;
+            "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
+            *) printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins seo.${NC}\n"; break;;
         esac
     done
 }

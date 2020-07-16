@@ -36,17 +36,17 @@ validate_domain(){
     #     ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
     # fi
     if [ -z "${1}" ]; then
-        ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
-    elif [[ ! ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
-        ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
+        ALERT=$(printf "${RED}Ban chua chon ten mien.${NC}\n")
+    elif ! [[ ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
+        ALERT=$(printf "${RED}Ten mien ban nhap khong dung dinh dang.${NC}\n")
     fi
 }
 
 check_domain_exists(){
     if [[ -f "${USER_DIR}/.${1}.conf" || -f "${VHOST_DIR}/${1}.conf" ]]; then
         ALERT=$(
-                    printf "${RED}Domain da ton tai tren vps.${NC}\n"
-                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                    printf "${RED}Ten mien da ton tai tren vps.${NC}\n"
+                    printf "${RED}Ban can xoa Ten mien neu muon them lai.${NC}\n"
                 )
     fi
 }
@@ -60,7 +60,7 @@ if_domain_exists(){
 }
 
 validate_user(){
-    if ! [[ ${user} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+    if ! [[ ${1} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
         ALERT=$(printf "${RED}User ban nhap khong dung dinh dang.${NC}\n")
     fi
 }

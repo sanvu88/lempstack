@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+set_var(){
+	username=${domain//[-._]/}
+	cache=$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+}
+
+browser_cache(){
+	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+	plugin_cache="other"
+    if [[ "${plugins_cache}" == "w3c" ]]; then
+        plugin_cache="w3c"
+        set_cache="include /etc/nginx/wordpress/w3c.conf;"
+    elif [[ "${plugins_cache}" == "wpfc" ]]; then
+        plugin_cache="wpfc"
+        set_cache="include /etc/nginx/wordpress/wpfc.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wprocket" ]]; then
+        plugin_cache="wprocket"
+        set_cache="include /etc/nginx/wordpress/wprocket.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "wpsc" ]]; then
+        plugin_cache="wpsc"
+        set_cache="include /etc/nginx/wordpress/wpsc.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "enabler" ]]; then
+        plugin_cache="enabler"
+        set_cache="include /etc/nginx/wordpress/enabler.conf;"
+        rewrite=""
+    elif [[ "${plugins_cache}" == "swift1" ]]; then
+        plugin_cache="swift1"
+        set_cache="include /etc/nginx/extra/staticfiles.conf;"
+    elif [[ "${plugins_cache}" == "swift2" ]]; then
+        plugin_cache="swift2"
+        set_cache="include /etc/nginx/wordpress/swift2.conf;"
+    else
+        plugin_cache="other"
+        set_cache="include /etc/nginx/extra/staticfiles.conf;"
+    fi
+}
+
+validate_plugin(){
+	if [[ -z "${plugins_cache}" ]]; then
+		ALERT=$(printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n")
+	fi
+}
+
+action(){
+	browser_cache
+	if [[ "${cache}" == "other" ]]; then
+		sed -i 's|include /etc/nginx/extra/staticfiles.conf;|'${set_cache}'|g' ${VHOST_DIR}/${domain}.conf
+	else
+		sed -i 's|include /etc/nginx/extra/'${cache}'.conf;|'${set_cache}'|g' ${VHOST_DIR}/${domain}.conf
+	fi
+
+	if [[ -z "${rewrite}" ]]; then
+		sed -i '/wordpress.conf/d' ${VHOST_DIR}/${domain}.conf
+	fi
+}
+
+_run(){
+	select_domain
+	select_plugin_cache
+	validate_plugin
+	set_var
+
+	if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
+		ALERT=$(printf "${RED}Website khong su dung WordPress.${NC}\n")
+	fi
+
+	if [[ -z "${ALERT}" ]]; then
+		action
+		clear
+		printf "${GREEN}Cau hinh Nginx voi plugin cache thanh cong.${NC}\n"
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+_run
+menu_wp

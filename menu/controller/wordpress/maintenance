@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    select_domain
+    if [[ -z "${ALERT}" ]]; then
+        username=${domain//[-._]/}
+        cd_dir /home/${username}/${domain}/public_html
+        wp maintenance-mode is-active --allow-root
+
+        if [[ $? == 1 ]]; then
+            wp maintenance-mode activate --allow-root
+            printf "${GREEN}Bat che do bao tri thanh cong.${NC}\n"
+            echo ""
+        else
+            wp maintenance-mode deactivate --allow-root
+            printf "${GREEN}Tat che do bao tri thanh cong.${NC}\n"
+            echo ""
+        fi
+    else
+        printf "${ALERT}\n"
+    fi
+}
+
+_run
+menu_wp

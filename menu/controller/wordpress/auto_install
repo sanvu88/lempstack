@@ -22,8 +22,8 @@ set_var(){
 	fi
 
 	cache="include /etc/nginx/extra/staticfiles.conf;"
-	php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+    include_seo=""
 }
 
 docroot_empty(){
@@ -50,7 +50,13 @@ auto_install(){
     wp core download --locale=en_US --allow-root
     rm -rf license.txt readme.html
     # Create wp-config.php
-    wp core config --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --allow-root
+    db_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+        wp core config --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}_" --extra-php <<PHP
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_LOG', false );
+define( 'FS_METHOD', 'direct');
+define( 'WP_CACHE', true);
+PHP
     # Install WordPress
     wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
     # Create robots.txt
@@ -121,6 +127,19 @@ create_vhost(){
     fastcgi
     set_cache
 
+    if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+        include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
+        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+        echo "plugins_seo=yoast_seo" >> ${USER_DIR}/.${domain}.conf
+    elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
+        include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
+        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+        echo "plugins_seo=rank_math_seo" >> ${USER_DIR}/.${domain}.conf
+    else
+        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+        echo "plugins_seo=" >> ${USER_DIR}/.${domain}.conf
+    fi
+
     cat >> "${VHOST_DIR}/${domain}.conf" << END
 server {
     listen 80;
@@ -130,7 +149,7 @@ server {
     #access_log /home/${username}/${domain}/logs/access.log;
     #error_log off;
     error_log /home/${username}/${domain}/logs/error.log;
-    root /home/${username}/${domain}/public_html/public;
+    root /home/${username}/${domain}/public_html;
     index index.php index.html index.htm;
 
     ${rewrite}
@@ -157,6 +176,7 @@ server {
     }
     include /etc/nginx/wordpress/wordpress_secure.conf;
     include /etc/nginx/extra/security.conf;
+    ${include_seo}
 }
 END
 
@@ -187,6 +207,8 @@ run(){
 			auto_install
 			clear
 			select_plugin_cache
+            select_plugin_seo
+            create_vhost
 		else
 			clear
 			printf "${ALERT}\n"
