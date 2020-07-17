@@ -1,7 +1,7 @@
-<div style="text-align: center;"><strong>Auto Install & Optimize LEMP Stack on CentOS 7</strong></div>
-<div style="text-align: center;"><strong>Author: Sanvv - HOSTVN.NET Technical</strong></div>
+<p align="center"><strong>Auto Install & Optimize LEMP Stack on CentOS 7</strong></p>
+<p align="center"><strong>Author: Sanvv - HOSTVN.NET Technical</strong></p>
 
-<div style="text-align: center;"> <img src="https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png" alt="HOSTVN.NET" /> </div>
+<p align="center"> <img src="https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png" /> </p>
 
 ########################################################################################
 
