@@ -50,7 +50,12 @@ choose_domain(){
 }
 
 download_backup(){
-	rclone copy "${remote}:/${IPADDRESS}/${date}/${domain}" /home/backup
+  if [ -d "/home/backup/${date}/${domain}" ]; then
+      rm -rf /home/backup/"${date}"/"${domain}"
+  else
+    mkdir -p /home/backup/"${date}"/"${domain}"
+  fi
+	rclone copy "${remote}:/${IPADDRESS}/${date}/${domain}" /home/backup/"${date}"
 }
 
 restore_source(){
