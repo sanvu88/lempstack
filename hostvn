@@ -32,11 +32,7 @@ AUTHOR_CONTACT="kythuat@hostvn.net"
 AUTHOR_WEBSITE="https://hostvn.net"
 
 # Set Lang
-ROOT_ERR="Ban can chay script voi user root. Chay lenh \"sudo su\" de co quyen root!"
 CANCEL_INSTALL="Huy cai dat..."
-OS_WROG="Script chi hoat dong tren \"CentOS 7\"!"
-RAM_NOT_ENOUGH="Canh bao: Dung luong RAM qua thap de cai Script. (it nhat 512MB)"
-OTHER_CP_EXISTS="May chu cua ban da cai dat Control Panel khac. Vui long rebuild de cai dat Script"
 ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
 SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
 WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat PHP 7.4"
@@ -133,14 +129,6 @@ create_bash_dir(){
     mkdir -p "${BASH_DIR}"
 }
 
-# Disable Selinux
-disable_selinux(){
-    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-    systemctl stop firewalld
-    systemctl disable firewalld
-}
-
 # Config Selinux
 config_selinux(){
     yum install policycoreutils-python-utils -y
@@ -222,7 +210,6 @@ ssh_login_noti(){
 
 prepare_install(){
     echo ""
-    #disable_selinux
     config_selinux
     set_timezone
     set_os_arch
@@ -232,66 +219,6 @@ prepare_install(){
     create_log
     ssh_login_noti
     set_email
-}
-
-############################################
-# Check conditions
-############################################
-
-# Check if user not root
-check_root(){
-    if [[ "$(id -u)" != "0" ]]; then
-        printf "%s\n" "${ROOT_ERR}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-}
-
-# Check OS
-check_os(){
-    if [[ "${OS_VER}" != "7" ]]; then
-        printf "%s\n" "${OS_WROG}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-}
-
-# Check if not enough ram
-check_low_ram(){
-    if [[ "${RAM_TOTAL}" -lt "${LOW_RAM}" ]]; then
-        printf "%s\n" "${RAM_NOT_ENOUGH}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-}
-
-# Check if other Control Panel has installed before
-check_control_panel(){
-    if [[ -f "${CPANEL}" || -f "${DIRECTADMIN}" || -f "${PLESK}" || -f "${WEBMIN}" || -f "${SENTORA}" || -f "${HOCVPS}" ]]; then
-        printf "%s\n" "${OTHER_CP_EXISTS}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-
-    if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}"  ]]; then
-        printf "%s\n" "${OTHER_CP_EXISTS}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-
-    if [[ -f "/etc/hostvn.lock" ]]; then
-        printf "%s\n" "${OTHER_CP_EXISTS}"
-        printf "%s\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-}
-
-check_before_install(){
-    echo ""
-    check_root
-    check_os
-    check_low_ram
-    check_control_panel
 }
 
 ############################################
@@ -3812,7 +3739,6 @@ write_info(){
         echo "php2_release=${PHP2_RELEASE}"
         echo "php1_version=${PHP_VERSION}"
         echo "php2_version=${PHP_VERSION_2}"
-        echo "backup_num="
         echo "lang=vi"
     } >> "${FILE_INFO}"
 
@@ -3826,7 +3752,6 @@ write_info(){
 ############################################
 _run(){
     # Prepare before install
-    check_before_install
     prepare_install
     create_bash_dir
 
