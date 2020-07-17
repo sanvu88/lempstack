@@ -3,7 +3,7 @@
 
 <p align="center"> <img src="https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png" /> </p>
 
-########################################################################################
+####################################################################################################
 
 Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - MariaDB - PHP-FPM) trên CentOS 7 (CentOS 8 sẽ sớm được hỗ trợ).
 
