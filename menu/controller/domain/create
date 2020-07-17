@@ -405,6 +405,7 @@ run(){
 
     if [ -z "${ALERT}" ]; then
         select_source
+        create_docrot
 
         if [[ "${php2_release}" == "yes" ]]; then
             select_php
@@ -423,7 +424,6 @@ run(){
         create_vhost
         create_db
         create_user
-        create_docrot
         create_ftp
 
         set_owner
