@@ -1,10 +1,7 @@
-#################################################
-# Auto Install & Optimize LEMP Stack on CentOS 7#
-# Version: 1.0                                  #
-# Author: Sanvv - HOSTVN Technical              #
-#                                               #
-# Please don't remove copyright. Thank!         #
-#################################################
+Auto Install & Optimize LEMP Stack on CentOS 7                                
+Author: Sanvv - HOSTVN.NET Technical
+
+##################################################################################################
 
 Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - MariaDB - PHP-FPM) trên CentOS 7 (CentOS 8 sẽ sớm được hỗ trợ).
 
