@@ -87,6 +87,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Scan bug WordPress
 - Thay đổi WordPress database prefix
 - Tích hợp Firewall chống XSS, SQL Injection ....
+- Cảnh báo qua email, telegram
 
 ## 5. Cách sử dụng
 
