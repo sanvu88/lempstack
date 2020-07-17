@@ -204,7 +204,7 @@ run(){
 			wp_auto_install_info
 			rm -rf /home/"$username"/"$domain"/public_html/*
 			empty_db
-			auto_install
+			auto_install "$@"
 			clear
 			select_plugin_cache
             select_plugin_seo

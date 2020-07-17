@@ -35,7 +35,7 @@ do
     printf "${GREEN}11. Xem thong tin tai khoan${NC}\n"
     printf "${GREEN}12. Quan ly Cronjob${NC}\n"
     printf "${GREEN}--------------------------------------------------${NC}\n"
-    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
         CHOICE=1

@@ -1,10 +1,5 @@
 #!/bin/bash
 
-set_var(){
-	admin_port=$(grep "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
-	admin_pwd=$(grep "admin_pwd" "${FILE_INFO}" | cut -f2 -d'=')
-}
-
 show_info(){
 	set_var
 	printf "Admin user                   : admin\n"

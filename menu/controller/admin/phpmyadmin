@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 set_var(){
 	phpmyadmin_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
 }
 
 check_php_version(){
 	php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
-	if [ "${php_v}" < 7 ]; then
+
+	if [ ${php_v} -lt 7 ]; then
 		ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
 	fi
 }

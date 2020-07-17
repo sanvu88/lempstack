@@ -7,7 +7,7 @@ input(){
 	read -r -p "1. Nhap ten database: " db_name
 	read -r -p "2. Nhap Mysql User: " db_user
 	read -r -p "3. Nhap Mysql Password: " password
-	read -r -p "Xac nhan them database? (y/n): " confirm
+	read -r -p "Xac nhan them database? (y/n): " promtp_db
 }
 
 validate_input(){
@@ -16,7 +16,7 @@ validate_input(){
 	fi
 }
 
-vaildate(){
+validate(){
 	validate_input
 	check_database ${db_name}
 	check_mysql_user ${db_user}
@@ -34,8 +34,8 @@ create_db(){
 
 show_info(){
 	clear
-    printf "DB_Name    : s%\n" "${RED}${database}${NC}"
-    printf "DB_User    : s%\n" "${RED}${username}${NC}"
+    printf "DB_Name    : s%\n" "${RED}${db_name}${NC}"
+    printf "DB_User    : s%\n" "${RED}${db_user}${NC}"
     printf "DB_Password: s%\n" "${RED}${password}${NC}"
     echo ""
     sleep 3
@@ -43,14 +43,18 @@ show_info(){
 
 run(){
 	input
-	vaildate
+	if [[ ${promtp_db} =~ ^([yY])$  ]]; then
+	   validate
 
-	if [ -z "${ALERT}" ]; then
-		create_db
-		show_info
-	else
-		clear
-		printf "${ALERT}\n"
+    if [ -z "${ALERT}" ]; then
+      create_db
+      show_info
+    else
+      clear
+      printf "${ALERT}\n"
+    fi
+  else
+     printf "${RED}Ban da huy them database.${NC}\n"
 	fi
 }
 

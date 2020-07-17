@@ -3,26 +3,6 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-select_remote(){
-    echo "Chon Remote: "
-    selects=$(rclone listremotes)
-    for entry in ${selects}; do
-        select=${entry//:}
-        remotes+=(${select})
-    done
-
-    PS3="Nhap lua chon cua ban [0 = Thoat]: "
-    select remote in "${remotes[@]}"
-    do
-        remote=${remote}
-        break
-    done
-
-    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
-    fi
-}
-
 set_var(){
 	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
@@ -40,6 +20,9 @@ backup(){
 }
 
 _run(){
+  select_remote
+  select_domain
+
 	if [[ -z "${ALERT}" ]]; then
 		set_var
 

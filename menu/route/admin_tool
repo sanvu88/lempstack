@@ -26,18 +26,18 @@ do
     case ${CHOICE} in
         1) update_phpmyadmin ;;
         2) update_phpsysinfo ;;
-		3) update_opcache_panel ;;
+		    3) update_opcache_panel ;;
         4) update_memcached_panel ;;
-        4) update_redis_panel ;;
-		6)
-			read -r -p "Nhap mat khau moi: " admin_new_pwd
-			htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
-            sed -i '/admin_pwd=/d' ${FILE_INFO}
-            echo "admin_pwd=${admin_new_pwd}" >> ${FILE_INFO}
-			clear
-			printf "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}\n"
-			menu_admin
-			;;
+        5) update_redis_panel ;;
+		    6)
+            read -r -p "Nhap mat khau moi: " admin_new_pwd
+            htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
+                  sed -i '/admin_pwd=/d' ${FILE_INFO}
+                  echo "admin_pwd=${admin_new_pwd}" >> ${FILE_INFO}
+            clear
+            printf "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}\n"
+            menu_admin
+            ;;
         7) change_port_admin ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;

@@ -7,32 +7,12 @@ confirm_destroy(){
 	read -r -p "Ban muon xoa backup ? (y\n) " promt_destroy
 }
 
-select_remote(){
-    echo "Chon Remote: "
-    selects=$(rclone listremotes)
-    for entry in ${selects}; do
-        select=${entry//:}
-        remotes+=(${select})
-    done
-
-    PS3="Nhap lua chon cua ban [0 = Thoat]: "
-    select remote in "${remotes[@]}"
-    do
-        remote=${remote}
-        break
-    done
-
-    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
-    fi
-}
-
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
     selects=$(rclone lsf ${remote}:${IPADDRESS})
     for entry in ${selects}; do
     	select=${entry///}
-        dates+=(${select})
+        dates+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
     select date in "${dates[@]}"
@@ -55,7 +35,7 @@ choose_domain(){
     selects=$(rclone lsf ${remote}:${IPADDRESS}/${date})
     for entry in ${selects}; do
     	select=${entry///}
-        domains+=(${select})
+        domains+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
     select domain in "${domains[@]}"
@@ -69,8 +49,8 @@ choose_domain(){
 
 _run(){
 	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
-        select_remote
-		select_backup
+    select_remote
+    select_backup
 
 		if [[ -z "${ALERT}" ]]; then
 			rclone delete ${remote}:/${IPADDRESS}/${date}/${domain} --rmdirs > /dev/null  2>&1

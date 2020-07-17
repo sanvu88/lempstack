@@ -10,6 +10,9 @@ debug_(){
 
 debug_
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 set_var(){
 	script_v=$(curl -s ${UPDATE_LINK}/version | grep "script_version=" | cut -f2 -d'=')
 	current_v=$(grep "script_version" "${FILE_INFO}" | cut -f2 -d'=');
@@ -27,7 +30,7 @@ confirm_update(){
 }
 
 update(){
-	cd "${BASH_DIR}"
+	cd_dir "${BASH_DIR}"
 	wget -q "${UPDATE_LINK}"/update.txt -O "${BASH_DIR}"/update &> /dev/null
 	dos2unix update &> /dev/null
 	sh update

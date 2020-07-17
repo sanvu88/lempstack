@@ -14,7 +14,6 @@ SCRIPT_LINK="https://scripts.sanvu88.net/lemp"
 
 # VPS Info
 OS_VER=$(rpm -E %centos)
-OS_ARCH=$(uname -m)
 RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 
 # Control Panel path
@@ -42,7 +41,6 @@ HOSTVN_EXISTS="May chu cua ban da cai dat HOSTVN Script khac. Vui long rebuild n
 
 # Set Color
 RED='\033[0;31m'
-GREEN='\033[0;32m'
 NC='\033[0m'
 
 welcome(){
@@ -139,7 +137,6 @@ check_before_install(){
     check_low_ram
     check_control_panel
 }
-
 
 create_swap(){
     swap="$(swapon -s)"

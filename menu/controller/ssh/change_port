@@ -40,7 +40,7 @@ check_port(){
 	    ALERT=$(printf "${RED}Port ban nhap trung vui Port SSH hien tai.${NC}\n")
 	fi
 
-	if [[ "${port_new}" == "${admin_port}" || "${port_new}" == "${csf_port}" || "${new_port}" == "${ftp_port}" ]]; then
+	if [[ "${port_new}" == "${admin_port}" || "${port_new}" == "${csf_port}" || "${port_new}" == "${ftp_port}" ]]; then
 	    ALERT=$(printf "${RED}Port ban nhap trung voi Port Admin tool.${NC}\n")
 	fi
 }

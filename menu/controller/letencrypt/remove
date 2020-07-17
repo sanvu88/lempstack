@@ -21,11 +21,9 @@ echo
 validate(){
     check_nginx_status
     check_le_exists ${domain}
-    #validate_domain ${domain}
 }
 
 set_variable(){
-    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
@@ -36,9 +34,6 @@ set_variable(){
 }
 
 check_plugins_cache(){
-    yoast_seo="#include /etc/nginx/wordpress/yoast_seo.conf;"
-    rank_math_seo="#include /etc/nginx/wordpress/rank_math_seo.conf;"
-
     if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
         cache="include /etc/nginx/wordpress/w3c.conf;"
         wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"

@@ -148,7 +148,7 @@ change_phpconfig(){
 }
 
 change_in_db(){
-    cd /home/"${username}"/"${domain}"/public_html
+    cd_dir /home/"${username}"/"${domain}"/public_html
     wp search-replace --allow-root "https://${domain}" "http://${newdomain}"
     wp search-replace --allow-root "http://${domain}" "http://${newdomain}"
 }
@@ -159,10 +159,10 @@ change_user_config(){
 
 run(){
 	select_domain
-    #validate_domain ${domain}
+
 	set_var
 	check_is_wordpress ${username} ${domain}
-    check_wpconfig ${username} ${domain}
+  check_wpconfig ${username} ${domain}
 	input
 	validate_domain ${newdomain}
     backup_confirm
@@ -180,7 +180,7 @@ run(){
     fi
 
 	if [ -z "${ALERT}" ]; then
-        backup
+    backup
 		change_path
 		change_vhost
 		change_phpconfig

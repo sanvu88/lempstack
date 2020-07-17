@@ -32,7 +32,6 @@ AUTHOR_CONTACT="kythuat@hostvn.net"
 AUTHOR_WEBSITE="https://hostvn.net"
 
 # Set Lang
-CANCEL_INSTALL="Huy cai dat..."
 ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
 SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
 WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat PHP 7.4"
@@ -79,28 +78,12 @@ RANDOM_ADMIN_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
 DEFAULT_DIR_WEB="/usr/share/nginx/html"
 USR_DIR="/usr/share"
 
-# Control Panel path
-CPANEL="/usr/local/cpanel/cpanel"
-DIRECTADMIN="/usr/local/directadmin/custombuild/build"
-PLESK="/usr/local/psa/version"
-WEBMIN="/etc/init.d/webmin"
-SENTORA="/root/passwords.txt"
-HOCVPS="/etc/hocvps/scripts.conf"
-VPSSIM="/home/vpssim.conf"
-EEV3="/usr/local/bin/ee"
-WORDOPS="/usr/local/bin/wo"
-KUSANAGI="/home/kusanagi"
-CWP="/usr/local/cwpsrv"
-VESTA="/usr/local/vesta/"
-EEV4="/opt/easyengine"
-
 # Get info VPS
 CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
 RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 SWAP_TOTAL=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 PHP_MEM=${RAM_TOTAL}+${SWAP_TOTAL}
 RAM_MB=$(echo "scale=0;${RAM_TOTAL}/1024" | bc)
-LOW_RAM='524288'
 NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
 MAX_CLIENT=$((NGINX_PROCESSES * 1024))
 
@@ -1124,7 +1107,7 @@ if (\$rocket_hsts = "0") {
     set \$rocket_hsts_value "";
 }
 
-set \$rocket_end "/cache/wp-rocket/\$http_host/\$request_uri/index\$rocket_https_prefix.html$rocket_encryption";
+set \$rocket_end "/cache/wp-rocket/\$http_host/\$request_uri/index\$rocket_https_prefix.html\$rocket_encryption";
 set \$rocket_url "/wp-content\$rocket_end";
 set \$rocket_file "\$document_root/wp-content\$rocket_end";
 set \$rocket_mobile_detection "\$document_root/wp-content/cache/wp-rocket/\$http_host/\$request_uri/.mobile-active";
@@ -1226,13 +1209,13 @@ if (\$request_method = POST) {
     set \$cache_uri 'null cache';
 }
 if (\$query_string != "") {
-    set $cache_uri 'null cache';
+    set \$cache_uri 'null cache';
 }
 if (\$request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
     set \$cache_uri 'null cache';
 }
 if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
-    set $cache_uri 'null cache';
+    set \$cache_uri 'null cache';
 }
 location / {
     try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php ;
@@ -2398,8 +2381,8 @@ chdir = /
 php_admin_value[error_log] = /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm/www-error.log
 php_admin_flag[log_errors] = on
 php_value[session.save_handler] = files
-php_value[session.save_path]    = /opt/remi/${php2_version}/root/var/lib/php/session
-php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+php_value[session.save_path]    = /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
 php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
@@ -2419,7 +2402,7 @@ EOwww_2_conf
     chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
     chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm
     chmod 711 /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
-    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+    chmod 711 /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
 }
 
 # Custom PHP Ini
@@ -3544,7 +3527,7 @@ phpmemcachedadmin(){
     rm -rf /usr/share/nginx/html/phpmemcachedadmin/docker
     mv phpmemcachedadmin memcached
     chown -R nginx:nginx /usr/share/nginx/html/memcached
-    cd_dir ${DIR}
+    cd_dir "${DIR}"
 }
 
 ############################################
@@ -3554,10 +3537,10 @@ redisdadmin(){
     cd_dir /usr/share/nginx/html
     git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
     mv phpRedisAdmin redis
-    cd redis
+    cd_dir /usr/share/nginx/html/redis
     git clone https://github.com/nrk/predis.git vendor
     cd .. && chown -R nginx:nginx redis
-    cd_dir ${DIR
+    cd_dir "${DIR}"
 }
 
 ############################################

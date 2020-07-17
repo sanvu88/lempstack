@@ -38,14 +38,14 @@ do
             ;;
         3)
             yum -y update php-fpm;
-            if [ "${php2_release}" == "yes" ]; then
+            if [[ "${php2_release}" == "yes" ]]; then
                 yum -y update "${php2_version}"-php-fpm
             fi
             menu_php
             ;;
         4)
             systemctl restart php-fpm
-            if [ "${php2_release}" == "yes" ]; then
+            if [[ "${php2_release}" == "yes" ]]; then
                 systemctl restart "${php2_version}"-php-fpm
             fi
             menu_php

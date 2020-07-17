@@ -17,5 +17,5 @@ _run(){
     fi
 }
 
-_run
+_run "$@"
 menu_wp

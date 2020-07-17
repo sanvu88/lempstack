@@ -19,7 +19,6 @@ printf "${GREEN}-----------------${NC}\n"
 echo
 
 set_variable(){
-    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"

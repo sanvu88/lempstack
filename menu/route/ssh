@@ -14,7 +14,7 @@ do
     printf "${GREEN} ------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
-    if [ -z "${CHOICE}" ]
+    if [[  -z "${CHOICE}" ]]
     then
         CHOICE=1
         continue

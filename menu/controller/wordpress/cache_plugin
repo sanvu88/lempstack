@@ -40,6 +40,9 @@ browser_cache(){
         plugin_cache="other"
         set_cache="include /etc/nginx/extra/staticfiles.conf;"
     fi
+
+    sed -i '/plugin_cache=/d' ${USER_DIR}/.${domain}.conf
+    echo  plugin_cache=${plugin_cache} >> ${USER_DIR}/.${domain}.conf
 }
 
 validate_plugin(){

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # shellcheck disable=SC1091
-source /var/hostvn/menu/validate/function
+source /var/hostvn/menu/helpers/function
 
 set_var(){
 	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');

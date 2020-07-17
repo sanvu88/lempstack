@@ -28,7 +28,7 @@ do
         3) clear; ggdrive_restore ;;
         4) clear; ggdrive_destroy ;;
         5) clear; ggdrive_list_backup ;;
-		6) clear; ggdrive_del_remote ;;
+		    6) clear; ggdrive_del_remote ;;
         0) clear; menu_backup ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

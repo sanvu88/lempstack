@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 update(){
-	cd /usr/share/nginx/html/opcache
+	cd_dir /usr/share/nginx/html/opcache
 	rm -rf ./*
 	wget -q https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_WEB}"/opcache/index.php &> /dev/null
 	chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/opcache

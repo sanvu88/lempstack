@@ -18,7 +18,7 @@ printf "${GREEN}Xoa Domain${NC}\n"
 printf "${GREEN}----------${NC}\n"
 
 set_var(){
-	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+	  db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     db_user=$(grep "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -80,10 +80,10 @@ destroy_db(){
 }
 
 remove_path(){
-	if [[ "{$php_mode}" == 2 ]]; then
-    	php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
+	if [[ "{$php_mode}" -eq 2 ]]; then
+    	php_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
         if [[ "${php2_version}" == "php56" ]]; then
-            php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+            php_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
         fi
 	fi
 
@@ -101,9 +101,8 @@ remove_path(){
     fi
 }
 
-run(){
+_run(){
 	select_domain
-	#validate_domain ${domain}
 
     if ! if_domain_exists ${domain}; then
         ALERT=$(printf "${RED}Domain khong ton tai tren VPS.${NC}\n")
@@ -129,5 +128,5 @@ run(){
     fi
 }
 
-run
+_run
 menu_domain

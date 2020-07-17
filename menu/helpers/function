@@ -234,3 +234,24 @@ brute_force_wp(){
         ${fastcgi_pass}
     }"
 }
+
+select_remote(){
+	echo "Chon Remote: "
+	remotes=()
+	selects=$(rclone listremotes)
+	for entry in ${selects}; do
+		select=${entry//:}
+	    remotes+=("${select}")
+	done
+
+	PS3="Nhap lua chon cua ban [0 = Thoat]: "
+	select remote in "${remotes[@]}"
+	do
+	    remote=${remote}
+	    break
+	done
+
+	if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+		ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+	fi
+}

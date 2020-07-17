@@ -1,12 +1,6 @@
 #!/bin/bash
 
-set_var(){
-	admin_port=$(grep "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
-	phpmyadmin_pwd=$(grep "mysql_pwd" "${FILE_INFO}" | cut -f2 -d'=')
-}
-
 show_info(){
-	set_var
 	printf "User phpMyAdmin              : admin\n"
 	printf "Mat khau phpMyAdmin          : %s\n"  "${mysql_pwd}"
 	printf "Link phpMyAdmin              : %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"

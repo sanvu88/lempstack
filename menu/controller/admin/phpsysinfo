@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 set_var(){
 	phpsysinfo_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
 }
@@ -11,7 +14,7 @@ check_dir(){
 }
 
 update(){
-	cd /usr/share/nginx/html
+	cd_dir /usr/share/nginx/html
 	wget https://github.com/phpsysinfo/phpsysinfo/archive/v"${phpsysinfo_v}".zip &> /dev/null
 	unzip v"${phpsysinfo_v}".zip &> /dev/null
 	mv phpsysinfo-"${phpsysinfo_v}" serverinfo

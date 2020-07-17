@@ -9,6 +9,7 @@ clear_cache(){
 	if [ "${redis_status}" == "active" ]; then
 		systemctl restart redis
 		printf "${GREEN}Xoa cache thanh cong.${NC}\n"
+	fi
 	if [ "${memcached_status}" == "active" ]; then
 		systemctl restart memcached
 		printf "${GREEN}Xoa cache thanh cong.${NC}\n"

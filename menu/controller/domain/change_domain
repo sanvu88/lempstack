@@ -94,9 +94,8 @@ change_user_config(){
     mv "${USER_DIR}"/."${domain}".conf "${USER_DIR}"/."${newdomain}".conf
 }
 
-run(){
+_run(){
 	select_domain
-	#validate_domain ${domain}
 	set_var
 	if_is_wordpress ${username} ${domain}
 	input
@@ -118,5 +117,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_domain
