@@ -9,61 +9,61 @@ set_variable(){
 php_parameter(){
     set_variable
 
-    if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
+    if [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 1049576 && ${RAM_TOTAL} -le 2097152 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '2097152' && "${RAM_TOTAL}" -le '3145728' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 2097152 && ${RAM_TOTAL} -le 3145728 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 6 && ${CPU_CORES} -lt 8 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 6 && ${CPU_CORES} -lt 8 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 8 && ${CPU_CORES} -lt 16 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '12' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 8 && ${CPU_CORES} -lt 12 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '13' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 13 && ${CPU_CORES} -lt 16 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '17' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 17 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 5))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))

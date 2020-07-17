@@ -30,12 +30,6 @@ check_service(){
 }
 
 validate_domain(){
-    # if [ -z "${1}" ]; then
-    #     ALERT=$(printf "${RED}Ban chua chon ten mien.${NC}\n")
-    # elif ! [[ ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
-    #     ALERT=$(printf "${RED}Ten mien ban nhap khong dung dinh dang.${NC}\n")
-    # fi
-
     if [[ ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
         return 0
     else

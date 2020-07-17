@@ -104,7 +104,8 @@ LOW_RAM='524288'
 NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
 MAX_CLIENT=$((NGINX_PROCESSES * 1024))
 
-rm -rf "${DIR}"/hostvn.sh
+rm -rf "${DIR}"/hostvn
+rm -rf "${DIR}"/install
 
 ############################################
 # Function
@@ -684,23 +685,23 @@ install_cache(){
 ############################################
 # dynamic SSL cache size calculation
 cal_ssl_cache_size(){
-    if [[ "${RAM_TOTAL}" -gt '500000' && "${RAM_TOTAL}" -le '800000' ]]; then
+    if [[ ${RAM_TOTAL} -gt 500000 && ${RAM_TOTAL} -le 800000 ]]; then
         SSL_CACHE_SIZE=20
-    elif [[ "${RAM_TOTAL}" -gt '800000' && "${RAM_TOTAL}" -le '1000000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 800000 && ${RAM_TOTAL} -le 1000000 ]]; then
         SSL_CACHE_SIZE=40
-    elif [[ "${RAM_TOTAL}" -gt '1000000' && "${RAM_TOTAL}" -le '1880000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 1000000 && ${RAM_TOTAL} -le 1880000 ]]; then
         SSL_CACHE_SIZE=60
-    elif [[ "${RAM_TOTAL}" -gt '1880000' && "${RAM_TOTAL}" -le '2890000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 1880000 && ${RAM_TOTAL} -le 2890000 ]]; then
         SSL_CACHE_SIZE=80
-    elif [[ "${RAM_TOTAL}" -gt '2890000' && "${RAM_TOTAL}" -le '3890000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 2890000 && ${RAM_TOTAL} -le 3890000 ]]; then
         SSL_CACHE_SIZE=150
-    elif [[ "${RAM_TOTAL}" -gt '3890000' && "${RAM_TOTAL}" -le '7800000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 3890000 && ${RAM_TOTAL} -le 7800000 ]]; then
         SSL_CACHE_SIZE=300
-    elif [[ "${RAM_TOTAL}" -gt '7800000' && "${RAM_TOTAL}" -le '15600000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 7800000 && ${RAM_TOTAL} -le 15600000 ]]; then
         SSL_CACHE_SIZE=500
-    elif [[ "${RAM_TOTAL}" -gt '15600000' && "${RAM_TOTAL}" -le '23600000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 15600000 && ${RAM_TOTAL} -le 23600000 ]]; then
         SSL_CACHE_SIZE=1000
-    elif [[ "${RAM_TOTAL}" -gt '23600000' ]]; then
+    elif [[ ${RAM_TOTAL} -gt 23600000 ]]; then
         SSL_CACHE_SIZE=2000
     else
         SSL_CACHE_SIZE=10
@@ -2189,61 +2190,61 @@ config_nginx(){
 ############################################
 # PHP Parameter
 php_parameter(){
-    if [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '1049576' && "${RAM_TOTAL}" -le '2097152' ]]; then
+    if [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 1049576 && ${RAM_TOTAL} -le 2097152 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '2097152' && "${RAM_TOTAL}" -le '3145728' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 2097152 && ${RAM_TOTAL} -le 3145728 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '4' && "${CPU_CORES}" -lt '6' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 6 && ${CPU_CORES} -lt 8 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '6' && "${CPU_CORES}" -lt '8' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 6 && ${CPU_CORES} -lt 8 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '3145728' && "${RAM_TOTAL}" -le '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 8 && ${CPU_CORES} -lt 16 && ${RAM_TOTAL} -gt 3145728 && ${RAM_TOTAL} -le 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '8' && "${CPU_CORES}" -lt '12' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 8 && ${CPU_CORES} -lt 12 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '13' && "${CPU_CORES}" -lt '16' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 13 && ${CPU_CORES} -lt 16 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 6))
         PM_MAX_REQUEST=2000
-    elif [[ "${CPU_CORES}" -ge '17' && "${RAM_TOTAL}" -gt '4194304' ]]; then
+    elif [[ ${CPU_CORES} -ge 17 && ${RAM_TOTAL} -gt 4194304 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 5))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
