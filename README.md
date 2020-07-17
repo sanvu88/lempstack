@@ -59,14 +59,15 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 7. Feedback
 
-Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com hoặc tạo Github Issues.
+- Rất mong nhận được ý kiến đóng góp của các bạn để Scripts ngày càng hoàn thiện hơn.
+- Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com hoặc tạo Github Issues.
 
 ## 8. Contributors & Credits
 ### Developers / Maintainers
 - Sanvv
 
 ### Contributors
+- mbrother
 - Giapvv
 - Thanhnv
-- mbrother
 - Lamhn
