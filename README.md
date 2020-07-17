@@ -13,7 +13,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 - Cập nhật liên tục, cung cấp Menu giúp dễ dàng thao tác, tự động cài đặt.
 - Cài đặt các phần mềm phiên bản mới nhất từ chính trang chủ.
-- Mariadb phiên 10.5
+- Mariadb: 10.5
 - Phiên bản Nginx: 1.18.0
 - Cho phép lựa chọn phiên bản PHP: 5.6, 7.0, 7.1, 7.2, 7.4.
 - Cài đặt Pureftpd, phpMyAdmin, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
@@ -47,6 +47,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web)
 - Thay đổi Port SSH
 - Thay đổi port Admin
+- Thay đổi port FTP
 - And More .......
 
 ### 1.4. Quản lý WordPress
@@ -68,7 +69,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Bật/tắt Debug
 - Bật/tắt chế độ bảo trì
 - Huỷ kích hoạt toàn bộ plugins
-- Auto database prefix khi sử dụng chức năng cài đặt tự động
+- Random database prefix khi sử dụng chức năng cài đặt tự động
 
 
 ## 2. Yêu cầu
@@ -79,11 +80,12 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 `curl -sO https://scripts.hostvn.net/install && chmod +x install && ./install`
 
-## 4. Các tính năng đang phát triển
+## 4. Các tính năng sẽ phát triển
 
 - Deploy nhanh mã nguồn trên VPS
 - Scan Malware
-- Scan bug wordpress
+- Scan bug WordPress
+- Thay đổi WordPress database prefix
 - Tích hợp Firewall chống XSS, SQL Injection ....
 
 ## 5. Cách sử dụng
@@ -100,6 +102,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - phpRedisAdmin: https://github.com/erikdubbelboer/phpRedisAdmin
 - phpSysInfo: https://github.com/phpsysinfo/phpsysinfo
 - Pure-FTPD: https://www.pureftpd.org/project/pure-ftpd/
+- Rclone: https://rclone.org/
 
 ## 7. Contact
 
