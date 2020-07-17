@@ -251,7 +251,7 @@ select_remote(){
 	    break
 	done
 
-	if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+	if [[ -z "${remote}" || ! ${remote} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
 		ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
 	fi
 }

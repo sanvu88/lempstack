@@ -9,10 +9,13 @@ set_var(){
 
 backup(){
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/${DATE}/${domain}
+		mkdir -p /home/backup/"${DATE}"/"${domain}"
 	fi
-	cd_dir /home/backup/${DATE}/${domain}
-	mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
+	cd_dir /home/backup/"${DATE}"/"${domain}"
+	if [ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
+	    rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	fi
+	mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 }
 
 run(){

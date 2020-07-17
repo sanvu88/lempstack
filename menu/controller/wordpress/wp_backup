@@ -9,12 +9,21 @@ set_var(){
 
 backup(){
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${domain}"
-    fi
+      mkdir -p /home/backup/"${DATE}"/"${domain}"
+  fi
+
 	cd_dir /home/"${username}"/"${domain}"
+	if [ -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
+	    rm -rf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz
+	fi
 	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
+
+	if [ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
+	    rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	fi
 	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+
 	clear
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 }

@@ -9,9 +9,9 @@ echo ""
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Sao luu du lieu${NC}\n"
-    printf "${GREEN}2. Khoi phuc du lieu${NC}\n"
-    printf "${GREEN}3. Xoa ban sao luu${NC}\n"
+    printf "${GREEN}1. Sao luu du lieu (Local)${NC}\n"
+    printf "${GREEN}2. Khoi phuc du lieu (Local)${NC}\n"
+    printf "${GREEN}3. Xoa ban sao luu (Local)${NC}\n"
     printf "${GREEN}4. Sao luu len Google Drive${NC}\n"
     printf "${GREEN}5. Thiet lap backup tu dong${NC}\n"
     printf "${GREEN} --------------------------${NC}\n"

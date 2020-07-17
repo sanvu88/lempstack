@@ -12,6 +12,9 @@ backup(){
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
 		mkdir -p /home/backup/${DATE}/${domain}
 	fi
+	if [ -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
+	    /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz
+	fi
 	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html
 }
 
