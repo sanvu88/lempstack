@@ -164,6 +164,7 @@ _run(){
     remove_old_ervice
     install_requirement
     check_before_install
+    create_swap
     dowload_script
 }
 
