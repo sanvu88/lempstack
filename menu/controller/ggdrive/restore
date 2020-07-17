@@ -14,6 +14,7 @@ set_var(){
 
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
+	  dates=()
     selects=$(rclone lsf ${remote}:${IPADDRESS})
     for entry in ${selects}; do
     	select=${entry///}
@@ -26,8 +27,8 @@ select_backup(){
         break
     done
 
-    if ! [[ ${date} =~ ^[0-9]{2}-[0-9]{2}-[0-9]{4}$ ]]; then
-    	ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
+    if ! valid_date "${date}"; then
+        ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
     fi
 }
 
@@ -73,7 +74,7 @@ _run(){
 		select_remote
 		select_backup
 
-		if [[ ! -z "${domain}" ]]; then
+		if [[ -n "${domain}" ]]; then
 			set_var
 			if ! if_domain_exists ${domain}; then
 				ALERT=$(printf "${RED}Website khong ton tai tren VPS.${NC}\n")
