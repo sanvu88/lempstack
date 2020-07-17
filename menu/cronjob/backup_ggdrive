@@ -3,8 +3,6 @@
 # shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
 
 for users in /home/*; do
@@ -35,3 +33,6 @@ done
 
 rclone copy /home/backup ${remote}:${IPADDRESS} >> /var/log/rclone.log 2>&1
 rm -rf /home/backup/*
+
+rclone -q --min-age ${backup_num}d delete "${remote}:$IPADDRESS" >> /var/log/rclone.log 2>&1
+rclone -q --min-age ${backup_num}d rmdirs "${remote}:$IPADDRESS" >> /var/log/rclone.log 2>&1

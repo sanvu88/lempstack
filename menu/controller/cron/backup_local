@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 select_time(){
     echo "Lua chon thoi gian ?"
     PS3='Nhap lua chon cua ban (1-4): '
@@ -17,6 +20,38 @@ select_time(){
     done
 }
 
+input_backup_num(){
+    echo "Nhap so ban backup ban muon luu tru: "
+    echo "VD: 14 - Se luu 14 ban backup gan nhap - Cac ban cu hon se bi xoa"
+    input -r -p "Nhap vao lua chon cua ban:" backup_num
+
+    if ! valid_number ${backup_num} ; then
+        backup_num="14"
+        printf "${RED}So ban backup ban nhap khong dung. He thong se set mac dinh là 14."
+    fi
+
+    if [[ -z "${backup_num}" ]]; then
+        backup_num="14"
+        printf "${RED}Ban chua nhap so ban backup. He thong se set mac dinh là 14."
+    fi
+}
+
+set_backup_num(){
+    input_backup_num
+    if [[ "${time}" == "@weekly" ]]; then
+        backup_num=$((backup_num*7))
+    elif [[ "${time}" == "@monthly" ]]; then
+        backup_num=$((backup_num*30))
+    elif [[ "${time}" == "@yearly" ]]; then
+        backup_num=$((backup_num*365))
+    else
+        backup_num="${backup_num}"
+    fi
+
+    sed -i '/backup_num=/d' ${FILE_INFO}
+    echo "backup_num=${backup_num}" >> ${FILE_INFO}
+}
+
 create_cron(){
 	crontab -l | grep -q 'backup_local' && ALERT=$(printf '${RED}Cronjob da ton tai.${NC}\n') || cat <(crontab -l) <(echo "${time} ./var/hostvn/menu/cronjob/backup_local >/dev/null 2>&1") | crontab -
 	if [[ -z "${ALERT}" ]]; then
@@ -28,6 +63,7 @@ create_cron(){
 
 _run(){
 	select_time
+    set_backup_num
 	create_cron
 }
 

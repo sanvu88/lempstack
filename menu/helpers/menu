@@ -399,3 +399,7 @@ cron_backup_local(){
 cron_backup_gg(){
 	. /var/hostvn/menu/controller/cron/backup_gg
 }
+
+cron_destroy(){
+	. /var/hostvn/menu/controller/cron/destroy_cron
+}

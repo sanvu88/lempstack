@@ -1,0 +1,34 @@
+#!/bin/bash
+
+select_cron(){
+    echo "Lua chon Cronjob muon xoa ?"
+    PS3='Nhap lua chon cua ban (1-3): '
+    options=("Cronjob Auto Renew Let's Encrypt" "Cronjob auto backup local" "Cronjob auto backup Google Drive" )
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Cronjob Auto Renew Let's Encrypt") cron="certbot-auto renew"; break;;
+            "Cronjob auto backup local") cron="backup_local"; break;;
+            "Cronjob auto backup Google Drive") cron="backup_ggdrive"; break;;
+            *) ALERT=$(printf "${RED}Ban nhap sai, huy xoa Cronjob.${NC}\n"); break;;
+        esac
+    done
+}
+
+destroy_cronjob(){
+	crontab -u root -l | grep -v "${cron}"  | crontab -u root -
+}
+
+_run(){
+	select_cron
+	if [[ -z "${ALERT}" ]]; then
+		destroy_cronjob
+		printf "${GREEN}Xoa Cronjob thanh cong.{$NC}\n"
+		echo ""
+	else
+		printf "${ALERT}\n"
+	fi
+}
+
+_run
+menu_cronjob

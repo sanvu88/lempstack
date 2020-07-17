@@ -2,7 +2,7 @@
 
 valid_number(){
     REGEX_NUMBER='^[0-9]+$'
-    if ! [[ $1 =~ ${REGEX_NUMBER} ]]; then
+    if [[ ${1} =~ ${REGEX_NUMBER} ]]; then
         return 0
     else
         return 1
@@ -30,11 +30,6 @@ check_service(){
 }
 
 validate_domain(){
-    # if [ -z "${1}" ]; then
-    #     ALERT=$(printf "${RED}Ban chua nhap Domain.${NC}\n")
-    # elif [ "${1}" = "${1/.}" ]; then
-    #     ALERT=$(printf "${RED}Domain ban nhap khong dung dinh dang.${NC}\n")
-    # fi
     if [ -z "${1}" ]; then
         ALERT=$(printf "${RED}Ban chua chon ten mien.${NC}\n")
     elif ! [[ ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then

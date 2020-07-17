@@ -3812,6 +3812,7 @@ write_info(){
         echo "php2_release=${PHP2_RELEASE}"
         echo "php1_version=${PHP_VERSION}"
         echo "php2_version=${PHP_VERSION_2}"
+        echo "backup_num="
         echo "lang=vi"
     } >> "${FILE_INFO}"
 

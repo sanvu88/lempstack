@@ -5,7 +5,7 @@
 # Version: 1.0                                  #
 # Author: Sanvv - HOSTVN Technical              #
 # Website: https://hostvn.net                   #
-# 												#
+#                                               #
 # Please don't remove copyright. Thank!         #
 #################################################
 
@@ -46,15 +46,15 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 welcome(){
-	clear
-	printf "=========================================================================\n"
-	echo   "                 			HOSTVN.NET Scripts            			       "
-	echo   "                 Auto Install & Optimize LEMP Stack on CentOS 7            "
-	printf "          Neu can ho tro vui long lien he %s\n" "kythuat@hostvn.net"
-	printf "=========================================================================\n"
-	echo ""
-	echo "Chuan bi cai dat..."
-	sleep 3
+    clear
+    printf "=========================================================================\n"
+    echo   "                            HOSTVN.NET Scripts                             "
+    echo   "                 Auto Install & Optimize LEMP Stack on CentOS 7            "
+    printf "          Neu can ho tro vui long lien he %s\n" "kythuat@hostvn.net"
+    printf "=========================================================================\n"
+    echo ""
+    echo "Chuan bi cai dat..."
+    sleep 3
 }
 
 ###################
@@ -70,12 +70,12 @@ remove_old_ervice(){
 # Install requirement service
 install_requirement(){
     yum -y install epel-release
-	yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
-	yum -y update
-	yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils shc dos2unix openssl openssl-devel perl quota libaio \
-	libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
-	autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
-	psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers
+    yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
+    yum -y update
+    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils shc dos2unix openssl openssl-devel perl quota libaio \
+    libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
+    autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
+    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers
 }
 
 
@@ -144,15 +144,15 @@ check_before_install(){
 #Dowload primary Script #
 #########################
 dowload_script(){
-	curl -sO ${SCRIPT_LINK}/hostvn && chmod +x ./hostvn
+    curl -sO ${SCRIPT_LINK}/hostvn.sh && chmod +x hostvn.sh && sh hostvn.sh
 }
 
 _run(){
-	welcome
-	remove_old_ervice
-	install_requirement
-	check_before_install
-	dowload_script
+    welcome
+    remove_old_ervice
+    install_requirement
+    check_before_install
+    dowload_script
 }
 
 _run

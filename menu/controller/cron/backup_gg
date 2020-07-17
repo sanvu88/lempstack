@@ -1,5 +1,28 @@
 #!/bin/bash
 
+select_remote(){
+    echo "Chon Remote: "
+    selects=$(rclone listremotes)
+    for entry in ${selects}; do
+        select=${entry//:}
+        remotes+=(${select})
+    done
+
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select remote in "${remotes[@]}"
+    do
+        remote=${remote}
+        break
+    done
+
+    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+    else
+        sed -i '/remote=/d' ${FILE_INFO}
+        echo "remote=${remote}" >> ${FILE_INFO}
+    fi
+}
+
 select_time(){
     echo "Lua chon thoi gian ?"
     PS3='Nhap lua chon cua ban (1-4): '
@@ -17,8 +40,41 @@ select_time(){
     done
 }
 
+input_backup_num(){
+    echo "Nhap so ban backup ban muon luu tru: "
+    echo "VD: Backup hang ngay va nhap 14 - Se luu backup 14 ngay gan nhat - Cac ban cu hon se bi xoa"
+    echo "VD: Backup hang tuan va nhap 14 - Se luu backup 14*7=98 ngay gan nhat - Cac ban cu hon se bi xoa"
+    input -r -p "Nhap vao lua chon cua ban:" backup_num
+
+    if ! valid_number ${backup_num} ; then
+        backup_num="14"
+        printf "${RED}So ban backup ban nhap khong dung. He thong se set mac dinh là 14."
+    fi
+
+    if [[ -z "${backup_num}" ]]; then
+        backup_num="14"
+        printf "${RED}Ban chua nhap so ban backup. He thong se set mac dinh là 14."
+    fi
+}
+
+set_backup_num(){
+    input_backup_num
+    if [[ "${time}" == "@weekly" ]]; then
+        backup_num=$((backup_num*7))
+    elif [[ "${time}" == "@monthly" ]]; then
+        backup_num=$((backup_num*30))
+    elif [[ "${time}" == "@yearly" ]]; then
+        backup_num=$((backup_num*365))
+    else
+        backup_num="${backup_num}"
+    fi
+
+    sed -i '/backup_num=/d' ${FILE_INFO}
+    echo "backup_num=${backup_num}" >> ${FILE_INFO}
+}
+
 create_cron(){
-	crontab -l | grep -q 'backup_local' && ALERT=$(printf '${RED}Cronjob da ton tai.${NC}\n') || cat <(crontab -l) <(echo "${time} ./var/hostvn/menu/cronjob/backup_ggdrive >/dev/null 2>&1") | crontab -
+	crontab -l | grep -q 'backup_ggdrive' && ALERT=$(printf '${RED}Cronjob da ton tai.${NC}\n') || cat <(crontab -l) <(echo "${time} ./var/hostvn/menu/cronjob/backup_ggdrive >/dev/null 2>&1") | crontab -
 	if [[ -z "${ALERT}" ]]; then
 		printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
 	else
@@ -27,8 +83,17 @@ create_cron(){
 }
 
 _run(){
-	select_time
-	create_cron
+    select_remote
+	if [[ -z "${ALERT}" ]]; then
+        select_time
+        set_backup_num
+        create_cron
+        clear
+        printf "${GREEN}Backup thanh cong.${NC}\n"
+        echo ""
+    else
+        printf "${ALERT}\n"
+    fi
 }
 
 _run

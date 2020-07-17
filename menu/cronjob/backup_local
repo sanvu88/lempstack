@@ -3,9 +3,9 @@
 # shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
-source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
+
+backup_num=$(grep "backup_num" "${FILE_INFO}" | cut -f2 -d'=')
 
 for users in /home/*; do
 	if [[ -d "${users}" ]]; then
@@ -30,5 +30,15 @@ for users in /home/*; do
 				done
 			fi
 		done
+	fi
+done
+
+old_backup=$(date -d "${backup_num} days ago" +%Y-%m-%d)
+
+for D in /home/backup/*; do
+	[[ -d "${D}" ]] || continue
+	folder=${D##*/}
+	if [[ ${folder} -ne ${old_backup} ]]; then
+		rm -rf /home/backup/${folder}
 	fi
 done

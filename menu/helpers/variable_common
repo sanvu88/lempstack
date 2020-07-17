@@ -15,7 +15,7 @@ AUTHOR="HOSTVN"
 AUTHOR_WEB="HOSTVN.NET"
 UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
 IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
-DATE=$(date +%d-%m-%Y)
+DATE=$(date +%Y-%m-%d)
 ALERT=""
 
 # Set directory variables

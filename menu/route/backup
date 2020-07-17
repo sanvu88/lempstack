@@ -13,6 +13,7 @@ do
     printf "${GREEN}2. Khoi phuc du lieu${NC}\n"
     printf "${GREEN}3. Xoa ban sao luu${NC}\n"
     printf "${GREEN}4. Sao luu len Google Drive${NC}\n"
+    printf "${GREEN}5. Thiet lap backup tu dong${NC}\n"
     printf "${GREEN} --------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -25,6 +26,7 @@ do
         2) clear; select_restore ;;
         3) clear; delete_backup ;;
         4) clear; menu_ggdrive ;;
+        5) clear; menu_cronjob ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

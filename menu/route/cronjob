@@ -14,6 +14,7 @@ do
     printf "${GREEN}3. Tao Cronjob tu dong backup tai VPS${NC}\n"
     printf "${GREEN}4. Tao Cronjob tu dong backup len Google Drive${NC}\n"
     printf "${GREEN}5. Tao cronjob tuy chinh${NC}\n"
+    printf "${GREEN}6. Xóa cronjob${NC}\n"
     printf "${GREEN} ---------------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -80,6 +81,7 @@ do
             echo ""
             menu_cronjob
             ;;
+        6) clear; cron_destroy ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
