@@ -33,18 +33,18 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 `curl -sO https://scripts.hostvn.net/install && chmod +x install && ./install`
 
-Các tính năng đang phát triển
+## 4. Các tính năng đang phát triển
 
 - Deploy nhanh mã nguồn trên VPS
 - Scan Malware
 - Scan bug wordpress
 - Tích hợp Firewall chống XSS, SQL Injection ....
 
-## 4. Cách sử dụng
+## 5. Cách sử dụng
 
 - Vui lòng truy cập: https://scripts.hostvn.net
 
-## 5. Nguồn download các phần mềm
+## 6. Nguồn download các phần mềm
 
 - Nginx: http://nginx.org/en/download.html
 - MariaDB: https://downloads.mariadb.org/
