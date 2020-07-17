@@ -94,12 +94,6 @@ CWP="/usr/local/cwpsrv"
 VESTA="/usr/local/vesta/"
 EEV4="/opt/easyengine"
 
-#Install requirements
-yum -y install epel-release
-yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
-yum -y update
-yum -y install gawk git bc wget lsof htop curl zip unzip nano gcc gcc-c++ yum-utils shc dos2unix
-
 # Get info VPS
 CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
 RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
@@ -167,17 +161,6 @@ set_dns(){
     } >> /etc/resolv.conf
 }
 
-# Remove unnecessary services
-remove_service(){
-    yum -y remove mysql* php* httpd* sendmail* postfix* rsyslog* nginx*
-    yum clean all
-}
-
-# Install requirement service
-install_service(){
-    yum -y install syslog-ng syslog-ng-libdbi cronie ntpdate
-}
-
 # Admin Email
 set_email(){
     clear
@@ -214,8 +197,6 @@ prepare_install(){
     set_timezone
     set_os_arch
     set_dns
-    remove_service
-    install_service
     create_log
     ssh_login_noti
     set_email
@@ -2564,7 +2545,7 @@ config_php(){
 ############################################
 # MariaDB calculation
 mariadb_calculation(){
-    if [[ "${RAM_TOTAL}" -gt "524288" && "${RAM_TOTAL}" -le "2099152" ]]; then #1GB Ram
+    if [[ ${RAM_TOTAL} -gt 524288 && ${RAM_TOTAL} -le 2099152 ]]; then #1GB Ram
         max_allowed_packet="32M"
         back_log="100"
         max_connections="150"
@@ -2598,7 +2579,7 @@ mariadb_calculation(){
         write_buffer="16M"
     fi
 
-    if [[ "${RAM_TOTAL}" -gt "2099152" && "${RAM_TOTAL}" -le "4198304" ]]; then #2GB Ram
+    if [[ ${RAM_TOTAL} -gt 2099152 && ${RAM_TOTAL} -le 4198304 ]]; then #2GB Ram
         max_allowed_packet="48M"
         back_log="200"
         max_connections="200"
@@ -2632,7 +2613,7 @@ mariadb_calculation(){
         write_buffer="16M"
     fi
 
-    if [[ "${RAM_TOTAL}" -gt "4198304" && "${RAM_TOTAL}" -le "8396608" ]]; then #4GB Ram
+    if [[ ${RAM_TOTAL} -gt 4198304 && ${RAM_TOTAL} -le 8396608 ]]; then #4GB Ram
         max_allowed_packet="64M"
         back_log="200"
         max_connections="350"
@@ -2666,7 +2647,7 @@ mariadb_calculation(){
         write_buffer="32M"
     fi
 
-    if [[ "${RAM_TOTAL}" -gt "8396608" && "${RAM_TOTAL}" -le "16793216" ]]; then #8GB Ram
+    if [[ ${RAM_TOTAL} -gt 8396608 && ${RAM_TOTAL} -le 16793216 ]]; then #8GB Ram
         max_allowed_packet="64M"
         back_log="512"
         max_connections="400"
@@ -2700,7 +2681,7 @@ mariadb_calculation(){
         write_buffer="64M"
     fi
 
-    if [[ "${RAM_TOTAL}" -gt "16793216" && "${RAM_TOTAL}" -le "33586432" ]]; then #16GB Ram
+    if [[ ${RAM_TOTAL} -gt 16793216 && ${RAM_TOTAL} -le 33586432 ]]; then #16GB Ram
         max_allowed_packet="64M"
         back_log="768"
         max_connections="500"
@@ -3575,7 +3556,7 @@ redisdadmin(){
     cd redis
     git clone https://github.com/nrk/predis.git vendor
     cd .. && chown -R nginx:nginx redis
-    cd_dir ${DIR}
+    cd_dir ${DIR
 }
 
 ############################################
@@ -3614,7 +3595,6 @@ csf_gui(){
 
 install_csf(){
     echo ""
-    yum -y install perl-libwww-perl perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN bind-utils perl-IO-Socket-INET6 perl-Socket6 net-tools
     curl -o "${DIR}"/csf.tgz https://download.configserver.com/csf.tgz
     tar -xf csf.tgz
     cd_dir "${DIR}/csf"

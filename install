@@ -72,10 +72,11 @@ install_requirement(){
     yum -y install epel-release
     yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
     yum -y update
-    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils shc dos2unix openssl openssl-devel perl quota libaio \
+    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils dos2unix openssl openssl-devel perl quota libaio \
     libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
     autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
-    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers
+    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers \
+    perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6
 }
 
 
@@ -139,6 +140,17 @@ check_before_install(){
     check_control_panel
 }
 
+
+create_swap(){
+    swap="$(swapon -s)"
+    if [[ -z "${swap}" && ${RAM_TOTAL} -le "2099152" ]]; then
+        fallocate -l 1G /swapfile
+        chmod 600 /swapfile
+        mkswap /swapfile
+        swapon /swapfile
+        echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab
+    fi
+}
 
 #########################
 #Dowload primary Script #

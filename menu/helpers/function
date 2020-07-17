@@ -47,7 +47,9 @@ select_domain(){
             break
         done
 
-        validate_domain ${domain}
+        if ! validate_domain ${domain}; then
+            ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
+        fi
     else
         ALERT=$(printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n")
     fi

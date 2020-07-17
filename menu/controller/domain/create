@@ -42,7 +42,9 @@ set_var(){
 
 validate(){
     check_service
-    #validate_domain ${domain}
+    if ! validate_domain ${domain}; then
+        ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
+    fi
     check_domain_exists ${domain}
     check_database ${db_name}
     check_mysql_user ${db_user}
