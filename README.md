@@ -1,7 +1,7 @@
-<p align="center">Auto Install & Optimize LEMP Stack on CentOS 7</p>                        
-<p align="center">Author: Sanvv - HOSTVN.NET Technical</p>
+<p align="center"><strong>Auto Install & Optimize LEMP Stack on CentOS 7</strong></p>                        
+<p align="center"><strong>Author: Sanvv - HOSTVN.NET Technical</strong></p>
 
-<p align="center"> ![title](https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png) </p>
+<p align="center"> <img src="https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png" /> </p>
 
 ########################################################################################
 
@@ -33,7 +33,11 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 3. Cách cài đặt
 
-`curl -sO https://scripts.hostvn.net/install && chmod +x install && ./install`
+`
+
+curl -sO https://scripts.hostvn.net/install && chmod +x install && ./install
+
+`
 
 ## 4. Các tính năng đang phát triển
 
