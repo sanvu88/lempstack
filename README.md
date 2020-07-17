@@ -11,7 +11,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cài đặt các phần mềm phiên bản mới nhất từ chính trang chủ.
 - Cấu hình tối ưu bảo mật
 - Mariadb phiên 10.5
-- Phiên bar Nginx: 1.18.0
+- Phiên bản Nginx: 1.18.0
 - Cho phép lựa chọn phiên bản PHP: 5.6, 7.0, 7.1, 7.2, 7.4.
 - Cho phép chạy song song hai phiên bản PHP.
 - Cài đặt Pureftpd, phpMyAdmin, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
