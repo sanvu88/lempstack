@@ -53,3 +53,17 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - PHPMemcachedAdmin: https://github.com/elijaa/phpmemcachedadmin
 - phpRedisAdmin: https://github.com/erikdubbelboer/phpRedisAdmin
 - phpSysInfo: https://github.com/phpsysinfo/phpsysinfo
+- Pure-FTPD: https://www.pureftpd.org/project/pure-ftpd/
+
+## 7. Feedback
+
+Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com hoặc tạo Github Issues.
+
+## 8. Contributors & Credits
+### Developers / Maintainers
+- Sanvv
+
+### Contributors
+- Giapvv
+- Thanhnv
+- mbrother
