@@ -67,8 +67,8 @@ PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_ver
 PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
 
 # Select Service Version
-MARIADB_VERSION="10.5"
-PHP_VERSION="74"
+MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
+PHP_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
 PHP_VERSION_2="56"
 
 # Random Admin Port
@@ -205,9 +205,9 @@ gpgkey=https://nginx.org/keys/nginx_signing.key
 module_hotfixes=true
 EONGINXREPO
 
+    yum -y install nginx
     mkdir -p "${DEFAULT_DIR_TOOL}"
     chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"
-    yum -y install nginx
     systemctl start nginx
 }
 
@@ -243,7 +243,7 @@ select_php_ver(){
     clear
     printf "%s\n" "${SELECT_PHP}"
     PS3="${ENTER_OPTION}"
-    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
+    mapfile -t options < <(curl -s ${UPDATE_LINK}/version | grep "php_list=" | cut -f2 -d'=')
     select opt in "${options[@]}"
     do
         case $opt in
@@ -292,7 +292,7 @@ select_php_ver_2(){
     clear
     printf "%s\n" "${SELECT_PHP_2}"
     PS3="${ENTER_OPTION}"
-    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
+    mapfile -t options < <(curl -s ${UPDATE_LINK}/version | grep "php_list=" | cut -f2 -d'=')
     select opt in "${options[@]}"
     do
         case $opt in
