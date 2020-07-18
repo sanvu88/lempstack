@@ -30,6 +30,8 @@ KUSANAGI="/home/kusanagi"
 CWP="/usr/local/cwpsrv"
 VESTA="/usr/local/vesta/"
 EEV4="/opt/easyengine"
+LARVPS="/etc/larvps/.info.conf"
+TINO="/opt/tinopanel"
 
 # Set Lang
 ROOT_ERR="Ban can chay script voi user root. Chay lenh \"sudo su\" de co quyen root!"
@@ -37,7 +39,7 @@ CANCEL_INSTALL="Huy cai dat..."
 OS_WRONG="Script chi hoat dong tren \"CentOS 7\" va \"CentOS 8\"!"
 RAM_NOT_ENOUGH="Canh bao: Dung luong RAM qua thap de cai Script. (it nhat 512MB)"
 OTHER_CP_EXISTS="May chu cua ban da cai dat Control Panel khac. Vui long rebuild de cai dat Script."
-HOSTVN_EXISTS="May chu cua ban da cai dat HOSTVN Script khac. Vui long rebuild neu muon cai dat lai."
+HOSTVN_EXISTS="May chu cua ban da cai dat HOSTVN Script. Vui long rebuild neu muon cai dat lai."
 
 # Set Color
 RED='\033[0;31m'
@@ -79,13 +81,13 @@ check_low_ram(){
 
 # Check if other Control Panel has installed before
 check_control_panel(){
-    if [[ -f "${CPANEL}" || -f "${DIRECTADMIN}" || -f "${PLESK}" || -f "${WEBMIN}" || -f "${SENTORA}" || -f "${HOCVPS}" ]]; then
+    if [[ -f "${CPANEL}" || -f "${DIRECTADMIN}" || -f "${PLESK}" || -f "${WEBMIN}" || -f "${SENTORA}" || -f "${HOCVPS}" || -f "${LARVPS}" ]]; then
         printf "${RED}%s${NC}\n" "${OTHER_CP_EXISTS}"
         printf "${RED}%s${NC}\n" "${CANCEL_INSTALL}"
         exit
     fi
 
-    if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}"  ]]; then
+    if [[ -f "${VPSSIM}" || -f "${WORDOPS}" || -f "${EEV3}" || -d "${EEV4}" || -d "${VESTA}" || -d "${CWP}" || -d "${KUSANAGI}" || -d "${TINO}" ]]; then
         printf "${RED}%s${NC}\n" "${OTHER_CP_EXISTS}"
         printf "${RED}%s${NC}\n" "${CANCEL_INSTALL}"
         exit

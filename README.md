@@ -14,13 +14,15 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cập nhật liên tục, cung cấp Menu giúp dễ dàng thao tác, tự động cài đặt.
 - Cài đặt các phần mềm phiên bản mới nhất từ chính trang chủ.
 - Mariadb: 10.5
-- Phiên bản Nginx: 1.18.0
+- Phiên bản Nginx: 1.18.0 Stable
 - Cho phép lựa chọn phiên bản PHP: 5.6, 7.0, 7.1, 7.2, 7.4.
-- Cài đặt Pureftpd, phpMyAdmin, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
+- phpMyAdmin 4.9.5 nếu cài đặt PHP mặc định là 5.6, phpMyAdmin 5.0.2 nếu cài đặt PHP mặc định là 7.x
+- Cài đặt Pureftpd, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
 - Cài đặt memcached, redis.
 - Cài đặt CSF Firewall và CSF GUI - Quản lý CSF với giao diện web
 - Tích hợp Let's Encrypt SSL.
 - Cung cấp Menu nâng cấp Nginx, MariaDB/, PHP, Redis, Memcached, phpMyAdmin
+- WP-CLI, Composer
 
 
 ### 1.2. Tối ưu
@@ -104,6 +106,8 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - phpSysInfo: https://github.com/phpsysinfo/phpsysinfo
 - Pure-FTPD: https://www.pureftpd.org/project/pure-ftpd/
 - Rclone: https://rclone.org/
+- WP-CLI: https://wp-cli.org/
+- Composer: https://getcomposer.org/
 
 ## 7. Contact
 
@@ -123,5 +127,6 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ### Contributors
 - mbrother
 - Thanhnv
+- vouuvhb (mtdev)
 - Giapvv
 - Lamhn
