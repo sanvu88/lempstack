@@ -3228,11 +3228,6 @@ EOmysql_log
 ############################################
 # Install phpMyAdmin
 ############################################
-unzip_phpmyadmin(){
-    cd "${USR_DIR}" && unzip phpmyadmin.zip
-    rm -rf phpmyadmin.zip
-}
-
 #Config phpMyAdmin
 config_phpmyadmin(){
     BLOWFISH_SECRET=$(generate_random_pwd)
@@ -3295,7 +3290,7 @@ install_phpmyadmin(){
     unzip phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     rm -rf "${USR_DIR}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
-    ln -s "${USR_DIR}"/phpmyadmin ${DEFAULT_DIR_TOOL}/phpmyadmin
+    ln -s "${USR_DIR}"/phpmyadmin "${DEFAULT_DIR_TOOL}"/phpmyadmin
     config_phpmyadmin
     cd_dir "${DIR}"
 
@@ -3370,7 +3365,6 @@ EOpure_ftpd_conf
 change_ssh_port() {
     echo ""
     sed -i 's/#Port 22/Port 9292/g' /etc/ssh/sshd_config
-    systemctl restart sshd
 }
 
 ############################################
@@ -3394,6 +3388,13 @@ EOF
 }
 
 ############################################
+# Generate htpasswd
+############################################
+gen_htpasswd(){
+    htpasswd -b -c "${USR_DIR}"/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
+}
+
+############################################
 # Opcache Dashboard
 ############################################
 opcache_dashboard(){
@@ -3401,7 +3402,6 @@ opcache_dashboard(){
     mkdir -p "${DEFAULT_DIR_TOOL}"/opcache
     wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
     chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
-    htpasswd -b -c "${USR_DIR}"/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx "${USR_DIR}"/nginx/auth
 }
 
@@ -3452,6 +3452,7 @@ install_rclone(){
 }
 
 install_admin_tool(){
+    gen_htpasswd
     opcache_dashboard
     php_sys_info
     phpmemcachedadmin
@@ -3514,27 +3515,6 @@ EOCSF
 ############################################
 # Finished
 ############################################
-start_service() {
-    echo ""
-    systemctl enable nginx
-    systemctl enable mariadb
-    systemctl enable php-fpm
-    systemctl start php-fpm
-    systemctl start pure-ftpd
-    systemctl enable pure-ftpd
-    systemctl start lfd
-    systemctl enable lfd
-    systemctl start csf
-    systemctl enable csf
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        systemctl enable "${PHP_VERSION_2}"-php-fpm
-        systemctl start "${PHP_VERSION_2}"-php-fpm
-    fi
-
-    check_service_status
-}
-
 check_service_status(){
     echo ""
     NGINX_STATUS="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
@@ -3566,6 +3546,27 @@ check_service_status(){
     if [[ "${LFD_STATUS}" != "active" ]]; then
         echo "${LFD_NOT_WORKING}" >> "${LOG}"
     fi
+}
+
+start_service() {
+    echo ""
+    systemctl enable nginx
+    systemctl enable mariadb
+    systemctl enable php-fpm
+    systemctl start php-fpm
+    systemctl start pure-ftpd
+    systemctl enable pure-ftpd
+    systemctl start lfd
+    systemctl enable lfd
+    systemctl start csf
+    systemctl enable csf
+
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        systemctl enable "${PHP_VERSION_2}"-php-fpm
+        systemctl start "${PHP_VERSION_2}"-php-fpm
+    fi
+
+    check_service_status
 }
 
 ############################################

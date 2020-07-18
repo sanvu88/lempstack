@@ -145,7 +145,7 @@ install_requirement(){
 
 create_swap(){
     swap="$(swapon -s)"
-    if [[ -z "${swap}" && ${RAM_TOTAL} -le "2099152" ]]; then
+    if [[ -z "${swap}" && ${RAM_TOTAL} -le 2099152 ]]; then
         fallocate -l 1G /swapfile
         chmod 600 /swapfile
         mkswap /swapfile

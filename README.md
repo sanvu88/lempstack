@@ -44,12 +44,13 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ### 1.3. Bảo mật
 
 - Cấu hình tăng cường bảo mật từ tầng webserver.
-- Không tắt Selinux đảm bảo mức độ bảo mật cho CentOS.
-- Cấu hình website chạy với user khác nhau kết hợp disable các hàm nguy hiểm, bật open_basedir và một số config khác nhằm tăng cường bảo mật.
+- Không tắt Selinux trên CentOS.
+- Cấu hình website chạy với user khác nhau hạn chế lây lan mã độc giữa các website.
+- Disable các hàm nguy hiểm, bật open_basedir và một số config khác nhằm tăng cường bảo mật.
 - Auto block bruteforce SSH, FTP ....
 - Block run shell trong thư mục uploads WordPress. Chặn truy cập các thư mục, file nhạy cảm trên WordPress.
 - Chống Bruteforce wp-admin.
-- BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web).
+- BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web) và menu quản lý CSF.
 - Thay đổi Port SSH.
 - Thay đổi port Admin.
 - Thay đổi port FTP.
@@ -127,7 +128,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 8. Feedback
 
-- Rất mong nhận được ý kiến đóng góp của các bạn để Scripts ngày càng hoàn thiện hơn.
+- Do chưa có nhiều kinh nghiệm nên Scripts khó tránh khỏi thiếu sót, rất mong nhận được ý kiến đóng góp của các bạn để Scripts ngày càng hoàn thiện hơn.
 - Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com, Group Facebook: https://www.facebook.com/groups/scripthostvn/ hoặc tạo Github Issues.
 
 ## 9. Contributors & Credits

@@ -12,15 +12,15 @@
 source /var/hostvn/menu/helpers/function
 
 update(){
-	cd_dir /usr/share/nginx/html
-	rm -rf ./redis
-	git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
+	  cd_dir "${DEFAULT_DIR_TOOL}"
+	  rm -rf ./redis
+	  git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
     mv phpRedisAdmin redis
-    cd_dir /usr/share/nginx/html/redis
+    cd_dir "${DEFAULT_DIR_TOOL}"/redis
     git clone https://github.com/nrk/predis.git vendor
     cd .. && chown -R nginx:nginx redis
-	clear
-	printf "${GREEN}Update Redis Dashboard thanh cong.${NC}\n"
+	  clear
+	  printf "${GREEN}Update Redis Dashboard thanh cong.${NC}\n"
 }
 
 update

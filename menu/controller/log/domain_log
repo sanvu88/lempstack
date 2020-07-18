@@ -12,12 +12,12 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-  # shellcheck disable=SC2154
-	username=${domain//[-._]/}
+    # shellcheck disable=SC2154
+    username=${domain//[-._]/}
 }
 
 view_log(){
-	clear
+	  clear
     printf "${RED}Hien thi 10 dong log moi nhat...\n"
     echo ""
     tail /home/"${username}"/"${domain}"/logs/error.log
@@ -25,16 +25,16 @@ view_log(){
 }
 
 run(){
-	select_domain
+    select_domain
 
-	if ! if_domain_exists "${domain}"; then
-		ALERT=$(printf "${RED}Domain khong ton tai tren VPS.${NC}\n")
-	fi
+    if ! if_domain_exists "${domain}"; then
+        ALERT=$(printf "${RED}Domain khong ton tai tren VPS.${NC}\n")
+    fi
 
-	if [[ -z "${ALERT}" ]]; then
-		set_var
-		view_log
-	fi
+    if [[ -z "${ALERT}" ]]; then
+        set_var
+        view_log
+    fi
 }
 
 run

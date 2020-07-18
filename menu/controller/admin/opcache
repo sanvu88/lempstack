@@ -12,10 +12,10 @@
 source /var/hostvn/menu/helpers/function
 
 update(){
-	cd_dir /usr/share/nginx/html/opcache
+	cd_dir "${DEFAULT_DIR_TOOL}"/opcache
 	rm -rf ./*
-	wget -q https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_WEB}"/opcache/index.php &> /dev/null
-	chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/opcache
+	wget -q https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php &> /dev/null
+	chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
 	clear
 	printf "${GREEN}Update Opcache Dashboard thanh cong.${NC}\n"
 }

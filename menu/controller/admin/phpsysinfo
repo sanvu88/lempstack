@@ -16,13 +16,13 @@ set_var(){
 }
 
 check_dir(){
-	if [ -d "/usr/share/nginx/html/serverinfo" ]; then
-		rm -rf /usr/share/nginx/html/serverinfo
+	if [ -d "${DEFAULT_DIR_TOOL}/serverinfo" ]; then
+		rm -rf "${DEFAULT_DIR_TOOL}"/serverinfo
 	fi
 }
 
 update(){
-	cd_dir /usr/share/nginx/html
+	cd_dir "${DEFAULT_DIR_TOOL}"
 	wget https://github.com/phpsysinfo/phpsysinfo/archive/v"${phpsysinfo_v}".zip &> /dev/null
 	unzip v"${phpsysinfo_v}".zip &> /dev/null
 	mv phpsysinfo-"${phpsysinfo_v}" serverinfo

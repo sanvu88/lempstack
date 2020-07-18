@@ -24,19 +24,19 @@ check_php_version(){
 }
 
 check_dir(){
-	if [ -d "/usr/share/phpmyadmin" ]; then
-		rm -rf /usr/share/phpmyadmin
-		rm -rf "${DEFAULT_DIR_WEB}"/phpmyadmin
-	fi
+	  if [ -d "/usr/share/phpmyadmin" ]; then
+		  rm -rf /usr/share/phpmyadmin
+		  rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin
+	  fi
 }
 
 update(){
-	wget -O /usr/share/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
-	cd_dir /usr/share
-	unzip phpmyadmin.zip
-	rm -rf phpmyadmin.zip
+	  wget -O /usr/share/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
+	  cd_dir /usr/share
+	  unzip phpmyadmin.zip
+	  rm -rf phpmyadmin.zip
     mv phpMyAdmin-"${phpmyadmin_v}"-english phpmyadmin
-    ln -s /usr/share/phpmyadmin "${DEFAULT_DIR_WEB}"/phpmyadmin
+    ln -s /usr/share/phpmyadmin "${DEFAULT_DIR_TOOL}"/phpmyadmin
 }
 
 config_phpmyadmin(){

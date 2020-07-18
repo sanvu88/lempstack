@@ -62,7 +62,7 @@ do
         10) clear; menu_vps;;
         11) clear; menu_account ;;
         12) clear; menu_cronjob ;;
-        0) clear; echo -e "${GREEN}Bye Bye... Cam on ban da su dung HOSTVN.NET Script${NC}\n";;
+        0) clear; printf "${GREEN}Bye Bye... Cam on ban da su dung ${AUTHOR} Script${NC}\n";;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done

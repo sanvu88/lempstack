@@ -20,6 +20,7 @@ action(){
     read -r -p "Xac nhan phan quyen cho ten mien: ${domain:?}? (y/n): " confirm
     if [[ "$confirm" =~ ^([yY])$ ]]; then
         username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        chmod 711 /home
         chmod 711 /home/"${username}"
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
@@ -31,7 +32,6 @@ action(){
         clear
         printf "${RED}Huy phan quyen.${NC}\n"
     fi
-
 }
 
 run(){
