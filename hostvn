@@ -69,7 +69,7 @@ PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" |
 # Select Service Version
 MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
 PHP_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
-PHP_VERSION_2="56"
+PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
 
 # Random Admin Port
 RANDOM_ADMIN_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
@@ -96,6 +96,21 @@ rm -rf "${DIR}"/install
 ############################################
 cd_dir(){
     cd "$1" || return
+}
+
+generate_random_pwd(){
+    date +%s%N | sha256sum | base64 | head -c 16
+}
+
+random_port(){
+  port=$(( ( RANDOM % 9999 )  + 2000 ))
+  check_port=$(netstat -vatn | grep ${port})
+  if [ -z  "${check_port}" ]; then
+      port=${port}
+      echo ${port}
+  else
+      random_port
+  fi
 }
 
 ############################################
@@ -694,7 +709,7 @@ cal_ssl_cache_size(){
 self_signed_ssl(){
     #Create dhparams
     cal_ssl_cache_size
-    challenge_password=$(date +%s%N | sha256sum | base64 | head -c 12)
+    challenge_password=$(generate_random_pwd)
     self_signed_dir="/etc/nginx/ssl/server"
     mkdir -p "${self_signed_dir}"
     openssl dhparam -out /etc/nginx/ssl/dhparams.pem 2048
@@ -2964,7 +2979,7 @@ EOmysql_limit_nofile
 # Set MariaDB Root Password
 set_mariadb_root_pwd(){
     systemctl start mariadb
-    SQLPASS=$(date +%s%N | sha256sum | base64 | head -c 12)
+    SQLPASS=$(generate_random_pwd)
     cat > "/root/.my.cnf" <<EOmy_conf
 [client]
 user=root
@@ -3205,7 +3220,7 @@ unzip_phpmyadmin(){
 
 #Config phpMyAdmin
 config_phpmyadmin(){
-    BLOWFISH_SECRET=$(date +%s%N | sha256sum | base64 | head -c 64)
+    BLOWFISH_SECRET=$(generate_random_pwd)
     mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
     rm -rf "${USR_DIR}"/phpmyadmin/setup
     mkdir -p "${USR_DIR}"/phpmyadmin/tmp
