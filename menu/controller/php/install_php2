@@ -1,15 +1,21 @@
 #!/bin/bash
 
+# shellcheck disable=SC2207
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_php
 
 set_var(){
-	PECL_PHP_LINK="https://pecl.php.net/get"
-	IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
-	PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
-	PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
+    OS_VER=$(rpm -E %centos)
+    PECL_PHP_LINK="https://pecl.php.net/get"
+    IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
+    PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
+    PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
+    PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        unset "PHP_LIST[-1]"
+    fi
 }
 
 memory_calculation(){
@@ -98,16 +104,10 @@ select_php_ver(){
     clear
     printf "Lua chon phien ban PHP\n"
     PS3="Nhap vao lua chon cua ban [1-6]: "
-    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
-    select opt in "${options[@]}"
+    select opt in "${PHP_LIST[@]}"
     do
         case $opt in
-            "7.4") php2_version="php74"; break;;
-            "7.3") php2_version="php73"; break;;
-            "7.2") php2_version="php72"; break;;
-            "7.1") php2_version="php71"; break;;
-            "7.0") php2_version="php70"; break;;
-            "5.6") php2_version="php56"; break;;
+            "${opt}") php2_version="${opt/.}"; break;;
             *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
         esac
     done
@@ -359,8 +359,8 @@ _run(){
 		hostvn_custom_ini_2
 		php_opcache_2
 		write_info
-		systemctl start ${php2_version}-php-fpm
-		systemctl enable ${php2_version}-php-fpm
+		systemctl start "${php2_version}"-php-fpm
+		systemctl enable "${php2_version}"-php-fpm
 		clear
 		printf "${GREEN}Cai dat thanh cong.${NC}\n"
 	else

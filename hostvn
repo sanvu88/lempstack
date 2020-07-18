@@ -73,6 +73,9 @@ MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut
 PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
 PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
 PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+if [[ "${OS_VER}" -eq 8 ]]; then
+    unset "PHP_LIST[-1]"
+fi
 
 # Random Port
 RANDOM_ADMIN_PORT=$(shuf -i 49152-57343 -n 1)

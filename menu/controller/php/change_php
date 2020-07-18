@@ -7,11 +7,15 @@ source /var/hostvn/menu/helpers/function
 source /var/hostvn/menu/helpers/variable_php
 
 set_var(){
-	PECL_PHP_LINK="https://pecl.php.net/get"
-	IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
-	PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
-	PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
-	PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+    OS_VER=$(rpm -E %centos)
+    PECL_PHP_LINK="https://pecl.php.net/get"
+    IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
+    PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
+    PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
+    PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        unset "PHP_LIST[-1]"
+    fi
 }
 
 memory_calculation(){
@@ -118,7 +122,7 @@ select_php_ver(){
 	    select opt in "${PHP_LIST[@]}"
 	    do
 	        case $opt in
-	            "${opt}") php_version="php${opt/.}"; break;;
+	            "${opt}") php_version="${opt/.}"; break;;
 	            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 	        esac
 	    done
@@ -133,7 +137,7 @@ select_php_ver(){
 		    select opt2 in "${PHP_LIST[@]}"
 		    do
 		        case ${opt2} in
-		            "${opt2}") php_version2="php${opt2/.}"; break;;
+		            "${opt2}") php_version2="${opt2/.}"; break;;
 		            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 		        esac
 		    done
