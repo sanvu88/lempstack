@@ -3270,8 +3270,8 @@ install_phpmyadmin(){
         PHPMYADMIN_VERSION="4.9.5"
     fi
 
-    wget "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     cd_dir "${USR_DIR}"
+    wget "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     unzip phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     rm -rf "${USR_DIR}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
