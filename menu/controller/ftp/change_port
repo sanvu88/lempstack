@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
 set_var(){
 	current_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
 	csf_port=$(grep "csf_port" "${FILE_INFO}" | cut -f2 -d'=')

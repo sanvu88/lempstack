@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
 CHOICE=1
 
 nginx_status=$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)

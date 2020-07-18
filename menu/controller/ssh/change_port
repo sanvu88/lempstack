@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
 printf "${GREEN}-----------------${NC}\n"
 printf "${GREEN}Thay đoi port SSH${NC}\n"
 printf "${GREEN}-----------------${NC}\n"

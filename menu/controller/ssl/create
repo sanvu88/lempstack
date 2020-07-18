@@ -1,14 +1,12 @@
 #!/bin/bash
 
-debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_create_ssl.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
 
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function

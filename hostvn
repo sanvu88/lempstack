@@ -3613,40 +3613,36 @@ write_info(){
 ##############
 # Run Script
 ##############
-_run(){
-    # Prepare before install
-    prepare_install
-    create_bash_dir
+# Prepare before install
+prepare_install
+create_bash_dir
 
-    # Install
-    install_lemp
-    install_composer
-    install_wpcli
-    memory_calculation
-    install_cache
+# Install
+install_lemp
+install_composer
+install_wpcli
+memory_calculation
+install_cache
 
-    # Config
-    config_nginx
-    config_php
-    config_mariadb
-    other_config
-    log_rotation
+# Config
+config_nginx
+config_php
+config_mariadb
+other_config
+log_rotation
 
-    # Install other tool
-    install_phpmyadmin
-    install_pure_ftpd
-    change_ssh_port
-    install_certbot_auto
-    install_csf
-    install_admin_tool
+# Install other tool
+install_phpmyadmin
+install_pure_ftpd
+change_ssh_port
+install_certbot_auto
+install_csf
+install_admin_tool
 
-    # End install
-    start_service
-    add_menu
-    write_info
-}
-
-_run
+# End install
+start_service
+add_menu
+write_info
 
 clear
 sleep 1

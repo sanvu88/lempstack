@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
 show_info(){
 	printf "PHP default version     : %s\n" "$(rpm -qa php-fpm | cut -f3 -d'-')"
 	if [[ "${php2_release:?}" == "yes" ]]; then

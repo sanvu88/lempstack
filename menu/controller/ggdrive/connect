@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
 input(){
 	read -r -p "Nhap vao ten ket noi muon tao (Viet lien, khong dau): " remote_name
 }
