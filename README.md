@@ -5,7 +5,7 @@
 
 ########################################################################################
 
-Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - MariaDB - PHP-FPM) trên CentOS 7 (CentOS 8 sẽ sớm được hỗ trợ).
+Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - MariaDB - PHP-FPM) trên CentOS 7, CentOS 8.
 
 ## 1. Chi tiết Script:
 
@@ -15,7 +15,9 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cài đặt các phần mềm phiên bản mới nhất từ chính trang chủ.
 - Mariadb: 10.5
 - Phiên bản Nginx: 1.18.0 Stable
-- Cho phép lựa chọn phiên bản PHP: 5.6, 7.0, 7.1, 7.2, 7.4.
+- Cho phép lựa chọn phiên bản PHP:
+    + centOS 7: 5.6, 7.0, 7.1, 7.2, 7.3, 7.4.
+    + centOS 8: 7.2, 7.3, 7.4.
 - phpMyAdmin 4.9.5 nếu cài đặt PHP mặc định là 5.6, phpMyAdmin 5.0.2 nếu cài đặt PHP mặc định là 7.x
 - Cài đặt Pureftpd, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
 - Cài đặt memcached, redis.
@@ -76,7 +78,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 2. Yêu cầu
 
-- CentOS 7 (CentOS 8 sẽ sớm được hỗ trợ).
+- CentOS 7, CentOS 8.
 
 ## 3. Cách cài đặt
 

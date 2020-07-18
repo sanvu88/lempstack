@@ -74,7 +74,13 @@ PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -
 PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
 PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
 if [[ "${OS_VER}" -eq 8 ]]; then
-    unset "PHP_LIST[-1]"
+    index=0
+    for keyword in "${PHP_LIST[@]}"; do
+        if [[ "$keyword" = "php7.1" || "$keyword" = "php7.0" || "$keyword" = "php5.6" ]]; then
+            unset "PHP_LIST[$index]"
+        fi
+        (( index++ ))
+    done
 fi
 
 # Random Port
