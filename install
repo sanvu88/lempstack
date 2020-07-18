@@ -118,14 +118,14 @@ remove_old_ervice(){
 }
 
 # Install requirement service
-install_requirement(){
-    if [ "${OS_VER}" -eq 8 ]; then
-        yum -y install install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
+install_repo(){
+    if [[ "${OS_VER}" -eq 8 ]]; then
         yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+        yum -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
         yum -y update
-        yum -y install hostname
+        yum -y install hostname perl-DBI libaio libsepol lsof boost-program-options
     elif [ "${OS_VER}" -eq 7 ]; then
-        yum -y install epel-release
+        yum -y install epel-release ntpdate
         yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
         yum -y update
     else
@@ -133,12 +133,14 @@ install_requirement(){
         sleep 2
         exit
     fi
+}
 
+install_requirement(){
     yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils dos2unix openssl openssl-devel perl quota libaio \
-    libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
-    autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
-    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers \
-    perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6
+          libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed \
+          autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
+          psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers \
+          perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6
 }
 
 create_swap(){
@@ -159,13 +161,10 @@ dowload_script(){
     curl -sO ${SCRIPT_LINK}/hostvn && chmod +x hostvn && sh hostvn
 }
 
-_run(){
-    welcome
-    check_before_install
-    remove_old_ervice
-    install_requirement
-    create_swap
-    dowload_script
-}
-
-_run
+welcome
+check_before_install
+remove_old_ervice
+install_repo
+install_requirement
+create_swap
+dowload_script

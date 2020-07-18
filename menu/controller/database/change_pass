@@ -10,8 +10,8 @@ echo ""
 
 input(){
 	read -r -p "Nhap Mysql user: " db_user
-	read -r -p "Nhập DB_Password: " password
 	read -r -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
+	password=$(gen_pass "$@")
 }
 
 validate(){

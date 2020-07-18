@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC2207
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
@@ -10,6 +11,7 @@ set_var(){
 	IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
 	PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
 	PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
+	PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
 }
 
 memory_calculation(){
@@ -113,16 +115,10 @@ select_php_ver(){
     if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
 	    printf "Lua chon phien ban PHP mac dinh\n"
 	    PS3="Nhap vao lua chon cua ban [1-6]: "
-	    options=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
-	    select opt in "${options[@]}"
+	    select opt in "${PHP_LIST[@]}"
 	    do
 	        case $opt in
-	            "7.4") php_version="php74"; break;;
-	            "7.3") php_version="php73"; break;;
-	            "7.2") php_version="php72"; break;;
-	            "7.1") php_version="php71"; break;;
-	            "7.0") php_version="php70"; break;;
-	            "5.6") php_version="php56"; break;;
+	            "${opt}") php_version="php${opt/.}"; break;;
 	            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 	        esac
 	    done
@@ -134,16 +130,10 @@ select_php_ver(){
     	if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
     		printf "Lua chon phien ban PHP thu 2\n"
 		    PS3="Nhap vao lua chon cua ban [1-6]: "
-		    options2=("7.4" "7.3" "7.2" "7.1" "7.0" "5.6")
-		    select opt2 in "${options2[@]}"
+		    select opt2 in "${PHP_LIST[@]}"
 		    do
-		        case $opt2 in
-		            "7.4") php_version2="php74"; break;;
-		            "7.3") php_version2="php73"; break;;
-		            "7.2") php_version2="php72"; break;;
-		            "7.1") php_version2="php71"; break;;
-		            "7.0") php_version2="php70"; break;;
-		            "5.6") php_version2="php56"; break;;
+		        case ${opt2} in
+		            "${opt2}") php_version2="php${opt2/.}"; break;;
 		            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 		        esac
 		    done
@@ -172,7 +162,7 @@ remove_old_php(){
 }
 
 install_php(){
-    yum-config-manager --enable remi-${php_version}
+    yum-config-manager --enable remi-"${php_version}"
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
         php-intl php-imap perl-LWP-Protocol-https php-pear-Net-SMTP php-enchant php-pear php-devel php-zlib php-xmlrpc \
@@ -405,13 +395,13 @@ install_igbinary_2(){
     cd_dir /root && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir /root/igbinary-${IGBINARY_VERSION}
-    /opt/remi/${php_version2}/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/${php_version2}/root/usr/bin/php-config
+    /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
     make && make install
     cd_dir /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
     if [[ -f "${php2_module_dir}/igbinary.so" ]]; then
     	if [[ -f "${php2_ini_path}/40-igbinary.ini" ]]; then
-			rm -rf ${php2_ini_path}/40-igbinary.ini
+			rm -rf "${php2_ini_path}"/40-igbinary.ini
 		fi
         cat >> "${php2_ini_path}/40-igbinary.ini" << EOF
 extension=igbinary.so
@@ -427,13 +417,13 @@ install_php_memcached_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir /root/memcached-${PHP_MEMCACHED_VERSION}
-        /opt/remi/${php_version2}/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/${php_version2}/root/usr/bin/php-config
+        /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
         make && make install
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
     if [[ -f "${php2_module_dir}/memcached.so" ]]; then
     	if [[ -f "${php2_ini_path}/50-memcached.ini" ]]; then
-    		rm -rf ${php2_ini_path}/50-memcached.ini
+    		rm -rf "${php2_ini_path}"/50-memcached.ini
     	fi
         cat >> "${php2_ini_path}/50-memcached.ini" << EOF
 extension=memcached.so
@@ -449,13 +439,13 @@ install_php_redis_2(){
     cd /root && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "/root/redis-${PHP_REDIS_VERSION}"
-    /opt/remi/${php_version2}/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/${php_version2}/root/usr/bin/php-config
+    /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
     make && make install
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
     if [[ -f "${php2_module_dir}/redis.so" ]]; then
     	if [[ -f "${php2_ini_path}/50-redis.ini" ]]; then
-    		rm -rf ${php2_ini_path}/50-redis.ini
+    		rm -rf "${php2_ini_path}"/50-redis.ini
     	fi
         cat >> "${php2_ini_path}/50-redis.ini" << EOF
 extension=redis.so
@@ -475,11 +465,11 @@ php2_global_config(){
     fi
 
     if [[ -f "${php2_fpm_config_file}" ]]; then
-        rm -rf ${php2_fpm_config_file}
+        rm -rf "${php2_fpm_config_file}"
     fi
 
     if [[ ! -d "/opt/remi/${php_version2}/root/var/run/php-fpm" ]]; then
-        mkdir -p /opt/remi/${php_version2}/root/var/run/php-fpm
+        mkdir -p /opt/remi/"${php_version2}"/root/var/run/php-fpm
     fi
 
     cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
@@ -500,7 +490,7 @@ daemonize = yes
 EOphp_fpm_2_conf
 
     if [[ -f "${www2_config_file}" ]]; then
-        rm -rf ${www2_config_file}
+        rm -rf "${www2_config_file}"
     fi
 cat >> "${www2_config_file}" << EOwww_2_conf
 [www]
@@ -535,24 +525,24 @@ security.limit_extensions = .php
 EOwww_2_conf
 
     if [[ ! -d "/opt/remi/${php_version2}/root/var/lib/php/session" ]]; then
-        mkdir -p /opt/remi/${php_version2}/root/var/lib/php/session
+        mkdir -p /opt/remi/"${php_version2}"/root/var/lib/php/session
     fi
     if [[ ! -d "/opt/remi/${php_version2}/root/var/lib/php/wsdlcache" ]]; then
-        mkdir -p /opt/remi/${php_version2}/root/var/lib/php/wsdlcache
+        mkdir -p /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
     fi
     if [[ ! -d "/opt/remi/${php_version2}/root/var/log/php-fpm" ]]; then
-        mkdir -p /opt/remi/${php_version2}/root/var/log/php-fpm
+        mkdir -p /opt/remi/"${php_version2}"/root/var/log/php-fpm
     fi
-    chown -R nginx:nginx /opt/remi/${php_version2}/root/var/lib/php/session
-    chown -R nginx:nginx /opt/remi/${php_version2}/root/var/lib/php/wsdlcache
-    chown -R nginx:nginx /opt/remi/${php_version2}/root/var/log/php-fpm
-    chmod 711 /opt/remi/${php_version2}/root/var/lib/php/session
-    chmod 711 /opt/remi/${php_version2}/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/log/php-fpm
+    chmod 711 /opt/remi/"${php_version2}"/root/var/lib/php/session
+    chmod 711 /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
 }
 
 hostvn_custom_ini_2(){
 	if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
-		rm -rf ${php2_ini_path}/00-hostvn-custom.ini
+		rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
 	fi
     cat > "${php2_ini_path}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
@@ -579,7 +569,7 @@ EOhostvn_custom_ini
 
 php_opcache_2(){
     if [[ -f "${php2_ini_path}/10-opcache.ini" ]]; then
-        rm -rf ${php2_ini_path}/10-opcache.ini
+        rm -rf "${php2_ini_path}"/10-opcache.ini
     fi
     cat > "${php2_ini_path}/10-opcache.ini" << EOphp_opcache
 zend_extension=opcache.so
@@ -645,8 +635,8 @@ _run(){
 			php2_global_config
 			hostvn_custom_ini_2
 			php_opcache_2
-			systemctl restart ${php_version2}-php-fpm
-			systemctl enable ${php_version2}-php-fpm
+			systemctl restart "${php_version2}"-php-fpm
+			systemctl enable "${php_version2}"-php-fpm
 		fi
 
 		write_info

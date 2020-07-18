@@ -1,15 +1,5 @@
 #!/bin/bash
 
-debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_create_domain.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
-
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
@@ -27,11 +17,11 @@ input(){
 # Set variables
 set_var(){
     username=${domain//[-._]/}
-    user_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
+    user_pass=$(gen_pass "$@")
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
-    db_pass=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-12}";echo;)
+    db_pass=$(gen_pass "$@")
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""
     plugin_cache="other"

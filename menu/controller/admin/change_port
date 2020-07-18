@@ -1,16 +1,5 @@
 #!/bin/bash
 
-debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_change_port_ssh.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
-
-
 printf "${GREEN}-----------------${NC}\n"
 printf "${GREEN}Thay đoi port SSH${NC}\n"
 printf "${GREEN}-----------------${NC}\n"

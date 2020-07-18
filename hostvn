@@ -8,10 +8,12 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2207
+
 # Set variables
 OS_VER=$(rpm -E %centos)
 OS_ARCH=$(uname -m)
-IPADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
+IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 DIR=$(pwd)
 BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
@@ -24,10 +26,10 @@ PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
 FILE_INFO="${BASH_DIR}/hostvn.conf"
 HOSTNAME=$(hostname)
 PHP2_RELEASE="no"
-ADMIN_TOOL_PWD=$(date |md5sum |cut -c '14-30')
+ADMIN_TOOL_PWD=$(date +%s%N | sha256sum | base64 | head -c 16)
 
 # Copyright
-AUTHOR="HOSTVN"
+AUTHOR="HOSTVN.NET"
 AUTHOR_CONTACT="kythuat@hostvn.net"
 AUTHOR_WEBSITE="https://hostvn.net"
 
@@ -68,11 +70,13 @@ PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" |
 
 # Select Service Version
 MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
-PHP_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
+PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
 PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
+PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
 
-# Random Admin Port
-RANDOM_ADMIN_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
+# Random Port
+RANDOM_ADMIN_PORT=$(shuf -i 49152-57343 -n 1)
+CSF_UI_PORT=$(shuf -i 57344-65000 -n 1)
 
 # Dir
 DEFAULT_DIR_WEB="/usr/share/nginx/html"
@@ -100,17 +104,6 @@ cd_dir(){
 
 generate_random_pwd(){
     date +%s%N | sha256sum | base64 | head -c 16
-}
-
-random_port(){
-  port=$(( ( RANDOM % 9999 )  + 2000 ))
-  check_port=$(netstat -vatn | grep ${port})
-  if [ -z  "${check_port}" ]; then
-      port=${port}
-      echo ${port}
-  else
-      random_port
-  fi
 }
 
 ############################################
@@ -221,8 +214,8 @@ module_hotfixes=true
 EONGINXREPO
 
     yum -y install nginx
-    mkdir -p "${DEFAULT_DIR_TOOL}"
-    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"
+    mkdir -p ${DEFAULT_DIR_TOOL}
+    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}
     systemctl start nginx
 }
 
@@ -242,15 +235,22 @@ nginx_brotli(){
 
 #Install Mariadb
 install_mariadb(){
-    cat >> "/etc/yum.repos.d/mariadb.repo" << EOMARIADBREPO
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
+        chmod +x mariadb_repo_setup
+        ./mariadb_repo_setup
+        rm -rf mariadb_repo_setup
+        yum -y install --repo="mariadb-main" MariaDB-server MariaDB-client
+    else
+        cat >> "/etc/yum.repos.d/mariadb.repo" << EOMARIADBREPO
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/${MARIADB_VERSION}/centos${OS_VER}-${OS_ARCH1}
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOMARIADBREPO
-
-    yum -y install MariaDB-server MariaDB-client
+        yum -y install MariaDB-server MariaDB-client
+    fi
 }
 
 # Install php-fpm
@@ -258,21 +258,25 @@ select_php_ver(){
     clear
     printf "%s\n" "${SELECT_PHP}"
     PS3="${ENTER_OPTION}"
-    mapfile -t options < <(curl -s ${UPDATE_LINK}/version | grep "php_list=" | cut -f2 -d'=')
-    select opt in "${options[@]}"
+    select opt in "${PHP_LIST[@]}"
     do
         case $opt in
-            "$opt") PHP_VERSION_2="${opt/.}"; break;;
-            *) printf "%s\n" "${WRONG_PHP_OPTION}"; break;;
+            "${opt}") PHP_VERSION="${opt/.}"; break;;
+            *) printf "%s\n" "${WRONG_PHP_OPTION}"; PHP_VERSION="${PHP_VERSION_1}"; break;;
         esac
     done
+
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        PHP_VERSION=${PHP_VERSION//php}
+        PHP_VERSION=$(echo "${PHP_VERSION}" | fold -w1 | paste -sd'.')
+    fi
 }
 
 install_php(){
     if [ "${OS_VER}" -eq 8 ]; then
         dnf module enable php:remi-"${PHP_VERSION}" -y
     else
-        yum-config-manager --enable remi-php"${PHP_VERSION}"
+        yum-config-manager --enable remi-"${PHP_VERSION}"
     fi
 
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
@@ -302,11 +306,10 @@ select_php_ver_2(){
     clear
     printf "%s\n" "${SELECT_PHP_2}"
     PS3="${ENTER_OPTION}"
-    mapfile -t options < <(curl -s ${UPDATE_LINK}/version | grep "php_list=" | cut -f2 -d'=')
-    select opt in "${options[@]}"
+    select opt in "${PHP_LIST[@]}"
     do
         case $opt in
-            "$opt") PHP_VERSION_2="php${opt/.}"; break;;
+            "${opt}") PHP_VERSION_2="${opt/.}"; break;;
             *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; break;;
         esac
     done
@@ -500,7 +503,12 @@ memory_calculation(){
 
 # Install Memcached
 install_memcached(){
-    yum -y install memcached libmemcached libmemcached-devel -y
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        yum -y install memcached libmemcached
+    else
+        yum -y install memcached libmemcached libmemcached-devel
+    fi
+
     if [[ -f "/etc/sysconfig/memcached" ]]; then
         mv /etc/sysconfig/memcached /etc/sysconfig/memcached.bak
         cat >> "/etc/sysconfig/memcached" << EOMEMCACHED
@@ -528,7 +536,7 @@ EOFREDIS
 
 # Install igbinary
 install_igbinary(){
-    if [[ "${PHP_VERSION}" == "56" ]]; then
+    if [[ "${PHP_VERSION}" == "php56" ]]; then
         IGBINARY_VERSION="2.0.8"
     fi
 
@@ -571,7 +579,7 @@ EOF
 
 # Install Php memcached extension
 install_php_memcached(){
-    if [[ "${PHP_VERSION}" == "56" ]]; then
+    if [[ "${PHP_VERSION}" == "php56" ]]; then
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
@@ -614,7 +622,7 @@ EOF
 
 # Install Phpredis
 install_php_redis(){
-    if [[ "${PHP_VERSION}" == "56" ]]; then
+    if [[ "${PHP_VERSION}" == "php56" ]]; then
         PHP_REDIS_VERSION="4.3.0"
     fi
 
@@ -1888,7 +1896,7 @@ default_vhost(){
 
 cat >> "/etc/nginx/apps/phpmyadmin.conf" <<EOphpmyadmin_vhost
 location ^~ /phpmyadmin {
-    root "${DEFAULT_DIR_TOOL}"/;
+    root ${DEFAULT_DIR_TOOL}/;
     index index.php index.html index.htm;
     location ~ ^/phpmyadmin/(.+\.php)\$ {
         try_files \$uri =404;
@@ -1903,7 +1911,7 @@ location ^~ /phpmyadmin {
         }
     }
     location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-        root "${DEFAULT_DIR_TOOL}"/;
+        root ${DEFAULT_DIR_TOOL}/;
     }
 }
 location ~ ^/pma {
@@ -1956,7 +1964,7 @@ EOphpmyadmin_vhost
 
 cat >> "/etc/nginx/apps/opcache.conf" <<EOopcache_vhost
 location ^~ /opcache {
-    root "${DEFAULT_DIR_TOOL}"/;
+    root ${DEFAULT_DIR_TOOL}/;
     index index.php index.html index.htm;
 
     auth_basic "Restricted";
@@ -1975,14 +1983,14 @@ location ^~ /opcache {
         }
     }
     location ~* ^/opcache/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-        root "${DEFAULT_DIR_TOOL}"/;
+        root ${DEFAULT_DIR_TOOL}/;
     }
 }
 EOopcache_vhost
 
 cat >> "/etc/nginx/apps/serverinfo.conf" <<EOserverinfo_vhost
 location ^~ /serverinfo {
-    root "${DEFAULT_DIR_TOOL}"/;
+    root ${DEFAULT_DIR_TOOL}/;
     index index.php index.html index.htm;
 
     auth_basic "Restricted";
@@ -2001,14 +2009,14 @@ location ^~ /serverinfo {
         }
     }
     location ~* ^/serverinfo/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-        root "${DEFAULT_DIR_TOOL}"/;
+        root ${DEFAULT_DIR_TOOL}/;
     }
 }
 EOserverinfo_vhost
 
 cat >> "/etc/nginx/apps/memcached.conf" <<EOmemcached_vhost
 location ^~ /memcached {
-    root "${DEFAULT_DIR_TOOL}"/;
+    root ${DEFAULT_DIR_TOOL}/;
     index index.php index.html index.htm;
 
     auth_basic "Restricted";
@@ -2027,14 +2035,14 @@ location ^~ /memcached {
         }
     }
     location ~* ^/memcached/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-        root "${DEFAULT_DIR_TOOL}"/;
+        root ${DEFAULT_DIR_TOOL}/;
     }
 }
 EOmemcached_vhost
 
 cat >> "/etc/nginx/apps/redis.conf" <<EOredis_vhost
 location ^~ /redis {
-    root "${DEFAULT_DIR_TOOL}"/;
+    root ${DEFAULT_DIR_TOOL}/;
     index index.php index.html index.htm;
 
     auth_basic "Restricted";
@@ -2053,7 +2061,7 @@ location ^~ /redis {
         }
     }
     location ~* ^/redis/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
-        root "${DEFAULT_DIR_TOOL}"/;
+        root ${DEFAULT_DIR_TOOL}/;
     }
 }
 EOredis_vhost
@@ -2141,7 +2149,7 @@ default_index(){
 </html>
 EOdefault_index
 
-    cp "${DEFAULT_DIR_WEB}"/index.html "${DEFAULT_DIR_TOOL}"/index.html
+    cp "${DEFAULT_DIR_WEB}"/index.html ${DEFAULT_DIR_TOOL}/index.html
 }
 
 default_error_page(){
@@ -2175,7 +2183,7 @@ default_error_page(){
 </html>
 EOdefault_index
 
-    cp "${DEFAULT_DIR_WEB}"/50x.html "${DEFAULT_DIR_TOOL}"/50x.html
+    cp "${DEFAULT_DIR_WEB}"/50x.html ${DEFAULT_DIR_TOOL}/50x.html
 }
 
 config_nginx(){
@@ -3280,7 +3288,7 @@ install_phpmyadmin(){
     unzip phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     rm -rf "${USR_DIR}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
-    ln -s "${USR_DIR}"/phpmyadmin "${DEFAULT_DIR_TOOL}"/phpmyadmin
+    ln -s "${USR_DIR}"/phpmyadmin ${DEFAULT_DIR_TOOL}/phpmyadmin
     config_phpmyadmin
     cd_dir "${DIR}"
 
@@ -3378,9 +3386,9 @@ EOF
 ############################################
 opcache_dashboard(){
     echo ""
-    mkdir -p "${DEFAULT_DIR_TOOL}"/opcache
-    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
-    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
+    mkdir -p ${DEFAULT_DIR_TOOL}/opcache
+    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_TOOL}/opcache/index.php
+    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}/opcache
     htpasswd -b -c "${USR_DIR}"/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx "${USR_DIR}"/nginx/auth
 }
@@ -3390,24 +3398,24 @@ opcache_dashboard(){
 ############################################
 php_sys_info(){
     echo ""
-    cd_dir "${DEFAULT_DIR_TOOL}"
+    cd_dir ${DEFAULT_DIR_TOOL}
     wget -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
     unzip -q v"${PHP_SYS_INFO_VERSION}".zip && rm -f v"${PHP_SYS_INFO_VERSION}".zip
     mv phpsysinfo-"${PHP_SYS_INFO_VERSION}" serverinfo
     cd serverinfo && mv phpsysinfo.ini.new phpsysinfo.ini
     cd_dir "${DIR}"
-    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"
+    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}
 }
 
 ############################################
 # phpmemcachedadmin
 ############################################
 phpmemcachedadmin(){
-    cd_dir "${DEFAULT_DIR_TOOL}"
+    cd_dir ${DEFAULT_DIR_TOOL}
     git clone https://github.com/elijaa/phpmemcachedadmin.git
-    rm -rf "${DEFAULT_DIR_TOOL}"/phpmemcachedadmin/docker
+    rm -rf ${DEFAULT_DIR_TOOL}/phpmemcachedadmin/docker
     mv phpmemcachedadmin memcached
-    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/memcached
+    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}/memcached
     cd_dir "${DIR}"
 }
 
@@ -3415,10 +3423,10 @@ phpmemcachedadmin(){
 # Redis Admin Gui
 ############################################
 redisdadmin(){
-    cd_dir "${DEFAULT_DIR_TOOL}"
+    cd_dir ${DEFAULT_DIR_TOOL}
     git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
     mv phpRedisAdmin redis
-    cd_dir "${DEFAULT_DIR_TOOL}"/redis
+    cd_dir ${DEFAULT_DIR_TOOL}/redis
     git clone https://github.com/nrk/predis.git vendor
     cd .. && chown -R nginx:nginx redis
     cd_dir "${DIR}"
@@ -3443,17 +3451,10 @@ install_admin_tool(){
 # Install CSF Firewall
 ############################################
 csf_gui(){
-    CSF_UI_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
-    if [[ "${CSF_UI_PORT}" == "${RANDOM_ADMIN_PORT}" ]]; then
-        CSF_UI_PORT=$(( ( RANDOM % 9999 )  + 2000 ))
-    fi
-
     sed -i 's/UI = "0"/UI = "1"/g' /etc/csf/csf.conf
     sed -i "s/UI_PORT = \"6666\"/UI_PORT = \"${CSF_UI_PORT}\"/g" /etc/csf/csf.conf
-#    sed -i 's/UI_PORT = "6666"/UI_PORT = "'${CSF_UI_PORT}'"/g' /etc/csf/csf.conf
     sed -i 's/UI_USER = "username"/UI_USER = "admin"/g' /etc/csf/csf.conf
     sed -i "s/UI_PASS = \"password\"/UI_PASS = \"${ADMIN_TOOL_PWD}\"/g" /etc/csf/csf.conf
-#    sed -i 's/UI_PASS = "password"/UI_PASS = "'${ADMIN_TOOL_PWD}'"/g' /etc/csf/csf.conf
     mv /etc/csf/ui/server.key /etc/csf/ui/server.key.old
     mv /etc/csf/ui/server.crt /etc/csf/ui/server.crt.old
     cp /etc/nginx/ssl/server/server.crt /etc/csf/ui/server.crt
@@ -3462,6 +3463,15 @@ csf_gui(){
 
 install_csf(){
     echo ""
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        yum -y install iptables-services
+        touch /etc/sysconfig/iptables
+        touch /etc/sysconfig/iptables6
+        systemctl start iptables
+        systemctl start ip6tables
+        systemctl enable iptables
+        systemctl enable ip6tables
+    fi
     curl -o "${DIR}"/csf.tgz https://download.configserver.com/csf.tgz
     tar -xf csf.tgz
     cd_dir "${DIR}/csf"
@@ -3546,9 +3556,9 @@ check_service_status(){
     fi
 }
 
-############################################
+################
 # Create menu
-############################################
+################
 add_menu(){
     echo ""
     cd_dir "${BASH_DIR}"
@@ -3565,9 +3575,9 @@ add_menu(){
     mv "${BASH_DIR}"/menu/hostvn /usr/bin/hostvn && chmod +x /usr/bin/hostvn
 }
 
-############################################
+###############
 # Write Info
-############################################
+###############
 write_info(){
     touch "${FILE_INFO}"
     {
@@ -3581,7 +3591,7 @@ write_info(){
         echo "admin_email=${ADMIN_EMAIL}"
         echo "php1_release=yes"
         echo "php2_release=${PHP2_RELEASE}"
-        echo "php1_version=${PHP_VERSION}"
+        echo "php1_version=${PHP_VERSION_1}"
         echo "php2_version=${PHP_VERSION_2}"
         echo "lang=vi"
     } >> "${FILE_INFO}"
@@ -3591,9 +3601,9 @@ write_info(){
 }
 
 
-############################################
+##############
 # Run Script
-############################################
+##############
 _run(){
     # Prepare before install
     prepare_install

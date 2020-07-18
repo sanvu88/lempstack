@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# shellcheck disable=SC2207
 # shellcheck disable=SC2034
 # shellcheck disable=SC1091
 source /var/hostvn/menu/validate/rule
@@ -26,6 +28,19 @@ convert_to_mb(){
     else
         echo "$(( (bytes + 1048575)/1048576 )) GB"
     fi
+}
+
+check_port_exists(){
+    check_port=$(netstat -vatn | grep "${1}")
+    if [ -z  "${check_port}" ]; then
+        return 0
+    else
+        return  1
+    fi
+}
+
+gen_pass(){
+    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-16}";echo;
 }
 
 select_domain(){
@@ -204,17 +219,12 @@ select_plugin_seo(){
 
 wp_auto_install_info(){
     read -r -p "Nhap vao tai khoan wp-admin (Viet lien, khong dau. VD: hostvn: " admin_user
-    read -r -p "Nhap vao mat khau cho tai khoan wp-admin (8 ky tu tro len): " admin_pwd
+    admin_pwd=$(gen_pass "$@")
     read -r -p "Nhap vao email cua ban: " admin_email
     read -r -p "Nhap vao ten website: " site_name
 
     if [ -z "${admin_user}" ]; then
         admin_user="admin"
-    fi
-
-    if [ -z "${admin_pwd}" ]; then
-        random_pwd=$(date +%s%N | sha256sum | base64 | head -c 12)
-        admin_pwd="${random_pwd}"
     fi
 
     if [ -z "${admin_email}" ]; then
@@ -236,23 +246,22 @@ brute_force_wp(){
 }
 
 select_remote(){
-	echo "Chon Remote: "
-	remotes=()
-	mapfile -t selects < <(rclone listremotes)
+    echo "Chon Remote: "
+    remotes=()
+    selects=( $(rclone listremotes) )
+    for entry in "${selects[@]}"; do
+        select=${entry//:}
+        remotes+=("${select}")
+    done
 
-	for entry in "${selects[@]}"; do
-		select=${entry//:}
-	    remotes+=("${select}")
-	done
+    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    select remote in "${remotes[@]}"
+    do
+        remote=${remote}
+        break
+    done
 
-	PS3="Nhap lua chon cua ban [0 = Thoat]: "
-	select remote in "${remotes[@]}"
-	do
-	    remote=${remote}
-	    break
-	done
-
-	if [[ -z "${remote}" || ! ${remote} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-		ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
-	fi
+    if [[ -z "${remote}" || ! ${remote} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+    fi
 }
