@@ -247,12 +247,7 @@ select_php_ver(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "7.4") PHP_VERSION="74"; break;;
-            "7.3") PHP_VERSION="73"; break;;
-            "7.2") PHP_VERSION="72"; break;;
-            "7.1") PHP_VERSION="71"; break;;
-            "7.0") PHP_VERSION="70"; break;;
-            "5.6") PHP_VERSION="56"; break;;
+            "$opt") PHP_VERSION_2="${opt/.}"; break;;
             *) printf "%s\n" "${WRONG_PHP_OPTION}"; break;;
         esac
     done
@@ -296,12 +291,7 @@ select_php_ver_2(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "7.4") PHP_VERSION_2="php74"; break;;
-            "7.3") PHP_VERSION_2="php73"; break;;
-            "7.2") PHP_VERSION_2="php72"; break;;
-            "7.1") PHP_VERSION_2="php71"; break;;
-            "7.0") PHP_VERSION_2="php70"; break;;
-            "5.6") PHP_VERSION_2="php56"; break;;
+            "$opt") PHP_VERSION_2="php${opt/.}"; break;;
             *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; break;;
         esac
     done
@@ -551,7 +541,7 @@ install_igbinary_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
-    /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
+    /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
@@ -594,7 +584,7 @@ install_php_memcached_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
-        /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
+        /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
         make && make install
         cd "${DIR}" && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
@@ -638,7 +628,7 @@ install_php_redis_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
-    /opt/remi/${PHP_VERSION_2}/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/${PHP_VERSION_2}/root/usr/bin/php-config
+    /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
     make && make install
     cd "${DIR}" && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
@@ -2347,11 +2337,11 @@ php_global_config_2(){
     fi
 
     if [[ -f "${php2_fpm_config_file}" ]]; then
-        mv ${php2_fpm_config_file} ${php2_fpm_config_file}.orig
+        mv "${php2_fpm_config_file}" "${php2_fpm_config_file}".orig
     fi
 
     if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm" ]]; then
-        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/run/php-fpm
+        mkdir -p /opt/remi/"${PHP_VERSION_2}"/root/var/run/php-fpm
     fi
 
     cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
@@ -2372,7 +2362,7 @@ daemonize = yes
 EOphp_fpm_2_conf
 
     if [[ -f "${www2_config_file}" ]]; then
-        mv ${www2_config_file} ${www2_config_file}.orig
+        mv "${www2_config_file}" "${www2_config_file}".orig
     fi
 cat >> "${www2_config_file}" << EOwww_2_conf
 [www]
@@ -2407,19 +2397,19 @@ security.limit_extensions = .php
 EOwww_2_conf
 
     if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/lib/php/session" ]]; then
-        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
+        mkdir -p /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/session
     fi
     if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache" ]]; then
-        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
+        mkdir -p /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/wsdlcache
     fi
     if [[ ! -d "/opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm" ]]; then
-        mkdir -p /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm
+        mkdir -p /opt/remi/"${PHP_VERSION_2}"/root/var/log/php-fpm
     fi
-    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
-    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
-    chown -R nginx:nginx /opt/remi/${PHP_VERSION_2}/root/var/log/php-fpm
-    chmod 711 /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
-    chmod 711 /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${PHP_VERSION_2}"/root/var/log/php-fpm
+    chmod 711 /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/session
+    chmod 711 /opt/remi/"${PHP_VERSION_2}"/root/var/lib/php/wsdlcache
 }
 
 # Custom PHP Ini
@@ -2503,7 +2493,7 @@ EOopcache_blacklist
 
 php_opcache_2(){
     if [[ -f "${PHP2_INI_PATH}/10-opcache.ini" ]]; then
-        mv ${PHP2_INI_PATH}/10-opcache.ini ${PHP2_INI_PATH}/10-opcache.ini.orig
+        mv "${PHP2_INI_PATH}"/10-opcache.ini "${PHP2_INI_PATH}"/10-opcache.ini.orig
     fi
     cat > "${PHP2_INI_PATH}/10-opcache.ini" << EOphp_opcache
 zend_extension=opcache.so
