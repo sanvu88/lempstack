@@ -12,69 +12,76 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ### 1.1. Cài đặt
 
 - Cập nhật liên tục, cung cấp Menu giúp dễ dàng thao tác, tự động cài đặt.
-- Cài đặt các phần mềm phiên bản mới nhất từ chính trang chủ.
-- Mariadb: 10.5
-- Phiên bản Nginx: 1.18.0 Stable
+- Cài đặt các phần mềm với phiên bản mới nhất từ chính trang chủ.
+- Mariadb: 10.5.
+- Phiên bản Nginx: 1.18.0 Stable.
 - Cho phép lựa chọn phiên bản PHP:
     + centOS 7: 5.6, 7.0, 7.1, 7.2, 7.3, 7.4.
     + centOS 8: 7.2, 7.3, 7.4.
-- phpMyAdmin 4.9.5 nếu cài đặt PHP mặc định là 5.6, phpMyAdmin 5.0.2 nếu cài đặt PHP mặc định là 7.x
-- Cài đặt Pureftpd, PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo
-- Cài đặt memcached, redis.
-- Cài đặt CSF Firewall và CSF GUI - Quản lý CSF với giao diện web
+- phpMyAdmin 4.9.5 nếu cài đặt PHP mặc định là 5.6, phpMyAdmin 5.0.2 nếu cài đặt PHP mặc định là 7.x.
+- Cài đặt Pureftpd giúp quản lý FTP.
+- Cài đặt PHPMemcachedAdmin, phpRedisAdmin, phpSysInfo, Opcache Dashboard.
+- Cài đặt memcached, redis cache. (Mặc định sẽ không bật).
+- Cài đặt CSF Firewall và CSF GUI - Quản lý CSF với giao diện web.
 - Tích hợp Let's Encrypt SSL.
-- Cung cấp Menu nâng cấp Nginx, MariaDB/, PHP, Redis, Memcached, phpMyAdmin
-- WP-CLI, Composer
-
+- Cung cấp Menu nâng cấp Nginx, MariaDB/, PHP, Redis, Memcached, phpMyAdmin.
+- WP-CLI, Composer, Rclone.
+- KHÔNG THU THẬP BẤT KỲ THÔNG TIN GÌ TRÊN VPS CỦA BẠN.
 
 ### 1.2. Tối ưu
 
-- Cấu hình tối ưu MySQL, Nginx, php, Opacache, Memcached, Redis phù hợp theo thông số của VPS
-- Cấu hình Brotli Compress
-- Cấu hình rewrite URL với một số mã nguồn phổ biến: WordPress, Laravel, Opencart, Magento, Drupal ....
+- Cấu hình tối ưu MySQL, Nginx, PHP, Opcache, Memcached, Redis phù hợp theo thông số của VPS.
+- Cấu hình Brotli Compress.
+- Cấu hình rewrite URL với một số mã nguồn phổ biến: WordPress, Laravel, Opencart, Magento, Drupal ...
 - Cho phép chạy song song hai phiên bản PHP.
-- Backup và restore dữ liệu từ Google Drive với Rclone.
-- Backup, restore tại Local
-- Thiết lập số bản backup lưu trữ.
-- Quản lý FTP dễ dàng trong trường hợp bạn thuê coder và chỉ muốn họ được phép access vào thư mục nhất định
+- Quản lý FTP dễ dàng trong trường hợp bạn thuê coder và chỉ muốn họ được phép access vào thư mục nhất định.
 - Cho phép lựa chọn Redis Cache hoặc Memcached giúp tăng tốc độ website.
-- And More
+- Cho phép cấu hình tự động gia hạn Let's Encrypt.
+- Menu hỗ trợ cấu hình SSL trả phí.
+- Menu xem error log Nginx, Mysql, PHP và xem theo từng tên miền cụ thể.
+- And More ...
 
 ### 1.3. Bảo mật
 
-- Cấu hình tăng cường bảo mật từ tầng webserver
-- Không tắt Selinux đảm bảo mức độ bảo mật cho CentOS
-- Cấu hình website chạy với user khác nhau kết hợp disable các hàm nguy hiểm, bật open_basedir và một số config khác nhằm tăng cường bảo mật
+- Cấu hình tăng cường bảo mật từ tầng webserver.
+- Không tắt Selinux đảm bảo mức độ bảo mật cho CentOS.
+- Cấu hình website chạy với user khác nhau kết hợp disable các hàm nguy hiểm, bật open_basedir và một số config khác nhằm tăng cường bảo mật.
 - Auto block bruteforce SSH, FTP ....
-- Block run shell trong thư mục uploads WordPress. Chặn truy cập các thư mục, file nhạy cảm trên WordPress
-- Chống Bruteforce wp-admin
-- BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web)
-- Thay đổi Port SSH
-- Thay đổi port Admin
-- Thay đổi port FTP
-- And More .......
+- Block run shell trong thư mục uploads WordPress. Chặn truy cập các thư mục, file nhạy cảm trên WordPress.
+- Chống Bruteforce wp-admin.
+- BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web).
+- Thay đổi Port SSH.
+- Thay đổi port Admin.
+- Thay đổi port FTP.
+- And More ...
 
 ### 1.4. Quản lý WordPress
 
-- Kiểm tra phiên bản WordPress đang sử dụng
-- Cập nhật WordPress
-- Cập nhật plugins
-- Tối ưu Database
-- Repair Database
-- Sao lưu dữ liệu (Local)
-- Khôi phục dữ liệu (Local)
-- Thay đổi tên miền
-- Đổi mật khẩu admin (wp-admin)
-- Cài đặt WordPress tự động
-- Bật/tắt Yoast Seo config
-- Bật/Tắt Rank Math Seo config
-- Cấu hình Nginx với một số plugins cache phổ biến: WP-Rocket, w3 total cache, wp supercache, Cache Enabler, Swift Performance, Fast cache
-- Thêm cache key tránh trùng lặp nội dung giữa các site khi dùng memcached hoặc redis
-- Bật/tắt Debug
-- Bật/tắt chế độ bảo trì
-- Huỷ kích hoạt toàn bộ plugins
-- Random database prefix khi sử dụng chức năng cài đặt tự động
+- Kiểm tra phiên bản WordPress đang sử dụng.
+- Cập nhật WordPress.
+- Cập nhật plugins.
+- Tối ưu Database.
+- Repair Database.
+- Sao lưu dữ liệu (Local/GG Drive).
+- Khôi phục dữ liệu (Local/GG Drive).
+- Thay đổi tên miền.
+- Đổi mật khẩu admin (wp-admin).
+- Cài đặt WordPress tự động.
+- Bật/tắt Yoast Seo config.
+- Bật/Tắt Rank Math Seo config.
+- Cấu hình Nginx với một số plugins cache phổ biến: WP-Rocket, w3 total cache, wp supercache, Cache Enabler, Swift Performance, Fast cache.
+- Thêm cache key tránh trùng lặp nội dung giữa các site khi dùng memcached hoặc redis.
+- Bật/tắt Debug.
+- Bật/tắt chế độ bảo trì.
+- Huỷ kích hoạt toàn bộ plugins.
+- Random database prefix khi sử dụng chức năng cài đặt tự động.
 
+### 1.5. Sao lưu/Khôi phục dữ liệu
+- Backup và restore dữ liệu từ Google Drive với Rclone.
+- Backup, restore tại Local.
+- Thiết lập số bản backup lưu trữ.
+- Quản lý các bản sao lưu.
+- Cho phép kết nối nhiều tài khoản Google Drive.
 
 ## 2. Yêu cầu
 
@@ -90,8 +97,9 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Scan Malware
 - Scan bug WordPress
 - Thay đổi WordPress database prefix
-- Tích hợp Firewall chống XSS, SQL Injection ....
+- Tích hợp Firewall hạn chế XSS, SQL Injection ....
 - Cảnh báo qua email, telegram
+- Rewrite config
 
 ## 5. Cách sử dụng
 

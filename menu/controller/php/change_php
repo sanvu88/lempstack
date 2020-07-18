@@ -140,6 +140,11 @@ select_php_ver(){
 	            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 	        esac
 	    done
+
+	    if [[ "${OS_VER}" -eq 8 ]]; then
+          php_version=${php_version//php}
+          php_version=$(echo "${php_version}" | fold -w1 | paste -sd'.')
+      fi
 	fi
 
     prompt_php2="n"
@@ -180,7 +185,15 @@ remove_old_php(){
 }
 
 install_php(){
-    yum-config-manager --enable remi-"${php_version}"
+    if [ "${OS_VER}" -eq 8 ]; then
+        php1_version=${php1_version//php}
+        php1_version=$(echo "${php1_version}" | fold -w1 | paste -sd'.')
+        sudo dnf module reset php:remi-"${php1_version}" -y
+        dnf module enable php:remi-"${php_version}" -y
+    else
+        yum-config-manager --enable remi-"${php_version}"
+    fi
+
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
         php-intl php-imap perl-LWP-Protocol-https php-pear-Net-SMTP php-enchant php-pear php-devel php-zlib php-xmlrpc \
@@ -613,58 +626,61 @@ EOopcache_blacklist
 }
 
 write_info(){
-	if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
-		sed -i '/php1_version=/d' "${FILE_INFO}"
-		echo "php1_version=${php_version}" >> "${FILE_INFO}"
-	fi
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        php_version=php"${php_version//.}"
+    fi
+    if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
+        sed -i '/php1_version=/d' "${FILE_INFO}"
+        echo "php1_version=${php_version}" >> "${FILE_INFO}"
+    fi
 
-	if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
-		sed -i '/php2_version=/d' "${FILE_INFO}"
-		echo "php2_version=${php_version2}" >> "${FILE_INFO}"
-	fi
+    if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
+        sed -i '/php2_version=/d' "${FILE_INFO}"
+        echo "php2_version=${php_version2}" >> "${FILE_INFO}"
+    fi
 }
 
 _run(){
-	select_php_ver
-	check_duplicate_php
+    select_php_ver
+    check_duplicate_php
 
-	if [[ -z "${ALERT}" ]]; then
-		set_var
-		memory_calculation
-		remove_old_php
+    if [[ -z "${ALERT}" ]]; then
+        set_var
+        memory_calculation
+        remove_old_php
 
-		if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
-			install_php
-			install_igbinary
-			install_php_memcached
-			install_php_redis
-			php_global_config
-			hostvn_custom_ini
-			php_opcache
-			systemctl restart php-fpm
-			systemctl enable php-fpm
-		fi
+        if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
+            install_php
+            install_igbinary
+            install_php_memcached
+            install_php_redis
+            php_global_config
+            hostvn_custom_ini
+            php_opcache
+            systemctl restart php-fpm
+            systemctl enable php-fpm
+        fi
 
-		if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
-			install_php_2
-			install_igbinary_2
-			install_php_memcached_2
-			install_php_redis_2
-			php2_global_config
-			hostvn_custom_ini_2
-			php_opcache_2
-			systemctl restart "${php_version2}"-php-fpm
-			systemctl enable "${php_version2}"-php-fpm
-		fi
+        if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
+            install_php_2
+            install_igbinary_2
+            install_php_memcached_2
+            install_php_redis_2
+            php2_global_config
+            hostvn_custom_ini_2
+            php_opcache_2
+            systemctl restart "${php_version2}"-php-fpm
+            systemctl enable "${php_version2}"-php-fpm
+        fi
 
-		write_info
+        write_info
 
-		clear
-		printf "${GREEN}Thay doi phien ban PHP thanh cong.${NC}\n"
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+        clear
+        printf "${GREEN}Thay doi phien ban PHP thanh cong.${NC}\n"
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
 _run

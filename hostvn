@@ -33,10 +33,30 @@ AUTHOR="HOSTVN.NET"
 AUTHOR_CONTACT="kythuat@hostvn.net"
 AUTHOR_WEBSITE="https://hostvn.net"
 
+# Service Version
+PHPMYADMIN_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
+PHP_SYS_INFO_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
+IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
+PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
+PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
+MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
+PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
+PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
+PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+if [[ "${OS_VER}" -eq 8 ]]; then
+    index=0
+    for keyword in "${PHP_LIST[@]}"; do
+        if [[ "$keyword" = "php7.1" || "$keyword" = "php7.0" || "$keyword" = "php5.6" ]]; then
+            unset "PHP_LIST[$index]"
+        fi
+        (( index++ ))
+    done
+fi
+
 # Set Lang
 ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
 SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
-WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat PHP 7.4"
+WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat ${PHP_VERSION_1}"
 SELECT_INST_PHP_2="Ban co muon cai dat phien ban PHP thu hai khong - Multiple PHP ?"
 ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
 WRONG_PHP_SELECT_2="Ban nhap sai. He thong se cai mot phien ban PHP."
@@ -60,28 +80,6 @@ LFD_NOT_WORKING="CSF khong hoat dong."
 LFD_NOT_WORKING="LFD khong hoat dong."
 LOGIN_NOTI1="Cam on ban da su dung dich vu cua ${AUTHOR}."
 LOGIN_NOTI2="Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
-
-# Service Version
-PHPMYADMIN_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
-PHP_SYS_INFO_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
-IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
-PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
-PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
-
-# Select Service Version
-MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
-PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
-PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
-PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
-if [[ "${OS_VER}" -eq 8 ]]; then
-    index=0
-    for keyword in "${PHP_LIST[@]}"; do
-        if [[ "$keyword" = "php7.1" || "$keyword" = "php7.0" || "$keyword" = "php5.6" ]]; then
-            unset "PHP_LIST[$index]"
-        fi
-        (( index++ ))
-    done
-fi
 
 # Random Port
 RANDOM_ADMIN_PORT=$(shuf -i 49152-57343 -n 1)
@@ -134,7 +132,7 @@ config_selinux(){
     fi
 
     semanage permissive -a httpd_t
-    semanage port -a -t ssh_port_t -p tcp 8282
+    semanage port -a -t ssh_port_t -p tcp 9292
 }
 
 #Set timezone
@@ -223,8 +221,8 @@ module_hotfixes=true
 EONGINXREPO
 
     yum -y install nginx
-    mkdir -p ${DEFAULT_DIR_TOOL}
-    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}
+    mkdir -p "${DEFAULT_DIR_TOOL}"
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"
     systemctl start nginx
 }
 
@@ -3340,7 +3338,7 @@ AnonymousCanCreateDirs       no
 MaxLoad                      4
 PassivePortRange             35000 35999
 AntiWarez                    yes
-#Bind                         ${IPADDRESS},21
+#Bind                        ${IPADDRESS},21
 Umask                        133:022
 MinUID                       99
 AllowUserFXP                 yes
@@ -3352,7 +3350,7 @@ AnonymousCantUpload          no
 AltLog                       stats:/var/log/pureftpd.log
 PIDFile                      /run/pure-ftpd.pid
 CallUploadScript             no
-MaxDiskUsage                   99
+MaxDiskUsage                 99
 CustomerProof                yes
 TLS                          1
 TLSCipherSuite               HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3
@@ -3362,7 +3360,7 @@ EOpure_ftpd_conf
 
     mkdir -p "${PURE_CONF_PATH}"/ssl
     openssl dhparam -out "${PURE_CONF_PATH}"/ssl/pure-ftpd-dhparams.pem 2048
-    openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout ${PURE_CONF_PATH}/ssl/pure-ftpd.pem -out ${PURE_CONF_PATH}/ssl/pure-ftpd.pem
+    openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem -out "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem
     chmod 600 "${PURE_CONF_PATH}"/ssl/pure-ftpd*.pem
 }
 
@@ -3371,7 +3369,7 @@ EOpure_ftpd_conf
 ############################################
 change_ssh_port() {
     echo ""
-    sed -i 's/#Port 22/Port 8282/g' /etc/ssh/sshd_config
+    sed -i 's/#Port 22/Port 9292/g' /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
@@ -3400,9 +3398,9 @@ EOF
 ############################################
 opcache_dashboard(){
     echo ""
-    mkdir -p ${DEFAULT_DIR_TOOL}/opcache
-    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  ${DEFAULT_DIR_TOOL}/opcache/index.php
-    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}/opcache
+    mkdir -p "${DEFAULT_DIR_TOOL}"/opcache
+    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
     htpasswd -b -c "${USR_DIR}"/nginx/auth/.htpasswd admin "${ADMIN_TOOL_PWD}"
     chown -R nginx:nginx "${USR_DIR}"/nginx/auth
 }
@@ -3412,24 +3410,24 @@ opcache_dashboard(){
 ############################################
 php_sys_info(){
     echo ""
-    cd_dir ${DEFAULT_DIR_TOOL}
+    cd_dir "${DEFAULT_DIR_TOOL}"
     wget -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
     unzip -q v"${PHP_SYS_INFO_VERSION}".zip && rm -f v"${PHP_SYS_INFO_VERSION}".zip
     mv phpsysinfo-"${PHP_SYS_INFO_VERSION}" serverinfo
     cd serverinfo && mv phpsysinfo.ini.new phpsysinfo.ini
     cd_dir "${DIR}"
-    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"
 }
 
 ############################################
 # phpmemcachedadmin
 ############################################
 phpmemcachedadmin(){
-    cd_dir ${DEFAULT_DIR_TOOL}
+    cd_dir "${DEFAULT_DIR_TOOL}"
     git clone https://github.com/elijaa/phpmemcachedadmin.git
-    rm -rf ${DEFAULT_DIR_TOOL}/phpmemcachedadmin/docker
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpmemcachedadmin/docker
     mv phpmemcachedadmin memcached
-    chown -R nginx:nginx ${DEFAULT_DIR_TOOL}/memcached
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/memcached
     cd_dir "${DIR}"
 }
 
@@ -3437,10 +3435,10 @@ phpmemcachedadmin(){
 # Redis Admin Gui
 ############################################
 redisdadmin(){
-    cd_dir ${DEFAULT_DIR_TOOL}
+    cd_dir "${DEFAULT_DIR_TOOL}"
     git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
     mv phpRedisAdmin redis
-    cd_dir ${DEFAULT_DIR_TOOL}/redis
+    cd_dir "${DEFAULT_DIR_TOOL}"/redis
     git clone https://github.com/nrk/predis.git vendor
     cd .. && chown -R nginx:nginx redis
     cd_dir "${DIR}"
@@ -3492,14 +3490,14 @@ install_csf(){
     sh install.sh
     cd_dir "${DIR}"
     rm -rf csf*
-    #sed -i 's/21,22/21,22,8282/g' /etc/csf/csf.conf
+    #sed -i 's/21,22/21,22,9292/g' /etc/csf/csf.conf
     sed -i "s/443,465/443,${RANDOM_ADMIN_PORT},465/g" /etc/csf/csf.conf
     sed -i "s/443,587/443,465,587,${RANDOM_ADMIN_PORT}/g" /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
     sed -i 's/RESTRICT_SYSLOG = "0"/RESTRICT_SYSLOG = "2"/g' /etc/csf/csf.conf
     sed -i 's/CT_LIMIT = "0"/CT_LIMIT = "600"/g' /etc/csf/csf.conf
     sed -i 's/ICMP_IN = "0"/ICMP_IN = "1"/; s/ICMP_IN_RATE = "1/ICMP_IN_RATE = "5/' /etc/csf/csf.conf
-    sed -i 's/PORTS_sshd = "22"/PORTS_sshd = "22, 8282"/g' /etc/csf/csf.conf
+    sed -i 's/PORTS_sshd = "22"/PORTS_sshd = "22, 9292"/g' /etc/csf/csf.conf
     sed -i 's/PORTFLOOD = ""/PORTFLOOD = "21;tcp;20;300"/g' /etc/csf/csf.conf
     echo '#!/bin/sh' > /usr/sbin/sendmail
     chmod +x /usr/sbin/sendmail
@@ -3593,10 +3591,13 @@ add_menu(){
 # Write Info
 ############################################
 write_info(){
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        PHP_VERSION=php"${PHP_VERSION//.}"
+    fi
     touch "${FILE_INFO}"
     {
         echo "script_version=1.0"
-        echo "ssh_port=8282"
+        echo "ssh_port=9292"
         echo "admin_port=${RANDOM_ADMIN_PORT}"
         echo "csf_port=${CSF_UI_PORT}"
         echo "ftp_port=21"
@@ -3605,7 +3606,7 @@ write_info(){
         echo "admin_email=${ADMIN_EMAIL}"
         echo "php1_release=yes"
         echo "php2_release=${PHP2_RELEASE}"
-        echo "php1_version=${PHP_VERSION_1}"
+        echo "php1_version=${PHP_VERSION}"
         echo "php2_version=${PHP_VERSION_2}"
         echo "lang=vi"
     } >> "${FILE_INFO}"
@@ -3659,7 +3660,7 @@ printf "          Neu can ho tro vui long lien he %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
 echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
 echo "-----------------------------------------------------------------------------"
-echo   "1.  SSH  Port                    : 8282"
+echo   "1.  SSH  Port                    : 9292"
 printf "2.  phpMyAdmin                   : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 printf "3.  Link Opcache Dashboard       : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
 printf "4.  Link Server Info             : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
