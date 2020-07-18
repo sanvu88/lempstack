@@ -213,7 +213,7 @@ wp_auto_install_info(){
     fi
 
     if [ -z "${admin_pwd}" ]; then
-        random_pwd=$(date +%s | sha256sum | base64 | head -c 12)
+        random_pwd=$(date +%s%N | sha256sum | base64 | head -c 12)
         admin_pwd="${random_pwd}"
     fi
 

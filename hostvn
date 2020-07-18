@@ -704,7 +704,7 @@ cal_ssl_cache_size(){
 self_signed_ssl(){
     #Create dhparams
     cal_ssl_cache_size
-    challenge_password=$(date +%s | sha256sum | base64 | head -c 12)
+    challenge_password=$(date +%s%N | sha256sum | base64 | head -c 12)
     self_signed_dir="/etc/nginx/ssl/server"
     mkdir -p "${self_signed_dir}"
     openssl dhparam -out /etc/nginx/ssl/dhparams.pem 2048
@@ -2974,7 +2974,7 @@ EOmysql_limit_nofile
 # Set MariaDB Root Password
 set_mariadb_root_pwd(){
     systemctl start mariadb
-    SQLPASS=$(date +%s | sha256sum | base64 | head -c 12)
+    SQLPASS=$(date +%s%N | sha256sum | base64 | head -c 12)
     cat > "/root/.my.cnf" <<EOmy_conf
 [client]
 user=root
@@ -3215,7 +3215,7 @@ unzip_phpmyadmin(){
 
 #Config phpMyAdmin
 config_phpmyadmin(){
-    BLOWFISH_SECRET=$(date +%s | sha256sum | base64 | head -c 64)
+    BLOWFISH_SECRET=$(date +%s%N | sha256sum | base64 | head -c 64)
     mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
     rm -rf "${USR_DIR}"/phpmyadmin/setup
     mkdir -p "${USR_DIR}"/phpmyadmin/tmp

@@ -32,7 +32,7 @@ update(){
 }
 
 config_phpmyadmin(){
-    blowfish_secret=$(date +%s | sha256sum | base64 | head -c 64)
+    blowfish_secret=$(date +%s%N | sha256sum | base64 | head -c 64)
     mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
     rm -rf /usr/share/phpmyadmin/setup
     mkdir -p /usr/share/phpmyadmin/tmp
