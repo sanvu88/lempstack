@@ -26,6 +26,8 @@ do
     printf "${GREEN}15. Bat/Tat Debug mode${NC}\n"
     printf "${GREEN}16. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
     printf "${GREEN}17. Huy kich hoat toan bo plugins${NC}\n"
+    printf "${GREEN}18. Sao luu len Google Drive${NC}\n"
+    printf "${GREEN}19. Thiet lap backup tu dong${NC}\n"
     printf "${GREEN} ----------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -56,6 +58,8 @@ do
             echo ""
             menu_wp
             ;;
+        18) clear; menu_ggdrive ;;
+        19) clear; menu_cronjob ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
