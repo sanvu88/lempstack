@@ -25,7 +25,7 @@ input_backup_num(){
     echo "VD: 14 - Se luu 14 ban backup gan nhap - Cac ban cu hon se bi xoa"
     input -r -p "Nhap vao lua chon cua ban:" backup_num
 
-    if ! valid_number ${backup_num} ; then
+    if ! valid_number "${backup_num}" ; then
         backup_num="14"
         printf "${RED}So ban backup ban nhap khong dung. He thong se set mac dinh là 14."
     fi
@@ -48,8 +48,8 @@ set_backup_num(){
         backup_num="${backup_num}"
     fi
 
-    sed -i '/backup_num=/d' ${FILE_INFO}
-    echo "backup_num=${backup_num}" >> ${FILE_INFO}
+    sed -i '/backup_num=/d' "${FILE_INFO}"
+    echo "backup_num=${backup_num}" >> "${FILE_INFO}"
 }
 
 create_cron(){

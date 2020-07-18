@@ -16,7 +16,7 @@ do
     echo "1. Bat Redis Cache"
     echo "2. Tat Redis Cache"
     echo " -----------------"
-    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then

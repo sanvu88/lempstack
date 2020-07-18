@@ -15,7 +15,7 @@ set_var(){
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
 	  dates=()
-    selects=$(rclone lsf ${remote}:${IPADDRESS})
+    selects=$(rclone lsf "${remote:?}":"${IPADDRESS}")
     for entry in ${selects}; do
     	select=${entry///}
         dates+=("${select}")
@@ -34,7 +34,7 @@ select_backup(){
 
 choose_domain(){
 	echo "Chon ten mien ban muon khoi phuc: "
-    selects=$(rclone lsf ${remote}:${IPADDRESS}/${date})
+    selects=$(rclone lsf "${remote}":"${IPADDRESS}"/"${date}")
     for entry in ${selects}; do
     	select=${entry///}
         domains+=("${select}")
@@ -46,7 +46,9 @@ choose_domain(){
         break
     done
 
-    validate_domain ${domain}
+    if ! validate_domain "${domain}"; then
+      ALERT=$(printf "${RED}Ten mien khong dung dinh dang.${NC}\n")
+    fi
 }
 
 download_backup(){
@@ -60,7 +62,7 @@ download_backup(){
 
 restore_source(){
 	if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-		mkdir -p /home/${username}/${domain}/public_html
+		mkdir -p /home/"${username}"/"${domain}"/public_html
 	fi
 	rm -rf /home/"${username}"/"${domain}"/public_html/*
 	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
@@ -68,8 +70,8 @@ restore_source(){
 }
 
 restore_db(){
-	cd_dir /home/backup/${date}/${domain}
-	mysql -uadmin -p${mysql_pwd} ${db_name} < ${db_name}.sql
+	cd_dir /home/backup/"${date}"/"${domain}"
+	mysql -uadmin -p"${mysql_pwd:?}" "${db_name}" < "${db_name}".sql
 }
 
 _run(){
@@ -85,7 +87,7 @@ _run(){
 				ALERT=$(printf "${RED}Website khong ton tai tren VPS.${NC}\n")
 			fi
 
-			if ! if_db_exists ${db_name}; then
+			if ! if_db_exists "${db_name}"; then
 				ALERT=$(printf "${RED}Database khong ton tai.${NC}\n")
 			fi
 		fi

@@ -7,9 +7,9 @@ source /var/hostvn/menu/helpers/variable_php
 
 set_var(){
 	PECL_PHP_LINK="https://pecl.php.net/get"
-	IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
-	PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
-	PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
+	IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
+	PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
+	PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
 }
 
 memory_calculation(){
@@ -114,7 +114,7 @@ select_php_ver(){
 }
 
 check_duplicate_php(){
-    if [[ "${php2_version}" == "${php1_version}" ]]; then
+    if [[ "${php2_version}" == "${php1_version:?}" ]]; then
         ALERT=$(printf "${RED}Phien ban PHP thu 2 trung voi phien ban mac dinh. Huy cai dat.${NC}\n")
     fi
 }
@@ -335,8 +335,8 @@ EOopcache_blacklist
 }
 
 write_info(){
-	sed -i '/php2_release=/d' ${FILE_INFO}
-	sed -i '/php2_version=/d' ${FILE_INFO}
+	sed -i '/php2_release=/d' "${FILE_INFO}"
+	sed -i '/php2_version=/d' "${FILE_INFO}"
 	{
         echo "php2_release=${php2_release}"
         echo "php2_version=${php2_version}"

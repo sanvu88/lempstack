@@ -34,7 +34,7 @@ EEV4="/opt/easyengine"
 # Set Lang
 ROOT_ERR="Ban can chay script voi user root. Chay lenh \"sudo su\" de co quyen root!"
 CANCEL_INSTALL="Huy cai dat..."
-OS_WROG="Script chi hoat dong tren \"CentOS 7\"!"
+OS_WRONG="Script chi hoat dong tren \"CentOS 7\" va \"CentOS 8\"!"
 RAM_NOT_ENOUGH="Canh bao: Dung luong RAM qua thap de cai Script. (it nhat 512MB)"
 OTHER_CP_EXISTS="May chu cua ban da cai dat Control Panel khac. Vui long rebuild de cai dat Script."
 HOSTVN_EXISTS="May chu cua ban da cai dat HOSTVN Script khac. Vui long rebuild neu muon cai dat lai."
@@ -56,29 +56,6 @@ welcome(){
 }
 
 ###################
-# Prepare Install #
-###################
-
-# Remove unnecessary services
-remove_old_ervice(){
-    yum -y remove mysql* php* httpd* sendmail* postfix* rsyslog* nginx*
-    yum clean all
-}
-
-# Install requirement service
-install_requirement(){
-    yum -y install epel-release
-    yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
-    yum -y update
-    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils dos2unix openssl openssl-devel perl quota libaio \
-    libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
-    autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
-    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers \
-    perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6
-}
-
-
-###################
 #Check conditions #
 ###################
 
@@ -91,18 +68,9 @@ check_root(){
     fi
 }
 
-# Check OS
-check_os(){
-    if [[ "${OS_VER}" != "7" ]]; then
-        printf "${RED}%s${NC}\n" "${OS_WROG}"
-        printf "${RED}%s${NC}\n" "${CANCEL_INSTALL}"
-        exit
-    fi
-}
-
 # Check if not enough ram
 check_low_ram(){
-    if [[ "${RAM_TOTAL}" -lt "${LOW_RAM}" ]]; then
+    if [[ ${RAM_TOTAL} -lt ${LOW_RAM} ]]; then
         printf "${RED}%s${NC}\n" "${RAM_NOT_ENOUGH}"
         printf "${RED}%s${NC}\n" "${CANCEL_INSTALL}"
         exit
@@ -133,9 +101,42 @@ check_control_panel(){
 check_before_install(){
     echo ""
     check_root
-    check_os
     check_low_ram
     check_control_panel
+}
+
+###################
+# Prepare Install #
+###################
+
+# Remove unnecessary services
+remove_old_ervice(){
+    yum -y remove mysql* php* httpd* sendmail* postfix* rsyslog* nginx*
+    yum clean all
+}
+
+# Install requirement service
+install_requirement(){
+    if [ "${OS_VER}" -eq 8 ]; then
+        yum -y install install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
+        yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+        yum -y update
+        yum -y install hostname
+    elif [ "${OS_VER}" -eq 7 ]; then
+        yum -y install epel-release
+        yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
+        yum -y update
+    else
+        printf "${RED}${OS_WRONG}${NC}\n"
+        sleep 2
+        exit
+    fi
+
+    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils dos2unix openssl openssl-devel perl quota libaio \
+    libcom_err-devel libcurl-devel gd zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed ntpdate \
+    autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
+    psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl xfsprogs rsyslog logrotate crontabs file kernel-headers \
+    perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6
 }
 
 create_swap(){
@@ -158,9 +159,9 @@ dowload_script(){
 
 _run(){
     welcome
+    check_before_install
     remove_old_ervice
     install_requirement
-    check_before_install
     create_swap
     dowload_script
 }

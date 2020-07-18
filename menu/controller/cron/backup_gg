@@ -5,7 +5,7 @@ select_remote(){
     selects=$(rclone listremotes)
     for entry in ${selects}; do
         select=${entry//:}
-        remotes+=(${select})
+        remotes+=("${select}")
     done
 
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -18,8 +18,8 @@ select_remote(){
     if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
         ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
     else
-        sed -i '/remote=/d' ${FILE_INFO}
-        echo "remote=${remote}" >> ${FILE_INFO}
+        sed -i '/remote=/d' "${FILE_INFO}"
+        echo "remote=${remote}" >> "${FILE_INFO}"
     fi
 }
 
@@ -46,7 +46,7 @@ input_backup_num(){
     echo "VD: Backup hang tuan va nhap 14 - Se luu backup 14*7=98 ngay gan nhat - Cac ban cu hon se bi xoa"
     input -r -p "Nhap vao lua chon cua ban:" backup_num
 
-    if ! valid_number ${backup_num} ; then
+    if ! valid_number "${backup_num}" ; then
         backup_num="14"
         printf "${RED}So ban backup ban nhap khong dung. He thong se set mac dinh là 14."
     fi
@@ -69,8 +69,8 @@ set_backup_num(){
         backup_num="${backup_num}"
     fi
 
-    sed -i '/backup_num=/d' ${FILE_INFO}
-    echo "backup_num=${backup_num}" >> ${FILE_INFO}
+    sed -i '/backup_num=/d' "${FILE_INFO}"
+    echo "backup_num=${backup_num}" >> "${FILE_INFO}"
 }
 
 create_cron(){

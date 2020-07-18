@@ -5,12 +5,12 @@ source /var/hostvn/menu/helpers/function
 
 _run(){
 	select_domain
-    plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
     if [[ -z "${ALERT}" ]]; then
-        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
+        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[ ${plugins_seo_current} == "rank_math_seo" ]]; then
-            sed -i '|etc/nginx/wordpress/rank_math_seo.conf;|d' ${VHOST_DIR}/${domain}.conf
-            echo "plugins_seo=" >> ${USER_DIR}/.${domain}.conf
+            sed -i '|etc/nginx/wordpress/rank_math_seo.conf;|d' "${VHOST_DIR}"/"${domain}".conf
+            echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
             printf "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}\n"
         elif [[ ${plugins_seo_current} == "yoast_seo" ]]; then
             printf "${RED}Ban dang su dung Yoast Seo.${NC}\n"

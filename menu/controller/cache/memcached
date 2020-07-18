@@ -16,7 +16,7 @@ do
     printf "${GREEN}1. Mo Memcached${NC}\n"
     printf "${GREEN}2. Tat Memcached${NC}\n"
     echo " ----------------------------------------------- "
-    read -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
     then

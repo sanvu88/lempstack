@@ -4,7 +4,7 @@
 source /var/hostvn/menu/helpers/function
 
 check_expired(){
-	if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
+	if [[ -f "/etc/letsencrypt/live/${domain:?}/cert.pem" ]]; then
 		clear
 	    openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
 	else
@@ -15,7 +15,7 @@ check_expired(){
 
 run(){
 	select_domain
-	#validate_domain ${domain}
+
 	if [ -z "${ALERT}" ]; then
 		check_expired
 	else

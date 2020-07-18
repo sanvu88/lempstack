@@ -4,13 +4,13 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	username=$(grep "username" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
 }
 
 backup(){
 	cd_dir /home/"${username}"/"${domain}"
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/${DATE}/${domain}
+		mkdir -p /home/backup/"${DATE}"/"${domain}"
 	fi
 	if [ -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
 	    /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz

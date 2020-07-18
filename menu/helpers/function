@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# shellcheck disable=SC2034
 # shellcheck disable=SC1091
 source /var/hostvn/menu/validate/rule
 
@@ -9,11 +9,11 @@ cd_dir(){
 
 # Print space
 printf_s(){
-    if [ $1 -le 0 ]
+    if [ "$1" -le 0 ]
     then
         echo ""
     else
-        printf '%0.s ' $(seq 1 $1)
+        printf '%0.s ' $(seq 1 "$1")
     fi
 }
 
@@ -30,14 +30,14 @@ convert_to_mb(){
 
 select_domain(){
     domain=""
-    if [ "$(ls -At ${USER_DIR})" ]; then
+    if [ "$(ls -At "${USER_DIR}")" ]; then
         echo "Danh sach domain"
         selects=()
         cd_dir "${USER_DIR}"
         for entry in .*.conf; do
             domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
             if [ "${domain}" != "${domain/.}" ]; then
-                selects+=(${domain})
+                selects+=("${domain}")
             fi
         done
         PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -47,7 +47,7 @@ select_domain(){
             break
         done
 
-        if ! validate_domain ${domain}; then
+        if ! validate_domain "${domain}"; then
             ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
         fi
     else
@@ -117,23 +117,23 @@ set_rewrite(){
 }
 
 fastcgi(){
-    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
+    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username:?}.sock;"
 
-    if [[ "${php_mode}" == "2" ]]; then
-        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
+    if [[ "${php_mode:?}" == "2" ]]; then
+        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version:?}/root/var/run/php-fpm/${username}.sock;"
     fi
 }
 
 restart_service(){
     systemctl restart nginx.service
     systemctl restart php-fpm.service
-    if [ "${php2_release}" == "yes" ]; then
+    if [ "${php2_release:?}" == "yes" ]; then
         systemctl restart "${php2_version}"-php-fpm
     fi
 }
 
 make_backup_dir(){
-    if [[ ! -d "/home/backup/${DATE}/${1}" ]]; then
+    if [[ ! -d "/home/backup/${DATE:?}/${1}" ]]; then
         mkdir -p /home/backup/"${DATE}"/"${1}"
     fi
 }
@@ -143,9 +143,9 @@ list_backup(){
     if [ "$(ls -At /home/backup)" ]; then
         echo "Danh sach backup"
         selects=()
-        cd /home/backup
+        cd_dir /home/backup
         for date in * ; do
-            selects+=(${date})
+            selects+=("${date}")
         done
         PS3="Nhap lua chon cua ban [0 = Thoat]: "
         select select in "${selects[@]}"
@@ -159,7 +159,7 @@ list_backup(){
 }
 
 empty_db(){
-    tables=$(mysql ${db_name} -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
+    tables=$(mysql "${db_name:?}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
     for t in ${tables}
     do
         mysql "${db_name}" -e "drop table ${t}"
@@ -238,8 +238,9 @@ brute_force_wp(){
 select_remote(){
 	echo "Chon Remote: "
 	remotes=()
-	selects=$(rclone listremotes)
-	for entry in ${selects}; do
+	mapfile -t selects < <(rclone listremotes)
+
+	for entry in "${selects[@]}"; do
 		select=${entry//:}
 	    remotes+=("${select}")
 	done

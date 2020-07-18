@@ -9,9 +9,9 @@ echo "------------------"
 echo ""
 
 input(){
-	read -p "Nhap Mysql user: " db_user
-	read -p "Nhập DB_Password: " password
-	read -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
+	read -r -p "Nhap Mysql user: " db_user
+	read -r -p "Nhập DB_Password: " password
+	read -r -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
 }
 
 validate(){
@@ -45,7 +45,7 @@ run(){
 	input
 	validate
 
-	if ! if_mysql_user_exists ${db_user};
+	if ! if_mysql_user_exists "${db_user}";
 	then
 		ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
 	fi

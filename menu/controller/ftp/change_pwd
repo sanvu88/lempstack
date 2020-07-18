@@ -26,7 +26,7 @@ run(){
 		ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
 	fi
 
-	validate_user ${ftp_user}
+	validate_user "${ftp_user}"
 
 	if [[ -z "${ALERT}" ]]; then
 		change_pass

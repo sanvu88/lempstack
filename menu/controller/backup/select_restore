@@ -20,9 +20,9 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) clear; resstore_source;;
-        2) clear; resstore_db ;;
-        3) clear; resstore_full ;;
+        1) clear; restore_source;;
+        2) clear; restore_db ;;
+        3) clear; restore_full ;;
         0) clear; menu_backup ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

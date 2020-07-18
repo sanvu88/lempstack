@@ -26,7 +26,7 @@ if [ "$(ls -At ${USER_DIR})" ]; then
     menu_permission
 else
     clear
-    echo "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
+    printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
     menu_permission
 fi
 

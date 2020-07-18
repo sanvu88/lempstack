@@ -12,7 +12,7 @@ _run(){
 	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
 		select_remote
 		if [[ -z "${ALERT}" ]]; then
-			rclone config delete ${remote}
+			rclone config delete "${remote:?}"
 			printf "${GREEN}Xoa remote thanh cong.${NC}\n"
 		else
 			printf "${ALERT}\n"

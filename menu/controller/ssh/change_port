@@ -1,16 +1,5 @@
 #!/bin/bash
 
-debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_change_port_ssh.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
-
-
 printf "${GREEN}-----------------${NC}\n"
 printf "${GREEN}Thay đoi port SSH${NC}\n"
 printf "${GREEN}-----------------${NC}\n"
@@ -59,9 +48,9 @@ change_port(){
     sed -i '/ssh_port=/d' ${FILE_INFO}
     echo "ssh_port=${port_new}" >> ${FILE_INFO}
     if [[ "${current_port}" != "22" ]]; then
-    	semanage port -d -p tcp ${current_port}
+    	semanage port -d -p tcp "${current_port}"
     fi
-    semanage port -a -t ssh_port_t -p tcp ${port_new}
+    semanage port -a -t ssh_port_t -p tcp "${port_new}"
     systemctl reload sshd.service
     csf -x
     csf -e

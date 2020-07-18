@@ -9,7 +9,7 @@ confirm_destroy(){
 
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
-    selects=$(rclone lsf ${remote}:${IPADDRESS})
+    selects=$(rclone lsf "${remote:?}":"${IPADDRESS}")
     for entry in ${selects}; do
     	select=${entry///}
         dates+=("${select}")
@@ -21,10 +21,8 @@ select_backup(){
         break
     done
 
-    date "+%d-%m-%Y" -d "${date}" > /dev/null  2>&1
-
-    if [[ $? != 0 ]]; then
-    	ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
+    if ! valid_date "${date}"; then
+    	ALERT=$(printf "${RED}Ngay ban chon khong dung dinh dang.${NC}\n")
     else
     	choose_domain
     fi
@@ -32,7 +30,7 @@ select_backup(){
 
 choose_domain(){
 	echo "Chon ten mien ban muon khoi phuc: "
-    selects=$(rclone lsf ${remote}:${IPADDRESS}/${date})
+    selects=$(rclone lsf "${remote}":"${IPADDRESS}"/"${date}")
     for entry in ${selects}; do
     	select=${entry///}
         domains+=("${select}")
@@ -44,7 +42,9 @@ choose_domain(){
         break
     done
 
-    validate_domain ${domain}
+    if ! validate_domain "${domain}"; then
+      ALERT=$(printf "${RED}Ten mien khong dung dinh dang.${NC}\n")
+    fi
 }
 
 _run(){
@@ -53,9 +53,9 @@ _run(){
     select_backup
 
 		if [[ -z "${ALERT}" ]]; then
-			rclone delete ${remote}:/${IPADDRESS}/${date}/${domain} --rmdirs > /dev/null  2>&1
-			rclone cleanup ${remote}:${IPADDRESS} > /dev/null  2>&1
-			rm -rf /home/backup/${date}/${domain}
+			rclone delete "${remote}":/"${IPADDRESS}"/"${date}"/"${domain}" --rmdirs > /dev/null  2>&1
+			rclone cleanup "${remote}":"${IPADDRESS}" > /dev/null  2>&1
+			rm -rf /home/backup/"${date}"/"${domain}"
 			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
 		else
 			printf "${ALERT}\n"

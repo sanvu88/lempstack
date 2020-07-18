@@ -4,6 +4,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
+  # shellcheck disable=SC2154
 	username=${domain//[-._]/}
 	cache=$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
@@ -11,7 +12,7 @@ set_var(){
 browser_cache(){
 	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
 	plugin_cache="other"
-    if [[ "${plugins_cache}" == "w3c" ]]; then
+    if [[ "${plugins_cache:?}" == "w3c" ]]; then
         plugin_cache="w3c"
         set_cache="include /etc/nginx/wordpress/w3c.conf;"
     elif [[ "${plugins_cache}" == "wpfc" ]]; then
@@ -41,8 +42,8 @@ browser_cache(){
         set_cache="include /etc/nginx/extra/staticfiles.conf;"
     fi
 
-    sed -i '/plugin_cache=/d' ${USER_DIR}/.${domain}.conf
-    echo  plugin_cache=${plugin_cache} >> ${USER_DIR}/.${domain}.conf
+    sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+    echo  plugin_cache=${plugin_cache} >> "${USER_DIR}"/."${domain}".conf
 }
 
 validate_plugin(){
@@ -54,13 +55,13 @@ validate_plugin(){
 action(){
 	browser_cache
 	if [[ "${cache}" == "other" ]]; then
-		sed -i 's|include /etc/nginx/extra/staticfiles.conf;|'${set_cache}'|g' ${VHOST_DIR}/${domain}.conf
+		sed -i 's|include /etc/nginx/extra/staticfiles.conf;|'${set_cache}'|g' "${VHOST_DIR}"/"${domain}".conf
 	else
-		sed -i 's|include /etc/nginx/extra/'${cache}'.conf;|'${set_cache}'|g' ${VHOST_DIR}/${domain}.conf
+		sed -i 's|include /etc/nginx/extra/'${cache}'.conf;|'${set_cache}'|g' "${VHOST_DIR}"/"${domain}".conf
 	fi
 
 	if [[ -z "${rewrite}" ]]; then
-		sed -i '/wordpress.conf/d' ${VHOST_DIR}/${domain}.conf
+		sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
 	fi
 }
 

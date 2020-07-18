@@ -7,9 +7,9 @@ source /var/hostvn/menu/helpers/variable_php
 
 set_var(){
 	PECL_PHP_LINK="https://pecl.php.net/get"
-	IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | cut -f2 -d'=')
-	PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
-	PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
+	IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
+	PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
+	PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
 }
 
 memory_calculation(){
@@ -89,11 +89,11 @@ memory_calculation(){
 }
 
 check_duplicate_php(){
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php_version}" == "${php1_version}" ]]; then
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php_version}" == "${php1_version:?}" ]]; then
         ALERT=$(printf "${RED}Phien ban PHP mac dinh ban muon thay giong phien ban hien tai. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_version}" ]]; then
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_version:?}" ]]; then
     	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
     fi
 
@@ -606,12 +606,12 @@ EOopcache_blacklist
 
 write_info(){
 	if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
-		sed -i '/php1_version=/d' ${FILE_INFO}
+		sed -i '/php1_version=/d' "${FILE_INFO}"
 		echo "php1_version=${php_version}" >> "${FILE_INFO}"
 	fi
 
 	if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
-		sed -i '/php2_version=/d' ${FILE_INFO}
+		sed -i '/php2_version=/d' "${FILE_INFO}"
 		echo "php2_version=${php_version2}" >> "${FILE_INFO}"
 	fi
 }

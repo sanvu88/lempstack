@@ -32,8 +32,8 @@ do
 		    6)
             read -r -p "Nhap mat khau moi: " admin_new_pwd
             htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
-                  sed -i '/admin_pwd=/d' ${FILE_INFO}
-                  echo "admin_pwd=${admin_new_pwd}" >> ${FILE_INFO}
+                  sed -i '/admin_pwd=/d' "${FILE_INFO}"
+                  echo "admin_pwd=${admin_new_pwd}" >> "${FILE_INFO}"
             clear
             printf "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}\n"
             menu_admin

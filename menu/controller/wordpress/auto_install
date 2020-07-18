@@ -4,7 +4,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+	username=$(grep "username" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=');
 
 	if [ -z "${username}" ]; then
 		read -r -p "Nhap vao FTP username: " username
@@ -21,13 +21,18 @@ set_var(){
 		read -r -p "Nhap vao mat khau Mysql user: " db_pass
 	fi
 
+	db_user=$(grep "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+	if [[ -z "${db_user}" ]]; then
+		read -r -p "Nhap vao Mysql user: " db_user
+	fi
+
 	cache="include /etc/nginx/extra/staticfiles.conf;"
 	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
-    include_seo=""
+  include_seo=""
 }
 
 docroot_empty(){
-	if check_docroot_empty $username $domain;
+	if check_docroot_empty "$username" "$domain";
 	then
 		read -r -p "Thu muc public_html dang co du lieu. Ban co muon xoa du lieu khong ? (y/n) " promtp_install
 	else
@@ -36,7 +41,7 @@ docroot_empty(){
 }
 
 database_empty(){
-	if if_db_not_empty ${db_name};
+	if if_db_not_empty "${db_name}";
 	then
 		promtp_install="y"
 	else
@@ -58,7 +63,7 @@ define( 'FS_METHOD', 'direct');
 define( 'WP_CACHE', true);
 PHP
     # Install WordPress
-    wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
+    wp core install --url="${domain}" --title="${site_name:?}" --admin_user="${admin_user:?}" --admin_password="${admin_pwd:?}" --admin_email="${admin_email:?}" --allow-root
     # Create robots.txt
     cat > "/home/$username/$domain/public_html/robots.txt" <<END
 User-agent: *
@@ -76,7 +81,7 @@ END
 }
 
 set_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
+    if [[ "${plugins_cache:?}" == "w3c" ]]; then
         plugin_cache="w3c"
         cache="include /etc/nginx/wordpress/w3c.conf;"
     elif [[ "${plugins_cache}" == "wpfc" ]]; then
@@ -127,17 +132,17 @@ create_vhost(){
     fastcgi
     set_cache
 
-    if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+    if [[ "${plugins_seo:?}" == "yoast_seo" ]]; then
         include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-        echo "plugins_seo=yoast_seo" >> ${USER_DIR}/.${domain}.conf
+        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+        echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
     elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
         include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
-        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-        echo "plugins_seo=rank_math_seo" >> ${USER_DIR}/.${domain}.conf
+        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+        echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
     else
-        sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-        echo "plugins_seo=" >> ${USER_DIR}/.${domain}.conf
+        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+        echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
     fi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
@@ -164,7 +169,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass}
+            ${fastcgi_pass:?}
         }
     }
 
@@ -184,18 +189,18 @@ END
 
 run(){
 	select_domain
-	#validate_domain ${domain}
+
 	set_var
 	docroot_empty
 	database_empty
 
 	if [[ "${promtp_install}" =~ ^([yY])$ ]]; then
-		if ! if_mysql_user_exists ${db_user};
+		if ! if_mysql_user_exists "${db_user}";
 		then
 			ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
 		fi
 
-		if ! if_db_exists ${db_name};
+		if ! if_db_exists "${db_name}";
 		then
 			ALERT=$(printf "${RED}Database khong ton tai.${NC}")
 		fi

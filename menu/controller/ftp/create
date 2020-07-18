@@ -4,6 +4,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
+  # shellcheck disable=SC2154
 	username=${domain//[-._]/}
 }
 
@@ -21,7 +22,7 @@ show_info(){
 }
 
 create(){
-	pure-pw useradd ${ftp_user} -u ${username} -g ${username} -d ${ftp_path} <<EOF
+	pure-pw useradd "${ftp_user}" -u "${username}" -g "${username}" -d "${ftp_path}" <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF

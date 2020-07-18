@@ -4,6 +4,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
+  # shellcheck disable=SC2154
 	username=${domain//[-._]/}
 }
 
@@ -11,14 +12,14 @@ view_log(){
 	clear
     printf "${RED}Hien thi 10 dong log moi nhat...\n"
     echo ""
-    tail /home/${username}/${domain}/logs/error.log
+    tail /home/"${username}"/"${domain}"/logs/error.log
     printf "${RED}Vi tri file log: /home/${username}/${domain}/logs/error.log${NC}\n"
 }
 
 run(){
 	select_domain
 
-	if ! if_domain_exists ${domain}; then
+	if ! if_domain_exists "${domain}"; then
 		ALERT=$(printf "${RED}Domain khong ton tai tren VPS.${NC}\n")
 	fi
 

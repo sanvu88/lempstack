@@ -8,7 +8,7 @@ confirm_delete(){
 }
 
 delete(){
-	rm -rf /home/backup/${date}/${domain}/*
+	rm -rf /home/backup/"${date:?}"/"${domain:?}"/*
 }
 
 run(){
@@ -18,7 +18,7 @@ run(){
 		list_backup
 		select_domain
 
-		if ! check_backup_empty ${date} ${domain};
+		if ! check_backup_empty "${date}" "${domain}";
 		then
 			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
 		fi

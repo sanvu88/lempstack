@@ -340,7 +340,7 @@ restore_db(){
 	. /var/hostvn/menu/controller/backup/restore_db
 }
 
-resstore_full(){
+restore_full(){
 	. /var/hostvn/menu/controller/backup/restore_all
 }
 

@@ -1,15 +1,5 @@
 #!/bin/bash
 
-debug_(){
-    LOG_FILE=/var/log/hostvn/$(date +%d-%m-%Y)_remove_le.log
-    exec 5> "${LOG_FILE}"
-    BASH_XTRACEFD="5"
-    PS4='$LINENO: '
-    set -x
-}
-
-debug_
-
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -20,7 +10,7 @@ echo
 
 validate(){
     check_nginx_status
-    check_le_exists ${domain}
+    check_le_exists "${domain:?}"
 }
 
 set_variable(){
@@ -95,17 +85,17 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         check_plugins_cache
         brute_force_wp
-        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+        if [[ "${plugins_seo:?}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-            echo "plugins_seo=yoast_seo" >> ${USER_DIR}/.${domain}.conf
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+            echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
         elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
-            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-            echo "plugins_seo=rank_math_seo" >> ${USER_DIR}/.${domain}.conf
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+            echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
         else
-            sed -i '/plugins_seo=/d' ${USER_DIR}/.${domain}.conf
-            echo "plugins_seo=" >> ${USER_DIR}/.${domain}.conf
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
+            echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
         fi
     fi
 
@@ -133,7 +123,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass}
+            ${fastcgi_pass:?}
         }
     }
 

@@ -12,7 +12,7 @@ printf "${RED}Can suy nghi ky truoc khi thay doi bat ky thong so nao.${NC}\n"
 
 set_variable(){
 	ini_1="/etc/php.d/00-hostvn-custom.ini"
-	ini_2="/etc/opt/remi/${php2_version}/php.d/00-hostvn-custom.ini"
+	ini_2="/etc/opt/remi/${php2_version:?}/php.d/00-hostvn-custom.ini"
 
 	if [[ ${php2_version} == "php56" ]]; then
         ini_2="/opt/remi/${php2_version}/root/etc/php.d/00-hostvn-custom.ini"
@@ -57,12 +57,12 @@ change_parameter(){
 		parameter_new=${num}M
 	fi
 
-	sed -i.bak '/${parameter}/d' ${ini_1}
-	echo "${parameter} = ${parameter_new}" >> ${ini_1}
+	sed -i.bak "/${parameter}/d" ${ini_1}
+	echo "${parameter} = ${parameter_new}" >> "${ini_1}"
 
-	if [[ "${php2_release}" == "yes" ]]; then
-		sed -i.bak '/${parameter}/d' ${ini_2}
-		echo "${parameter} = ${parameter_new}" >> ${ini_2}
+	if [[ "${php2_release:?}" == "yes" ]]; then
+		sed -i.bak "/${parameter}/d" "${ini_2}"
+		echo "${parameter} = ${parameter_new}" >> "${ini_2}"
 	fi
 }
 

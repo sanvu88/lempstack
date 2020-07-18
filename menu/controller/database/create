@@ -18,8 +18,8 @@ validate_input(){
 
 validate(){
 	validate_input
-	check_database ${db_name}
-	check_mysql_user ${db_user}
+	check_database "${db_name}"
+	check_mysql_user "${db_user}"
 }
 
 create_db(){

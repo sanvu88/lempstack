@@ -6,8 +6,9 @@ source /var/hostvn/menu/helpers/function
 _run(){
     select_domain
     if [[ -z "${ALERT}" ]]; then
+        # shellcheck disable=SC2154
         username=${domain//[-._]/}
-        cd_dir /home/${username}/${domain}/public_html
+        cd_dir /home/"${username}"/"${domain}"/public_html
         debug=$(wp config get WP_DEBUG --allow-root)
         if [[ "${debug}" == 1 ]]; then
             wp config set WP_DEBUG false --raw --allow-root

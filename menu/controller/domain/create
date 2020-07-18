@@ -42,17 +42,17 @@ set_var(){
 
 validate(){
     check_service
-    if ! validate_domain ${domain}; then
+    if ! validate_domain "${domain}"; then
         ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
     fi
-    check_domain_exists ${domain}
-    check_database ${db_name}
-    check_mysql_user ${db_user}
+    check_domain_exists "${domain}"
+    check_database "${db_name}"
+    check_mysql_user "${db_user}"
 }
 
 set_php_version(){
-    php1="php${php1_version}"
-    php2=${php2_version}
+    php1="php${php1_version:?}"
+    php2=${php2_version:?}
 }
 
 select_php(){
@@ -106,7 +106,7 @@ define( 'WP_CACHE', true);
 PHP
 
         # Install WordPress
-        wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
+        wp core install --url="${domain}" --title="${site_name:?}" --admin_user="${admin_user:?}" --admin_password="${admin_pwd:?}" --admin_email="${admin_email:?}" --allow-root
 
         # Create robots.txt
         cat > "/home/$username/$domain/public_html/robots.txt" <<END
@@ -125,7 +125,7 @@ END
 }
 
 browser_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
+    if [[ "${plugins_cache:?}" == "w3c" ]]; then
         plugin_cache="w3c"
         cache="include /etc/nginx/wordpress/w3c.conf;"
         wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
@@ -167,30 +167,30 @@ browser_cache(){
 
 # Create
 create_user(){
-    if ! if_user_exists ${username};
+    if ! if_user_exists "${username}";
     then
-        useradd -r --shell /sbin/nologin ${username}
+        useradd -r --shell /sbin/nologin "${username}"
     fi
 }
 
 create_ftp(){
     if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
-        if if_pureftpd_user_exists ${username};
+        if if_pureftpd_user_exists "${username}";
         then
-            pure-pw passwd ${username} <<EOF
+            pure-pw passwd "${username}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
             pure-pw mkdb
         else
-            pure-pw useradd ${username} -u ${username} -g ${username} -d /home/${username} <<EOF
+            pure-pw useradd "${username}" -u "${username}" -g "${username}" -d /home/"${username}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
             pure-pw mkdb
         fi
     else
-        pure-pw useradd ${username} -u ${username} -g ${username} -d /home/${username} <<EOF
+        pure-pw useradd "${username}" -u "${username}" -g "${username}" -d /home/"${username}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
@@ -199,13 +199,12 @@ EOF
 }
 
 create_db(){
-    MYSQL=$(which mysql)
     Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
     Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
     Q3="FLUSH PRIVILEGES;"
     SQL="${Q1}${Q2}${Q3}"
 
-    ${MYSQL} -uroot -e "${SQL}"
+    mysql -uroot -e "${SQL}"
 }
 
 create_docrot(){
@@ -232,7 +231,7 @@ set_phpconf_var(){
     wsdl_cache_dir="/home/${username}/php/wsdlcache"
     open_basedir="/home/${username}/:/dev/urandom:/usr/share/php/:/dev/shm"
 
-    if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+    if [[ "${php2_release:?}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
         listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
         open_basedir="/home/${username}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
@@ -303,7 +302,7 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         browser_cache
         brute_force_wp
-        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
+        if [[ "${plugins_seo:?}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
         elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
@@ -338,7 +337,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass}
+            ${fastcgi_pass:?}
         }
     }
     include /etc/nginx/extra/security.conf;

@@ -51,14 +51,14 @@ change_port(){
    	sleep 1
     sed -i 's/,'${current_port}'/,'${new_port}'/g' /etc/csf/csf.conf
     sed -i 's/'${current_port}'/'${new_port}'/g' /etc/nginx/web_apps.conf
-    sed -i '/admin_port=/d' ${FILE_INFO}
-    echo "admin_port=${new_port}" >> ${FILE_INFO}
+    sed -i '/admin_port=/d' "${FILE_INFO}"
+    echo "admin_port=${new_port}" >> "${FILE_INFO}"
     csf -x
     csf -e
     systemctl restart csf
     systemctl restart lfd
     clear
-    printf "${GREEN}Da thay đoi Port Admin sang ${port_new} thanh cong.${NC}\n"
+    printf "${GREEN}Da thay đoi Port Admin sang ${new_port} thanh cong.${NC}\n"
 }
 
 _run(){

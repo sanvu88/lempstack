@@ -9,15 +9,15 @@ set_var(){
 
 backup(){
 	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/${DATE}/${domain}
+		mkdir -p /home/backup/"${DATE}"/"${domain}"
 	fi
 	if [ ! -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
-	    cd_dir /home/${user}/${domain}
-      tar -cpzvf /home/backup/"${DATE}"/"${domain}"/${domain}.tar.gz ${public}
+	    cd_dir /home/"${user}"/"${domain}"
+      tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
 	fi
 	if [ ! -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
-	    cd_dir /home/backup/${DATE}/${domain}
-      mysqldump -uadmin -p${mysql_pwd} ${db_name} > ${db_name}.sql
+	    cd_dir /home/backup/"${DATE}"/"${domain}"
+      mysqldump -uadmin -p"${mysql_pwd:?}" "${db_name}" > "${db_name}".sql
 	fi
 }
 
@@ -31,7 +31,7 @@ _run(){
 		for users in /home/*; do
 			if [[ -d "${users}" ]]; then
 				user=${users##*/}
-				for domains in /home/${user}/*; do
+				for domains in /home/"${user}"/*; do
 					if [[ -d "${domains}" ]]; then
 						domain=${domains##*/}
 						for publics in /home/${user}/${domain}/public_html; do
@@ -46,7 +46,7 @@ _run(){
 			fi
 		done
 
-		rclone copy /home/backup ${remote}:${IPADDRESS} >> /var/log/rclone.log 2>&1
+		rclone copy /home/backup "${remote:?}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
 		rm -rf /home/backup/*
 		clear
 		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"

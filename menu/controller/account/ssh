@@ -1,8 +1,7 @@
 #!/bin/bash
 
 show_info(){
-	set_var
-	printf "SSH PORT                     : %s\n" "${ssh_port}"
+	printf "SSH PORT                     : %s\n" "${ssh_port:?}"
 }
 
 show_info
