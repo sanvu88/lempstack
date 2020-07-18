@@ -3242,7 +3242,7 @@ config_phpmyadmin(){
     rm -rf "${USR_DIR}"/phpmyadmin/setup
     mkdir -p "${USR_DIR}"/phpmyadmin/tmp
 
-    if [[ "${PHP_VERSION}" != "56" ]]; then
+    if [[ "${PHP_VERSION}" != "php56" ]]; then
         DECLARE="declare(strict_types=1);"
     fi
 
@@ -3288,7 +3288,7 @@ EOphpmyadmin_temp
 install_phpmyadmin(){
     echo ""
 
-    if [[ ${PHP_VERSION} -eq 56 ]]; then
+    if [[ "${PHP_VERSION}" == "php56" ]]; then
         PHPMYADMIN_VERSION="4.9.5"
     fi
 
@@ -3317,6 +3317,11 @@ install_pure_ftpd(){
     fi
 
     cat >> "${PURE_CONF_PATH}/pure-ftpd.conf" << EOpure_ftpd_conf
+############################################################
+#                                                          #
+#             Configuration file for pure-ftpd             #
+#                                                          #
+############################################################
 ChrootEveryone               yes
 BrokenClientsCompatibility   no
 MaxClientsNumber             50
@@ -3338,21 +3343,21 @@ AntiWarez                    yes
 #Bind                         ${IPADDRESS},21
 Umask                        133:022
 MinUID                       99
-UseFtpUsers                  no
-AllowUserFXP                 no
+AllowUserFXP                 yes
 AllowAnonymousFXP            no
 ProhibitDotFilesWrite        no
 ProhibitDotFilesRead         no
 AutoRename                   no
-AnonymousCantUpload          yes
+AnonymousCantUpload          no
 AltLog                       stats:/var/log/pureftpd.log
-PIDFile                      /var/run/pure-ftpd.pid
+PIDFile                      /run/pure-ftpd.pid
 CallUploadScript             no
-MaxDiskUsage                 99
+MaxDiskUsage                   99
 CustomerProof                yes
 TLS                          1
 TLSCipherSuite               HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3
 CertFile                     /etc/pure-ftpd/ssl/pure-ftpd.pem
+ExtCert                      /var/run/pure-certd.sock
 EOpure_ftpd_conf
 
     mkdir -p "${PURE_CONF_PATH}"/ssl
@@ -3565,9 +3570,9 @@ check_service_status(){
     fi
 }
 
-################
+############################################
 # Create menu
-################
+############################################
 add_menu(){
     echo ""
     cd_dir "${BASH_DIR}"
@@ -3584,9 +3589,9 @@ add_menu(){
     mv "${BASH_DIR}"/menu/hostvn /usr/bin/hostvn && chmod +x /usr/bin/hostvn
 }
 
-###############
+############################################
 # Write Info
-###############
+############################################
 write_info(){
     touch "${FILE_INFO}"
     {
@@ -3610,9 +3615,9 @@ write_info(){
 }
 
 
-##############
+############################################
 # Run Script
-##############
+############################################
 # Prepare before install
 prepare_install
 create_bash_dir
