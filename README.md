@@ -51,6 +51,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Block run shell trong thư mục uploads WordPress. Chặn truy cập các thư mục, file nhạy cảm trên WordPress.
 - Chống Bruteforce wp-admin.
 - BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web) và menu quản lý CSF.
+- Disable User API trên WordPress tránh lộ thông tin User (Sẽ phát triển menu bật tắt disable).
 - Thay đổi Port SSH.
 - Thay đổi port Admin.
 - Thay đổi port FTP.
@@ -74,7 +75,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Thêm cache key tránh trùng lặp nội dung giữa các site khi dùng memcached hoặc redis.
 - Bật/tắt Debug.
 - Bật/tắt chế độ bảo trì.
-- Bật/Tắt disable xmlrpc.
+- Bật/Tắt disable xmlrpc (Mặc định sẽ disable xmlrpc để tránh bị khai thác DDOS).
 - Huỷ kích hoạt toàn bộ plugins.
 - Random database prefix khi sử dụng chức năng cài đặt tự động.
 
@@ -87,6 +88,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 2. Yêu cầu
 
+- VPS tối thiểu 1G ram và chưa cài đặt bất kỳ dịch vụ nào.
 - CentOS 7, CentOS 8.
 
 ## 3. Cách cài đặt
