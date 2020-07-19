@@ -39,6 +39,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cho phép cấu hình tự động gia hạn Let's Encrypt.
 - Menu hỗ trợ cấu hình SSL trả phí.
 - Menu xem error log Nginx, Mysql, PHP và xem theo từng tên miền cụ thể.
+- Cronjob tự động cập nhật dải IP mới nhất của Cloudflare cho Nginx và CSF Firewall.
 - And More ...
 
 ### 1.3. Bảo mật
