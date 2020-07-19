@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
@@ -32,8 +33,6 @@ set_var(){
     db_pass=$(gen_pass "$@")
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""
-    plugins_seo=""
-    plugins_cache=""
     plugin_cache="other"
     php_mode="1"
     wp_secure=""
@@ -413,9 +412,7 @@ run(){
         select_source
         create_docrot
         create_db
-        save_user_config
         create_phpconfig
-        create_vhost
         create_user
         create_ftp
 
@@ -427,7 +424,9 @@ run(){
             select_plugin_seo
         fi
 
+        create_vhost
         set_owner
+        save_user_config
         restart_service
         clear
         show_info

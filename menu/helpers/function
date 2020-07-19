@@ -229,15 +229,23 @@ select_plugin_seo(){
 wp_auto_install_info(){
     read -r -p "Nhap vao tai khoan wp-admin (Viet lien, khong dau. VD: hostvn: " admin_user
     admin_pwd=$(gen_pass "$@")
-    read -r -p "Nhap vao email cua ban: " admin_email
+
+    while true
+    do
+        read -r -p "Nhap vao email cua ban: " admin_email
+        echo
+        if [[ "${admin_email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
+        then
+            break
+        else
+            echo "Email ban nhap khong chinh xac vui long nhap lai."
+        fi
+    done
+
     read -r -p "Nhap vao ten website: " site_name
 
     if [ -z "${admin_user}" ]; then
         admin_user="admin"
-    fi
-
-    if [ -z "${admin_email}" ]; then
-        admin_email=$(grep "admin_email" "${FILE_INFO}" | cut -f2 -d'=')
     fi
 
     if [ -z "${site_name}" ]; then

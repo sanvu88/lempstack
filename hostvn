@@ -2462,7 +2462,6 @@ EOhostvn_custom_ini
 }
 
 hostvn_custom_ini_2(){
-    memory_limit_calculation
     cat > "${PHP2_INI_PATH}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90

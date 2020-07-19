@@ -191,6 +191,7 @@ install_php(){
 
         dnf module reset php:remi-"${php1_version}" -y
         dnf module enable php:remi-"${php1_new_cent8}" -y
+        dnf config-manager --set-enabled PowerTools
     else
         yum-config-manager --enable remi-"${php1_new}"
     fi
@@ -239,9 +240,9 @@ install_php_memcached(){
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
     if [[ -f "/usr/lib64/php/modules/memcached.so" ]]; then
-    	if [[ -f "/etc/php.d/50-memcached.ini" ]]; then
-    		rm -rf /etc/php.d/50-memcached.ini
-    	fi
+    	  if [[ -f "/etc/php.d/50-memcached.ini" ]]; then
+    		    rm -rf /etc/php.d/50-memcached.ini
+    	  fi
         cat >> "/etc/php.d/50-memcached.ini" << EOF
 extension=memcached.so
 EOF
