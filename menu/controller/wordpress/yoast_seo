@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -23,10 +24,7 @@ _run(){
         elif [[ ${plugins_seo_current} == "rank_math_seo" ]]; then
             printf "${RED}Ban dang su dung Rank Math Seo.${NC}\n"
         elif [[ -z "${plugins_seo_current}" ]]; then
-            sec="include /etc/nginx/extra/security.conf;"
-            seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-            include="${sec}"$'\n'"${seo}"
-            sed -i 's|include /etc/nginx/extra/security.conf;|'${include}'|g'
+            sed -i '/index.php/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
             printf "${GREEN}Bat cau hinh Yoast Seo thanh cong.${NC}\n"
         fi
     else

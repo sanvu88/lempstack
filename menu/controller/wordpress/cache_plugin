@@ -55,41 +55,41 @@ browser_cache(){
 }
 
 validate_plugin(){
-	if [[ -z "${plugins_cache}" ]]; then
-		ALERT=$(printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n")
-	fi
+    if [[ -z "${plugins_cache}" ]]; then
+        ALERT=$(printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n")
+    fi
 }
 
 action(){
-	browser_cache
-	if [[ "${cache}" == "other" ]]; then
-		sed -i 's|include /etc/nginx/extra/staticfiles.conf;|'${set_cache}'|g' "${VHOST_DIR}"/"${domain}".conf
-	else
-		sed -i 's|include /etc/nginx/extra/'${cache}'.conf;|'${set_cache}'|g' "${VHOST_DIR}"/"${domain}".conf
-	fi
+    browser_cache
+    if [[ "${cache}" == "other" ]]; then
+        sed -i "s|include /etc/nginx/extra/staticfiles.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
+    else
+        sed -i "s|include /etc/nginx/extra/${cache}.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
+    fi
 
-	if [[ -z "${rewrite}" ]]; then
-		sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
-	fi
+    if [[ -z "${rewrite}" ]]; then
+        sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
+    fi
 }
 
 _run(){
-	select_domain
-	select_plugin_cache
-	validate_plugin
-	set_var
+    select_domain
+    select_plugin_cache
+    validate_plugin
+    set_var
 
-	if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
-		ALERT=$(printf "${RED}Website khong su dung WordPress.${NC}\n")
-	fi
+    if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
+        ALERT=$(printf "${RED}Website khong su dung WordPress.${NC}\n")
+    fi
 
-	if [[ -z "${ALERT}" ]]; then
-		action
-		clear
-		printf "${GREEN}Cau hinh Nginx voi plugin cache thanh cong.${NC}\n"
-	else
-		printf "${ALERT}\n"
-	fi
+    if [[ -z "${ALERT}" ]]; then
+        action
+        clear
+        printf "${GREEN}Cau hinh Nginx voi plugin cache thanh cong.${NC}\n"
+    else
+        printf "${ALERT}\n"
+    fi
 }
 
 _run
