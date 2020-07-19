@@ -198,7 +198,7 @@ prepare_install(){
     config_selinux
     set_timezone
     set_os_arch
-    set_dns
+    #set_dns
     create_log
     ssh_login_noti
     set_email
@@ -242,20 +242,17 @@ nginx_brotli(){
 
 #Install Mariadb
 install_mariadb(){
-    if [[ "${OS_VER}" -eq 8 ]]; then
-        wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
-        chmod +x mariadb_repo_setup
-        ./mariadb_repo_setup
-        rm -rf mariadb_repo_setup
-        yum -y install --repo="mariadb-main" MariaDB-server MariaDB-client
-    else
-        cat >> "/etc/yum.repos.d/mariadb.repo" << EOMARIADBREPO
+    cat >> "/etc/yum.repos.d/mariadb.repo" << EOMARIADBREPO
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/${MARIADB_VERSION}/centos${OS_VER}-${OS_ARCH1}
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOMARIADBREPO
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        dnf makecache
+        dnf install -y MariaDB-server MariaDB-client --disablerepo=AppStream
+    else
         yum -y install MariaDB-server MariaDB-client
     fi
 }
@@ -272,24 +269,22 @@ select_php_ver(){
             *) printf "%s\n" "${WRONG_PHP_OPTION}"; PHP_VERSION="${PHP_VERSION_1}"; break;;
         esac
     done
-
-    if [[ "${OS_VER}" -eq 8 ]]; then
-        PHP_VERSION=${PHP_VERSION//php}
-        PHP_VERSION=$(echo "${PHP_VERSION}" | fold -w1 | paste -sd'.')
-    fi
 }
 
 install_php(){
     if [ "${OS_VER}" -eq 8 ]; then
+        PHP1_VERSION=${PHP_VERSION//php}
+        PHP1_VERSION=$(echo "${PHP1_VERSION}" | fold -w1 | paste -sd'.')
         dnf module reset php
-        dnf module enable php:remi-"${PHP_VERSION}" -y
+        dnf makecache
+        dnf module enable php:remi-"${PHP1_VERSION}" -y
     else
-        yum-config-manager --enable remi-"${PHP_VERSION}"
+        yum-config-manager --enable remi-"${PHP1_VERSION}"
     fi
 
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
-        php-intl php-imap perl-LWP-Protocol-https php-pear-Net-SMTP php-enchant php-pear php-devel php-zlib php-xmlrpc \
+        php-intl php-imap perl-LWP-Protocol-https php-enchant php-pear php-devel php-zlib php-xmlrpc \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
@@ -327,7 +322,7 @@ install_php_2(){
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
         yum -y install "${PHP_VERSION_2}" "${PHP_VERSION_2}"-php-fpm "${PHP_VERSION_2}"-php-ldap "${PHP_VERSION_2}"-php-zip "${PHP_VERSION_2}"-php-embedded "${PHP_VERSION_2}"-php-cli "${PHP_VERSION_2}"-php-mysql "${PHP_VERSION_2}"-php-common "${PHP_VERSION_2}"-php-gd "${PHP_VERSION_2}"-php-xml "${PHP_VERSION_2}"-php-mbstring \
         "${PHP_VERSION_2}"-php-mcrypt "${PHP_VERSION_2}"-php-pdo "${PHP_VERSION_2}"-php-soap "${PHP_VERSION_2}"-php-json "${PHP_VERSION_2}"-php-simplexml "${PHP_VERSION_2}"-php-process "${PHP_VERSION_2}"-php-curl "${PHP_VERSION_2}"-php-bcmath "${PHP_VERSION_2}"-php-snmp "${PHP_VERSION_2}"-php-pspell "${PHP_VERSION_2}"-php-gmp \
-        "${PHP_VERSION_2}"-php-intl "${PHP_VERSION_2}"-php-imap perl-LWP-Protocol-https "${PHP_VERSION_2}"-php-pear-Net-SMTP "${PHP_VERSION_2}"-php-enchant "${PHP_VERSION_2}"-php-pear "${PHP_VERSION_2}"-php-devel "${PHP_VERSION_2}"-php-zlib "${PHP_VERSION_2}"-php-xmlrpc \
+        "${PHP_VERSION_2}"-php-intl "${PHP_VERSION_2}"-php-imap perl-LWP-Protocol-https "${PHP_VERSION_2}"-php-enchant "${PHP_VERSION_2}"-php-pear "${PHP_VERSION_2}"-php-devel "${PHP_VERSION_2}"-php-zlib "${PHP_VERSION_2}"-php-xmlrpc \
         "${PHP_VERSION_2}"-php-tidy "${PHP_VERSION_2}"-php-opcache "${PHP_VERSION_2}"-php-cli "${PHP_VERSION_2}"-php-pecl-zip "${PHP_VERSION_2}"-php-dom "${PHP_VERSION_2}"-php-ssh2 "${PHP_VERSION_2}"-php-xmlreader "${PHP_VERSION_2}"-php-date "${PHP_VERSION_2}"-php-exif "${PHP_VERSION_2}"-php-filter "${PHP_VERSION_2}"-php-ftp \
         "${PHP_VERSION_2}"-php-hash "${PHP_VERSION_2}"-php-iconv "${PHP_VERSION_2}"-php-libxml "${PHP_VERSION_2}"-php-pecl-imagick "${PHP_VERSION_2}"-php-mysqlnd "${PHP_VERSION_2}"-php-openssl "${PHP_VERSION_2}"-php-pcre "${PHP_VERSION_2}"-php-posix "${PHP_VERSION_2}"-php-sockets "${PHP_VERSION_2}"-php-spl \
         "${PHP_VERSION_2}"-php-tokenizer "${PHP_VERSION_2}"-php-bz2 "${PHP_VERSION_2}"-php-pgsql "${PHP_VERSION_2}"-php-sqlite3 "${PHP_VERSION_2}"-php-fileinfo
@@ -3588,9 +3583,6 @@ add_menu(){
 # Write Info
 ############################################
 write_info(){
-    if [[ "${OS_VER}" -eq 8 ]]; then
-        PHP_VERSION=php"${PHP_VERSION//.}"
-    fi
     touch "${FILE_INFO}"
     {
         echo "script_version=1.0"
