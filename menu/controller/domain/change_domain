@@ -12,7 +12,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	username=$(grep "username" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=');
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
 	if [[ -z "${username}" ]]; then
 		username=${domain//[-._]/}
@@ -54,8 +54,8 @@ server {
     root /home/${username}/${newdomain}/public_html/public;
     index index.php index.html index.htm;
 
-    ${rewrite:?}
-    ${cache:?}
+    ${rewrite}
+    ${cache}
 
     location ~ \.php\$ {
         try_files \$uri =404;
@@ -66,7 +66,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass:?}
+            ${fastcgi_pass}
         }
     }
 
@@ -77,8 +77,8 @@ END
 
 change_phpconfig(){
 	php_conf_path="/etc/php-fpm.d"
-	if [[ "${php2_release:?}" == "yes" && "${php_mode}" == "2" ]]; then
-        php_conf_path="/etc/opt/remi/${php2_version:?}/php-fpm.d"
+	if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+        php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
         if [[ "${php2_version}" == "php56" ]]; then
             php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
         fi

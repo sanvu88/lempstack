@@ -128,7 +128,7 @@ select_php_ver(){
 }
 
 check_duplicate_php(){
-    if [[ "${php2_version}" == "${php1_version:?}" ]]; then
+    if [[ "${php2_version}" == "${php1_version}" ]]; then
         ALERT=$(printf "${RED}Phien ban PHP thu 2 trung voi phien ban mac dinh. Huy cai dat.${NC}\n")
     fi
 }

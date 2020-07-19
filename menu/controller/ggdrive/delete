@@ -17,7 +17,7 @@ confirm_destroy(){
 
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
-    selects=$(rclone lsf "${remote:?}":"${IPADDRESS}")
+    selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     for entry in ${selects}; do
     	select=${entry///}
         dates+=("${select}")

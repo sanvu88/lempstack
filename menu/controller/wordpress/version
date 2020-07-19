@@ -12,7 +12,7 @@
 source /var/hostvn/menu/helpers/function
 
 check_version(){
-	username=$(grep "username" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
+	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 	cd_dir /home/"${username}"/"${domain}"/public_html/
 	clear
 	printf "${GREEN}Phien ban WordPress dang su dung: %s ${NC}\n" "$(wp core version --allow-root)"

@@ -13,7 +13,7 @@ source /var/hostvn/menu/helpers/function
 
 _run(){
 	select_domain
-    plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
+    plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     if [[ -z "${ALERT}" ]]; then
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[ ${plugins_seo_current} == "rank_math_seo" ]]; then

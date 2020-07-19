@@ -32,6 +32,8 @@ set_var(){
     db_pass=$(gen_pass "$@")
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""
+    plugins_seo=""
+    plugins_cache=""
     plugin_cache="other"
     php_mode="1"
     wp_secure=""
@@ -49,8 +51,8 @@ validate(){
 }
 
 set_php_version(){
-    php1="php${php1_version:?}"
-    php2=${php2_version:?}
+    php1="${php1_version}"
+    php2=${php2_version}
 }
 
 select_php(){
@@ -104,7 +106,7 @@ define( 'WP_CACHE', true);
 PHP
 
         # Install WordPress
-        wp core install --url="${domain}" --title="${site_name:?}" --admin_user="${admin_user:?}" --admin_password="${admin_pwd:?}" --admin_email="${admin_email:?}" --allow-root
+        wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
 
         # Create robots.txt
         cat > "/home/$username/$domain/public_html/robots.txt" <<END
@@ -123,7 +125,7 @@ END
 }
 
 browser_cache(){
-    if [[ "${plugins_cache:?}" == "w3c" ]]; then
+    if [[ "${plugins_cache}" == "w3c" ]]; then
         plugin_cache="w3c"
         cache="include /etc/nginx/wordpress/w3c.conf;"
         wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
@@ -229,7 +231,7 @@ set_phpconf_var(){
     wsdl_cache_dir="/home/${username}/php/wsdlcache"
     open_basedir="/home/${username}/:/dev/urandom:/usr/share/php/:/dev/shm"
 
-    if [[ "${php2_release:?}" == "yes" && "${php_mode}" == "2" ]]; then
+    if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
         listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
         open_basedir="/home/${username}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
@@ -300,7 +302,7 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         browser_cache
         brute_force_wp
-        if [[ "${plugins_seo:?}" == "yoast_seo" ]]; then
+        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
         elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
@@ -335,7 +337,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass:?}
+            ${fastcgi_pass}
         }
     }
     include /etc/nginx/extra/security.conf;

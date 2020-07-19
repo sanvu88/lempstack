@@ -17,7 +17,7 @@ printf "${GREEN}-------------------${NC}\n"
 echo
 
 set_variable(){
-    username=$(grep "username" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
+    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     cache="include /etc/nginx/extra/staticfiles.conf;"
@@ -108,7 +108,7 @@ create_ssl_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         check_plugins_cache
         brute_force_wp
-        if [[ "${plugins_seo:?}" == "yoast_seo" ]]; then
+        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
             sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
             echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
@@ -163,7 +163,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass:?}
+            ${fastcgi_pass}
         }
     }
 

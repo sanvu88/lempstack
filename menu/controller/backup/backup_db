@@ -12,7 +12,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	db_name=$(grep "db_name" "${USER_DIR}/.${domain:?}.conf" | cut -f2 -d'=')
+	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 backup(){
@@ -23,7 +23,7 @@ backup(){
 	if [ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
 	    rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
 	fi
-	mysqldump -uadmin -p"${mysql_pwd:?}" "${db_name}" > "${db_name}".sql
+	mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 }
 
 run(){

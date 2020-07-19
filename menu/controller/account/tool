@@ -10,13 +10,13 @@
 
 show_info(){
 	printf "Admin user                   : admin\n"
-	printf "Admin PORT                   : %s\n"  "${admin_port:?}"
-	printf "Mat khau Admin tool          : %s\n"  "${admin_pwd:?}"
+	printf "Admin PORT                   : %s\n"  "${admin_port}"
+	printf "Mat khau Admin tool          : %s\n"  "${admin_pwd}"
 	printf "Opcache Dashboard            : %s\n" "http://${IPADDRESS}:${admin_port}/opcache"
 	printf "php Memcached Admin          : %s\n" "http://${IPADDRESS}:${admin_port}/memcached"
 	printf "php Reids Admin              : %s\n" "http://${IPADDRESS}:${admin_port}/redis"
 	printf "Server Info                  : %s\n" "http://${IPADDRESS}:${admin_port}/serverinfo"
-	printf "Link CSF GUI                 : %s\n" "https://${IPADDRESS}:${csf_port:?}"
+	printf "Link CSF GUI                 : %s\n" "https://${IPADDRESS}:${csf_port}"
 }
 
 show_info

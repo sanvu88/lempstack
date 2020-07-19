@@ -109,11 +109,11 @@ memory_calculation(){
 }
 
 check_duplicate_php(){
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php_version}" == "${php1_version:?}" ]]; then
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php_version}" == "${php1_version}" ]]; then
         ALERT=$(printf "${RED}Phien ban PHP mac dinh ban muon thay giong phien ban hien tai. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_new:?}" ]]; then
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_new}" ]]; then
     	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
     fi
 

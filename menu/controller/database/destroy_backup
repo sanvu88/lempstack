@@ -16,7 +16,7 @@ confirm_delete(){
 }
 
 delete(){
-	rm -rf /home/backup/"${date:?}"/"${domain:?}"/"${domain}".sql
+	rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql
 }
 
 run(){

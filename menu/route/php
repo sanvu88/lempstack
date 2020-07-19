@@ -34,7 +34,7 @@ do
     case ${CHOICE} in
         1) php -v; menu_php ;;
         2)
-            if [[ "${php2_release:?}" != "yes" ]]; then
+            if [[ "${php2_release}" != "yes" ]]; then
                 printf "${RED}Ban chua cai dat phien ban PHP thu 2.${NC}\n"
             else
                 php2_ver=$(grep "php2_version" "${FILE_INFO}" | cut -f2 -d'=')
@@ -47,7 +47,7 @@ do
         3)
             yum -y update php-fpm;
             if [[ "${php2_release}" == "yes" ]]; then
-                yum -y update "${php2_version:?}"-php-fpm
+                yum -y update "${php2_version}"-php-fpm
             fi
             menu_php
             ;;

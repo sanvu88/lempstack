@@ -28,7 +28,7 @@ for users in /home/*; do
 						fi
 						rm -rf /home/backup/"${DATE}"/"${domain}"/*
 						cd_dir /home/backup/"${DATE}"/"${domain}"
-						mysqldump -uadmin -p"${mysql_pwd:?}" "${db_name}" > "${db_name}".sql
+						mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 
 						cd_dir /home/"${user}"/"${domain}"
 						tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
@@ -39,8 +39,8 @@ for users in /home/*; do
 	fi
 done
 
-rclone copy /home/backup "${remote:?}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
+rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
 rm -rf /home/backup/*
 
-rclone -q --min-age "${backup_num:?}"d delete "${remote}:$IPADDRESS" >> /var/log/rclone.log 2>&1
+rclone -q --min-age "${backup_num}"d delete "${remote}:$IPADDRESS" >> /var/log/rclone.log 2>&1
 rclone -q --min-age "${backup_num}"d rmdirs "${remote}:$IPADDRESS" >> /var/log/rclone.log 2>&1

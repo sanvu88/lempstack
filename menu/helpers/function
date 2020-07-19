@@ -140,23 +140,23 @@ set_rewrite(){
 }
 
 fastcgi(){
-    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username:?}.sock;"
+    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
 
-    if [[ "${php_mode:?}" == "2" ]]; then
-        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version:?}/root/var/run/php-fpm/${username}.sock;"
+    if [[ "${php_mode}" == "2" ]]; then
+        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
 }
 
 restart_service(){
     systemctl restart nginx.service
     systemctl restart php-fpm.service
-    if [ "${php2_release:?}" == "yes" ]; then
+    if [ "${php2_release}" == "yes" ]; then
         systemctl restart "${php2_version}"-php-fpm
     fi
 }
 
 make_backup_dir(){
-    if [[ ! -d "/home/backup/${DATE:?}/${1}" ]]; then
+    if [[ ! -d "/home/backup/${DATE}/${1}" ]]; then
         mkdir -p /home/backup/"${DATE}"/"${1}"
     fi
 }
@@ -182,7 +182,7 @@ list_backup(){
 }
 
 empty_db(){
-    tables=$(mysql "${db_name:?}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
+    tables=$(mysql "${db_name}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
     for t in ${tables}
     do
         mysql "${db_name}" -e "drop table ${t}"

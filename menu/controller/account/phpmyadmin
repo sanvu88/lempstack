@@ -10,8 +10,8 @@
 
 show_info(){
 	printf "User phpMyAdmin              : admin\n"
-	printf "Mat khau phpMyAdmin          : %s\n"  "${mysql_pwd:?}"
-	printf "Link phpMyAdmin              : %s\n" "http://${IPADDRESS}:${admin_port:?}/phpmyadmin"
+	printf "Mat khau phpMyAdmin          : %s\n"  "${mysql_pwd}"
+	printf "Link phpMyAdmin              : %s\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
 }
 
 show_info

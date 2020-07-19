@@ -25,8 +25,8 @@ clear_cache(){
 
 	systemctl restart php-fpm
 
-	if [[ "${php2_release:?}" == "yes" ]]; then
-		systemctl restart "${php2_version:?}"-php-fpm
+	if [[ "${php2_release}" == "yes" ]]; then
+		systemctl restart "${php2_version}"-php-fpm
 	fi
 
 	printf "${GREEN}Xoa cache thanh cong.${NC}\n"

@@ -20,7 +20,7 @@ set_var(){
 browser_cache(){
 	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
 	plugin_cache="other"
-    if [[ "${plugins_cache:?}" == "w3c" ]]; then
+    if [[ "${plugins_cache}" == "w3c" ]]; then
         plugin_cache="w3c"
         set_cache="include /etc/nginx/wordpress/w3c.conf;"
     elif [[ "${plugins_cache}" == "wpfc" ]]; then

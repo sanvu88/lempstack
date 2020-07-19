@@ -10,7 +10,7 @@
 
 select_date(){
 	echo "Chon ngay: "
-    selects=$(rclone lsf "${remote:?}":"${IPADDRESS}")
+    selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     dates=()
     for entry in ${selects}; do
     	select=${entry///}

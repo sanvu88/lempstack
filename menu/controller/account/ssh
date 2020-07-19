@@ -9,7 +9,7 @@
 #################################################
 
 show_info(){
-	printf "SSH PORT                     : %s\n" "${ssh_port:?}"
+	printf "SSH PORT                     : %s\n" "${ssh_port}"
 }
 
 show_info

@@ -23,7 +23,7 @@ set_var(){
 select_backup(){
 	echo "Chon ngay ban muon khoi phuc: "
 	  dates=()
-    selects=$(rclone lsf "${remote:?}":"${IPADDRESS}")
+    selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     for entry in ${selects}; do
     	select=${entry///}
         dates+=("${select}")
@@ -79,7 +79,7 @@ restore_source(){
 
 restore_db(){
 	cd_dir /home/backup/"${date}"/"${domain}"
-	mysql -uadmin -p"${mysql_pwd:?}" "${db_name}" < "${db_name}".sql
+	mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
 }
 
 _run(){

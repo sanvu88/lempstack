@@ -30,7 +30,7 @@ for users in /home/*; do
 						fi
 						rm -rf /home/backup/"${DATE}"/"${domain}"/*
 						cd_dir /home/backup/"${DATE}"/"${domain}"
-						mysqldump -uadmin -p"${mysql_pwd:?}" "${db_name}" > "${db_name}".sql
+						mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 
 						cd_dir /home/"${user}"/"${domain}"
 						tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"

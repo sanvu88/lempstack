@@ -25,7 +25,7 @@ backup(){
 	fi
 	if [ ! -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
 	    cd_dir /home/backup/"${DATE}"/"${domain}"
-      mysqldump -uadmin -p"${mysql_pwd:?}" "${db_name}" > "${db_name}".sql
+      mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 	fi
 }
 
@@ -54,7 +54,7 @@ _run(){
 			fi
 		done
 
-		rclone copy /home/backup "${remote:?}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
+		rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
 		rm -rf /home/backup/*
 		clear
 		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
