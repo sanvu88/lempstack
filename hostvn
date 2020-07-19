@@ -835,7 +835,30 @@ create_wp_cache_conf(){
 location ~ xmlrpc.php { deny all; access_log off; log_not_found off; }
 EOxmlrpc
 
+    cat >> "/etc/nginx/wordpress/disable_user_api.conf" << EOuser_api
+#Block API User
+location ~* /wp-json/wp/v2/users {
+    allow 127.0.0.1;
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+EOuser_api
+
+cat >> "/etc/nginx/wordpress/webp_image.conf" << EOwebp_image
+# webp extension
+location ~ ^/wp-content/uploads/ {
+    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
+        expires 30d;
+        add_header Vary "Accept";
+        add_header Cache-Control "public, no-transform";
+        try_files \$uri\$webp_extension \$uri =404;
+    }
+}
+EOwebp_image
+
     cat >> "/etc/nginx/wordpress/wordpress_secure.conf" << EOwpsecure
+include /etc/nginx/wordpress/disable_user_api.conf;
 rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 
 # Reduce Comment Spam
@@ -872,14 +895,6 @@ location ~* ^/(?:xmlrpc\.php|wp-links-opml\.php|wp-config\.php|wp-config-sample\
     deny all;
 }
 
-#Block API User
-location ~* /wp-json/wp/v2/users {
-    allow 127.0.0.1;
-    deny all;
-    access_log off;
-    log_not_found off;
-}
-
 # enable gzip on static assets - php files are forbidden
 location /wp-content/cache {
 # Cache css & js files
@@ -898,16 +913,6 @@ location /wp-content/cache {
 # Protect Easy Digital Download files from being accessed directly.
 location ~ ^/wp-content/uploads/edd/(.*?)\.zip\$ {
     rewrite / permanent;
-}
-
-# webp extension
-location ~ ^/wp-content/uploads/ {
-    location ~* ^/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
-        expires 30d;
-        add_header Vary "Accept";
-        add_header Cache-Control "public, no-transform";
-        try_files \$uri\$webp_extension \$uri =404;
-    }
 }
 EOwpsecure
 
@@ -1833,6 +1838,7 @@ cat >> "${REWRITE_CONFIG_PATH}/wordpress.conf" << EOwordpress
 location / {
     try_files \$uri \$uri/ /index.php?\$args;
 }
+include /etc/nginx/wordpress/webp_image.conf;
 EOwordpress
 
 cat >> "${REWRITE_CONFIG_PATH}/prestashop.conf" << EOprestashop
