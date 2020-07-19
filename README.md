@@ -52,9 +52,10 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Chống Bruteforce wp-admin.
 - BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web) và menu quản lý CSF.
 - Disable User API trên WordPress tránh lộ thông tin User (Sẽ phát triển menu bật tắt disable).
-- Thay đổi Port SSH.
-- Thay đổi port Admin.
-- Thay đổi port FTP.
+- Menu thay đổi Port SSH.
+- Menu thay đổi port Admin.
+- Menu thay đổi port FTP.
+- Tự động tạo mật khẩu mạnh.
 - And More ...
 
 ### 1.4. Quản lý WordPress
