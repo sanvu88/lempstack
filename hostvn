@@ -13,7 +13,7 @@
 # Set variables
 OS_VER=$(rpm -E %centos)
 OS_ARCH=$(uname -m)
-IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+IPADDRESS=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
 DIR=$(pwd)
 BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
@@ -60,7 +60,7 @@ WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat ${PHP_VE
 SELECT_INST_PHP_2="Ban co muon cai dat phien ban PHP thu hai khong - Multiple PHP ?"
 ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
 WRONG_PHP_SELECT_2="Ban nhap sai. He thong se cai mot phien ban PHP."
-WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat PHP 5.6"
+WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat ${PHP_VERSION_2}"
 SELECT_PHP_2="Lua chon phien ban PHP thu hai ban muon su dung:"
 INST_MARIADB_ERR="Cai dat MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
 INST_NGINX_ERR="Cai dat Nginx that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
@@ -159,7 +159,6 @@ set_dns(){
     sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
     {
         echo "nameserver 8.8.8.8"
-        echo "nameserver 1.1.1.1"
     } >> /etc/resolv.conf
 }
 
@@ -198,7 +197,7 @@ prepare_install(){
     config_selinux
     set_timezone
     set_os_arch
-    #set_dns
+    set_dns
     create_log
     ssh_login_noti
     set_email
@@ -280,7 +279,7 @@ install_php(){
         dnf module enable php:remi-"${PHP1_VERSION}" -y
         dnf config-manager --set-enabled PowerTools
     else
-        yum-config-manager --enable remi-"${PHP1_VERSION}"
+        yum-config-manager --enable remi-"${PHP_VERSION}"
     fi
 
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
@@ -314,7 +313,7 @@ select_php_ver_2(){
     do
         case $opt in
             "${opt}") PHP_VERSION_2="${opt/.}"; break;;
-            *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; break;;
+            *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; PHP_VERSION_2=${PHP_VERSION_2}; break;;
         esac
     done
 }
