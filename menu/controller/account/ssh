@@ -8,6 +8,8 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+
 show_info(){
 	printf "SSH PORT                     : %s\n" "${ssh_port}"
 }

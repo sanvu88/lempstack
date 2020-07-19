@@ -10,10 +10,6 @@
 
 # shellcheck disable=SC2034
 
-# LEMP variables common
-# Version: 1.0
-# Author: Sanvv
-
 # Color
 RED='\033[0;31m'
 GREEN='\033[0;32m'

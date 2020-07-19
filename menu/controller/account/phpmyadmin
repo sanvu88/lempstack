@@ -8,6 +8,8 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+
 show_info(){
 	printf "User phpMyAdmin              : admin\n"
 	printf "Mat khau phpMyAdmin          : %s\n"  "${mysql_pwd}"

@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
@@ -47,6 +48,6 @@ for D in /home/backup/*; do
 	[[ -d "${D}" ]] || continue
 	folder=${D##*/}
 	if [[ ${folder} -ne ${old_backup} ]]; then
-		rm -rf /home/backup/${folder}
+		rm -rf /home/backup/"${folder}"
 	fi
 done

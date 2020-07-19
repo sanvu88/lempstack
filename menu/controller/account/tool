@@ -8,6 +8,8 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+
 show_info(){
 	printf "Admin user                   : admin\n"
 	printf "Admin PORT                   : %s\n"  "${admin_port}"

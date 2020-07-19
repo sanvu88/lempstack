@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC2034
 # shellcheck disable=SC1091

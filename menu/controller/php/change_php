@@ -163,7 +163,7 @@ remove_old_php(){
 	if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
 		yum -y remove php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
-        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc \
+        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc php-devel \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
@@ -172,7 +172,7 @@ remove_old_php(){
     if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
     	yum -y remove "${php2_new}" "${php2_new}"-php-fpm "${php2_new}"-php-ldap "${php2_new}"-php-zip "${php2_new}"-php-embedded "${php2_new}"-php-cli "${php2_new}"-php-mysql "${php2_new}"-php-common "${php2_new}"-php-gd "${php2_new}"-php-xml "${php2_new}"-php-mbstring \
         "${php2_new}"-php-mcrypt "${php2_new}"-php-pdo "${php2_new}"-php-soap "${php2_new}"-php-json "${php2_new}"-php-simplexml "${php2_new}"-php-process "${php2_new}"-php-curl "${php2_new}"-php-bcmath "${php2_new}"-php-snmp "${php2_new}"-php-pspell "${php2_new}"-php-gmp \
-        "${php2_new}"-php-intl "${php2_new}"-php-imap "${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc \
+        "${php2_new}"-php-intl "${php2_new}"-php-imap "${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc "${php2_new}"-php-devel \
         "${php2_new}"-php-tidy "${php2_new}"-php-opcache "${php2_new}"-php-cli "${php2_new}"-php-pecl-zip "${php2_new}"-php-dom "${php2_new}"-php-ssh2 "${php2_new}"-php-xmlreader "${php2_new}"-php-date "${php2_new}"-php-exif "${php2_new}"-php-filter "${php2_new}"-php-ftp \
         "${php2_new}"-php-hash "${php2_new}"-php-iconv "${php2_new}"-php-libxml "${php2_new}"-php-pecl-imagick "${php2_new}"-php-mysqlnd "${php2_new}"-php-openssl "${php2_new}"-php-pcre "${php2_new}"-php-posix "${php2_new}"-php-sockets "${php2_new}"-php-spl \
         "${php2_new}"-php-tokenizer "${php2_new}"-php-bz2 "${php2_new}"-php-pgsql "${php2_new}"-php-sqlite3 "${php2_new}"-php-fileinfo
@@ -197,7 +197,7 @@ install_php(){
 
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
-        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc \
+        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc php-devel \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
@@ -405,7 +405,7 @@ EOopcache_blacklist
 install_php_2(){
     yum -y install "${php2_new}" "${php2_new}"-php-fpm "${php2_new}"-php-ldap "${php2_new}"-php-zip "${php2_new}"-php-embedded "${php2_new}"-php-cli "${php2_new}"-php-mysql "${php2_new}"-php-common "${php2_new}"-php-gd "${php2_new}"-php-xml "${php2_new}"-php-mbstring \
     "${php2_new}"-php-mcrypt "${php2_new}"-php-pdo "${php2_new}"-php-soap "${php2_new}"-php-json "${php2_new}"-php-simplexml "${php2_new}"-php-process "${php2_new}"-php-curl "${php2_new}"-php-bcmath "${php2_new}"-php-snmp "${php2_new}"-php-pspell "${php2_new}"-php-gmp \
-    "${php2_new}"-php-intl "${php2_new}"-php-imap ${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc \
+    "${php2_new}"-php-intl "${php2_new}"-php-imap "${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc "${php2_new}"-php-devel \
     "${php2_new}"-php-tidy "${php2_new}"-php-opcache "${php2_new}"-php-cli "${php2_new}"-php-pecl-zip "${php2_new}"-php-dom "${php2_new}"-php-ssh2 "${php2_new}"-php-xmlreader "${php2_new}"-php-date "${php2_new}"-php-exif "${php2_new}"-php-filter "${php2_new}"-php-ftp \
     "${php2_new}"-php-hash "${php2_new}"-php-iconv "${php2_new}"-php-libxml "${php2_new}"-php-pecl-imagick "${php2_new}"-php-mysqlnd "${php2_new}"-php-openssl "${php2_new}"-php-pcre "${php2_new}"-php-posix "${php2_new}"-php-sockets "${php2_new}"-php-spl \
     "${php2_new}"-php-tokenizer "${php2_new}"-php-bz2 "${php2_new}"-php-pgsql "${php2_new}"-php-sqlite3 "${php2_new}"-php-fileinfo
