@@ -113,15 +113,15 @@ check_duplicate_php(){
         ALERT=$(printf "${RED}Phien ban PHP mac dinh ban muon thay giong phien ban hien tai. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_version:?}" ]]; then
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_new:?}" ]]; then
     	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php_version}" == "${php_version2}" ]]; then
+    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php_version}" == "${php2_new}" ]]; then
     	ALERT=$(printf "${RED}Hai phien ban PHP ban chon trung nhau. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php_version2}" == "${php2_version}" ]]; then
+    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php2_new}" == "${php2_new}" ]]; then
     	ALERT=$(printf "${RED}Phien ban PHP thu 2 ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
     fi
 }
@@ -136,15 +136,10 @@ select_php_ver(){
 	    select opt in "${PHP_LIST[@]}"
 	    do
 	        case $opt in
-	            "${opt}") php_version="${opt/.}"; break;;
+	            "${opt}") php1_new="${opt/.}"; break;;
 	            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 	        esac
 	    done
-
-	    if [[ "${OS_VER}" -eq 8 ]]; then
-          php_version=${php_version//php}
-          php_version=$(echo "${php_version}" | fold -w1 | paste -sd'.')
-      fi
 	fi
 
     prompt_php2="n"
@@ -156,7 +151,7 @@ select_php_ver(){
 		    select opt2 in "${PHP_LIST[@]}"
 		    do
 		        case ${opt2} in
-		            "${opt2}") php_version2="${opt2/.}"; break;;
+		            "${opt2}") php2_new="${opt2/.}"; break;;
 		            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
 		        esac
 		    done
@@ -168,35 +163,41 @@ remove_old_php(){
 	if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
 		yum -y remove php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
-        php-intl php-imap perl-LWP-Protocol-https php-pear-Net-SMTP php-enchant php-pear php-devel php-zlib php-xmlrpc \
+        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
 	fi
 
     if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
-    	yum -y remove "${php2_version}" "${php2_version}"-php-fpm "${php2_version}"-php-ldap "${php2_version}"-php-zip "${php2_version}"-php-embedded "${php2_version}"-php-cli "${php2_version}"-php-mysql "${php2_version}"-php-common "${php2_version}"-php-gd "${php2_version}"-php-xml "${php2_version}"-php-mbstring \
-        "${php2_version}"-php-mcrypt "${php2_version}"-php-pdo "${php2_version}"-php-soap "${php2_version}"-php-json "${php2_version}"-php-simplexml "${php2_version}"-php-process "${php2_version}"-php-curl "${php2_version}"-php-bcmath "${php2_version}"-php-snmp "${php2_version}"-php-pspell "${php2_version}"-php-gmp \
-        "${php2_version}"-php-intl "${php2_version}"-php-imap perl-LWP-Protocol-https "${php2_version}"-php-pear-Net-SMTP "${php2_version}"-php-enchant "${php2_version}"-php-pear "${php2_version}"-php-devel "${php2_version}"-php-zlib "${php2_version}"-php-xmlrpc \
-        "${php2_version}"-php-tidy "${php2_version}"-php-opcache "${php2_version}"-php-cli "${php2_version}"-php-pecl-zip "${php2_version}"-php-dom "${php2_version}"-php-ssh2 "${php2_version}"-php-xmlreader "${php2_version}"-php-date "${php2_version}"-php-exif "${php2_version}"-php-filter "${php2_version}"-php-ftp \
-        "${php2_version}"-php-hash "${php2_version}"-php-iconv "${php2_version}"-php-libxml "${php2_version}"-php-pecl-imagick "${php2_version}"-php-mysqlnd "${php2_version}"-php-openssl "${php2_version}"-php-pcre "${php2_version}"-php-posix "${php2_version}"-php-sockets "${php2_version}"-php-spl \
-        "${php2_version}"-php-tokenizer "${php2_version}"-php-bz2 "${php2_version}"-php-pgsql "${php2_version}"-php-sqlite3 "${php2_version}"-php-fileinfo
+    	yum -y remove "${php2_new}" "${php2_new}"-php-fpm "${php2_new}"-php-ldap "${php2_new}"-php-zip "${php2_new}"-php-embedded "${php2_new}"-php-cli "${php2_new}"-php-mysql "${php2_new}"-php-common "${php2_new}"-php-gd "${php2_new}"-php-xml "${php2_new}"-php-mbstring \
+        "${php2_new}"-php-mcrypt "${php2_new}"-php-pdo "${php2_new}"-php-soap "${php2_new}"-php-json "${php2_new}"-php-simplexml "${php2_new}"-php-process "${php2_new}"-php-curl "${php2_new}"-php-bcmath "${php2_new}"-php-snmp "${php2_new}"-php-pspell "${php2_new}"-php-gmp \
+        "${php2_new}"-php-intl "${php2_new}"-php-imap "${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc \
+        "${php2_new}"-php-tidy "${php2_new}"-php-opcache "${php2_new}"-php-cli "${php2_new}"-php-pecl-zip "${php2_new}"-php-dom "${php2_new}"-php-ssh2 "${php2_new}"-php-xmlreader "${php2_new}"-php-date "${php2_new}"-php-exif "${php2_new}"-php-filter "${php2_new}"-php-ftp \
+        "${php2_new}"-php-hash "${php2_new}"-php-iconv "${php2_new}"-php-libxml "${php2_new}"-php-pecl-imagick "${php2_new}"-php-mysqlnd "${php2_new}"-php-openssl "${php2_new}"-php-pcre "${php2_new}"-php-posix "${php2_new}"-php-sockets "${php2_new}"-php-spl \
+        "${php2_new}"-php-tokenizer "${php2_new}"-php-bz2 "${php2_new}"-php-pgsql "${php2_new}"-php-sqlite3 "${php2_new}"-php-fileinfo
     fi
 }
 
 install_php(){
     if [ "${OS_VER}" -eq 8 ]; then
+        # New version
+        php1_new_cent8=${php1_new//php}
+        php1_new_cent8=$(echo "${php1_new_cent8}" | fold -w1 | paste -sd'.')
+
+        # Current version
         php1_version=${php1_version//php}
         php1_version=$(echo "${php1_version}" | fold -w1 | paste -sd'.')
-        sudo dnf module reset php:remi-"${php1_version}" -y
-        dnf module enable php:remi-"${php_version}" -y
+
+        dnf module reset php:remi-"${php1_version}" -y
+        dnf module enable php:remi-"${php1_new_cent8}" -y
     else
-        yum-config-manager --enable remi-"${php_version}"
+        yum-config-manager --enable remi-"${php1_new}"
     fi
 
     yum -y install php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
-        php-intl php-imap perl-LWP-Protocol-https php-pear-Net-SMTP php-enchant php-pear php-devel php-zlib php-xmlrpc \
+        php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
@@ -204,7 +205,7 @@ install_php(){
 
 # Install igbinary
 install_igbinary(){
-    if [[ "${php_version}" == "php56" ]]; then
+    if [[ "${php1_new}" == "php56" ]]; then
         IGBINARY_VERSION="2.0.8"
     fi
 
@@ -226,7 +227,7 @@ EOF
 }
 
 install_php_memcached(){
-    if [[ "${php_version}" == "php56" ]]; then
+    if [[ "${php1_new}" == "php56" ]]; then
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
@@ -248,7 +249,7 @@ EOF
 }
 
 install_php_redis(){
-    if [[ "${php_version}" == "php56" ]]; then
+    if [[ "${php1_new}" == "php56" ]]; then
         PHP_REDIS_VERSION="4.3.0"
     fi
 
@@ -260,9 +261,9 @@ install_php_redis(){
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
     if [[ -f "/usr/lib64/php/modules/redis.so" ]]; then
-    	if [[ -f "/etc/php.d/50-redis.ini" ]]; then
-    		rm -rf /etc/php.d/50-redis.ini
-    	fi
+    	  if [[ -f "/etc/php.d/50-redis.ini" ]]; then
+    		    rm -rf /etc/php.d/50-redis.ini
+    	  fi
         cat >> "/etc/php.d/50-redis.ini" << EOF
 extension=redis.so
 EOF
@@ -402,31 +403,31 @@ EOopcache_blacklist
 }
 
 install_php_2(){
-    yum -y install "${php_version2}" "${php_version2}"-php-fpm "${php_version2}"-php-ldap "${php_version2}"-php-zip "${php_version2}"-php-embedded "${php_version2}"-php-cli "${php_version2}"-php-mysql "${php_version2}"-php-common "${php_version2}"-php-gd "${php_version2}"-php-xml "${php_version2}"-php-mbstring \
-    "${php_version2}"-php-mcrypt "${php_version2}"-php-pdo "${php_version2}"-php-soap "${php_version2}"-php-json "${php_version2}"-php-simplexml "${php_version2}"-php-process "${php_version2}"-php-curl "${php_version2}"-php-bcmath "${php_version2}"-php-snmp "${php_version2}"-php-pspell "${php_version2}"-php-gmp \
-    "${php_version2}"-php-intl "${php_version2}"-php-imap perl-LWP-Protocol-https "${php_version2}"-php-pear-Net-SMTP "${php_version2}"-php-enchant "${php_version2}"-php-pear "${php_version2}"-php-devel "${php_version2}"-php-zlib "${php_version2}"-php-xmlrpc \
-    "${php_version2}"-php-tidy "${php_version2}"-php-opcache "${php_version2}"-php-cli "${php_version2}"-php-pecl-zip "${php_version2}"-php-dom "${php_version2}"-php-ssh2 "${php_version2}"-php-xmlreader "${php_version2}"-php-date "${php_version2}"-php-exif "${php_version2}"-php-filter "${php_version2}"-php-ftp \
-    "${php_version2}"-php-hash "${php_version2}"-php-iconv "${php_version2}"-php-libxml "${php_version2}"-php-pecl-imagick "${php_version2}"-php-mysqlnd "${php_version2}"-php-openssl "${php_version2}"-php-pcre "${php_version2}"-php-posix "${php_version2}"-php-sockets "${php_version2}"-php-spl \
-    "${php_version2}"-php-tokenizer "${php_version2}"-php-bz2 "${php_version2}"-php-pgsql "${php_version2}"-php-sqlite3 "${php_version2}"-php-fileinfo
+    yum -y install "${php2_new}" "${php2_new}"-php-fpm "${php2_new}"-php-ldap "${php2_new}"-php-zip "${php2_new}"-php-embedded "${php2_new}"-php-cli "${php2_new}"-php-mysql "${php2_new}"-php-common "${php2_new}"-php-gd "${php2_new}"-php-xml "${php2_new}"-php-mbstring \
+    "${php2_new}"-php-mcrypt "${php2_new}"-php-pdo "${php2_new}"-php-soap "${php2_new}"-php-json "${php2_new}"-php-simplexml "${php2_new}"-php-process "${php2_new}"-php-curl "${php2_new}"-php-bcmath "${php2_new}"-php-snmp "${php2_new}"-php-pspell "${php2_new}"-php-gmp \
+    "${php2_new}"-php-intl "${php2_new}"-php-imap ${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc \
+    "${php2_new}"-php-tidy "${php2_new}"-php-opcache "${php2_new}"-php-cli "${php2_new}"-php-pecl-zip "${php2_new}"-php-dom "${php2_new}"-php-ssh2 "${php2_new}"-php-xmlreader "${php2_new}"-php-date "${php2_new}"-php-exif "${php2_new}"-php-filter "${php2_new}"-php-ftp \
+    "${php2_new}"-php-hash "${php2_new}"-php-iconv "${php2_new}"-php-libxml "${php2_new}"-php-pecl-imagick "${php2_new}"-php-mysqlnd "${php2_new}"-php-openssl "${php2_new}"-php-pcre "${php2_new}"-php-posix "${php2_new}"-php-sockets "${php2_new}"-php-spl \
+    "${php2_new}"-php-tokenizer "${php2_new}"-php-bz2 "${php2_new}"-php-pgsql "${php2_new}"-php-sqlite3 "${php2_new}"-php-fileinfo
 
     php2_release="yes"
-    php2_ini_path="/etc/opt/remi/${php_version2}/php.d"
-    php2_module_dir="/opt/remi/${php_version2}/root/usr/lib64/php/modules"
+    php2_ini_path="/etc/opt/remi/${php2_new}/php.d"
+    php2_module_dir="/opt/remi/${php2_new}/root/usr/lib64/php/modules"
 
-    if [[ ${php_version2} == "php56" ]]; then
-        php2_ini_path="/opt/remi/${php_version2}/root/etc/php.d"
+    if [[ ${php2_new} == "php56" ]]; then
+        php2_ini_path="/opt/remi/${php2_new}/root/etc/php.d"
     fi
 }
 
 install_igbinary_2(){
-    if [[ "${php_version2}" == "php56" ]]; then
+    if [[ "${php2_new}" == "php56" ]]; then
         IGBINARY_VERSION="2.0.8"
     fi
 
     cd_dir /root && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir /root/igbinary-${IGBINARY_VERSION}
-    /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
+    /opt/remi/"${php2_new}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${php2_new}"/root/usr/bin/php-config
     make && make install
     cd_dir /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
@@ -441,14 +442,14 @@ EOF
 }
 
 install_php_memcached_2(){
-    if [[ "${php_version2}" == "php56" ]]; then
+    if [[ "${php2_new}" == "php56" ]]; then
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir /root/memcached-${PHP_MEMCACHED_VERSION}
-        /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
+        /opt/remi/"${php2_new}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${php2_new}"/root/usr/bin/php-config
         make && make install
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
@@ -463,14 +464,14 @@ EOF
 }
 
 install_php_redis_2(){
-    if [[ "${php_version2}" == "php56" ]]; then
+    if [[ "${php2_new}" == "php56" ]]; then
         PHP_REDIS_VERSION="4.3.0"
     fi
 
     cd /root && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "/root/redis-${PHP_REDIS_VERSION}"
-    /opt/remi/"${php_version2}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${php_version2}"/root/usr/bin/php-config
+    /opt/remi/"${php2_new}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${php2_new}"/root/usr/bin/php-config
     make && make install
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
@@ -485,22 +486,22 @@ EOF
 }
 
 php2_global_config(){
-	php2_fpm_config_file="/etc/opt/remi/${php_version2}/php-fpm.conf"
-    php2_fpm_config_path="/etc/opt/remi/${php_version2}/php-fpm.d"
-    www2_config_file="/etc/opt/remi/${php_version2}/php-fpm.d/www.conf"
+	  php2_fpm_config_file="/etc/opt/remi/${php2_new}/php-fpm.conf"
+    php2_fpm_config_path="/etc/opt/remi/${php2_new}/php-fpm.d"
+    www2_config_file="/etc/opt/remi/${php2_new}/php-fpm.d/www.conf"
 
-    if [[ ${php_version2} == "php56" ]]; then
-        php2_fpm_config_file="/opt/remi/${php_version2}/root/etc/php-fpm.conf"
+    if [[ ${php2_new} == "php56" ]]; then
+        php2_fpm_config_file="/opt/remi/${php2_new}/root/etc/php-fpm.conf"
         php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
-        www2_config_file="/opt/remi/${php_version2}/root/etc/php-fpm.d"
+        www2_config_file="/opt/remi/${php2_new}/root/etc/php-fpm.d"
     fi
 
     if [[ -f "${php2_fpm_config_file}" ]]; then
         rm -rf "${php2_fpm_config_file}"
     fi
 
-    if [[ ! -d "/opt/remi/${php_version2}/root/var/run/php-fpm" ]]; then
-        mkdir -p /opt/remi/"${php_version2}"/root/var/run/php-fpm
+    if [[ ! -d "/opt/remi/${php2_new}/root/var/run/php-fpm" ]]; then
+        mkdir -p /opt/remi/"${php2_new}"/root/var/run/php-fpm
     fi
 
     cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
@@ -511,8 +512,8 @@ php2_global_config(){
 include=${php2_fpm_config_path}/*.conf
 
 [global]
-pid = /opt/remi/${php_version2}/root/var/run/php-fpm/php-fpm.pid
-error_log = /opt/remi/${php_version2}/root/var/log/php-fpm/error.log
+pid = /opt/remi/${php2_new}/root/var/run/php-fpm/php-fpm.pid
+error_log = /opt/remi/${php2_new}/root/var/log/php-fpm/error.log
 log_level = warning
 emergency_restart_threshold = 10
 emergency_restart_interval = 1m
@@ -525,7 +526,7 @@ EOphp_fpm_2_conf
     fi
 cat >> "${www2_config_file}" << EOwww_2_conf
 [www]
-listen = /opt/remi/${php_version2}/root/var/run/php-fpm/php-fpm.sock;
+listen = /opt/remi/${php2_new}/root/var/run/php-fpm/php-fpm.sock;
 listen.backlog = -1
 listen.allowed_clients = 127.0.0.1
 listen.owner = nginx
@@ -542,33 +543,33 @@ pm.max_requests = ${PM_MAX_REQUEST}
 request_terminate_timeout = 300
 rlimit_files = 65536
 rlimit_core = 0
-;slowlog = /opt/remi/${php_version2}/root/var/log/php-fpm/www-slow.log
+;slowlog = /opt/remi/${php2_new}/root/var/log/php-fpm/www-slow.log
 chdir = /
-php_admin_value[error_log] = /opt/remi/${php_version2}/root/var/log/php-fpm/www-error.log
+php_admin_value[error_log] = /opt/remi/${php2_new}/root/var/log/php-fpm/www-error.log
 php_admin_flag[log_errors] = on
 php_value[session.save_handler] = files
-php_value[session.save_path]    = /opt/remi/${php_version2}/root/var/lib/php/session
-php_value[soap.wsdl_cache_dir]  = /opt/remi/${php_version2}/root/var/lib/php/wsdlcache
+php_value[session.save_path]    = /opt/remi/${php2_new}/root/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_new}/root/var/lib/php/wsdlcache
 php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 ;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
 security.limit_extensions = .php
 EOwww_2_conf
 
-    if [[ ! -d "/opt/remi/${php_version2}/root/var/lib/php/session" ]]; then
-        mkdir -p /opt/remi/"${php_version2}"/root/var/lib/php/session
+    if [[ ! -d "/opt/remi/${php2_new}/root/var/lib/php/session" ]]; then
+        mkdir -p /opt/remi/"${php2_new}"/root/var/lib/php/session
     fi
-    if [[ ! -d "/opt/remi/${php_version2}/root/var/lib/php/wsdlcache" ]]; then
-        mkdir -p /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
+    if [[ ! -d "/opt/remi/${php2_new}/root/var/lib/php/wsdlcache" ]]; then
+        mkdir -p /opt/remi/"${php2_new}"/root/var/lib/php/wsdlcache
     fi
-    if [[ ! -d "/opt/remi/${php_version2}/root/var/log/php-fpm" ]]; then
-        mkdir -p /opt/remi/"${php_version2}"/root/var/log/php-fpm
+    if [[ ! -d "/opt/remi/${php2_new}/root/var/log/php-fpm" ]]; then
+        mkdir -p /opt/remi/"${php2_new}"/root/var/log/php-fpm
     fi
-    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/lib/php/session
-    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
-    chown -R nginx:nginx /opt/remi/"${php_version2}"/root/var/log/php-fpm
-    chmod 711 /opt/remi/"${php_version2}"/root/var/lib/php/session
-    chmod 711 /opt/remi/"${php_version2}"/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php2_new}"/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/"${php2_new}"/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php2_new}"/root/var/log/php-fpm
+    chmod 711 /opt/remi/"${php2_new}"/root/var/lib/php/session
+    chmod 711 /opt/remi/"${php2_new}"/root/var/lib/php/wsdlcache
 }
 
 hostvn_custom_ini_2(){
@@ -631,21 +632,21 @@ write_info(){
     fi
     if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
         sed -i '/php1_version=/d' "${FILE_INFO}"
-        echo "php1_version=${php_version}" >> "${FILE_INFO}"
+        echo "php1_version=${php1_new}" >> "${FILE_INFO}"
     fi
 
     if [[ "${php2_release}" == "yes" && "${prompt_php2}" =~ ^([yY])$ ]]; then
-        sed -i '/php2_version=/d' "${FILE_INFO}"
-        echo "php2_version=${php_version2}" >> "${FILE_INFO}"
+        sed -i '/php2_new=/d' "${FILE_INFO}"
+        echo "php2_new=${php2_new}" >> "${FILE_INFO}"
     fi
 }
 
 _run(){
+    set_var
     select_php_ver
     check_duplicate_php
 
     if [[ -z "${ALERT}" ]]; then
-        set_var
         memory_calculation
         remove_old_php
 
@@ -669,8 +670,8 @@ _run(){
             php2_global_config
             hostvn_custom_ini_2
             php_opcache_2
-            systemctl restart "${php_version2}"-php-fpm
-            systemctl enable "${php_version2}"-php-fpm
+            systemctl restart "${php2_new}"-php-fpm
+            systemctl enable "${php2_new}"-php-fpm
         fi
 
         write_info

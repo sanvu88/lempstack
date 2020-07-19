@@ -136,8 +136,8 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Sanvv
 
 ### Contributors
-- mbrother
+- Mbrother GP
 - Thanhnv
-- vouuvhb (mtdev)
+- Vouuvhb (Mtdev)
 - Giapvv
 - Lamhn
