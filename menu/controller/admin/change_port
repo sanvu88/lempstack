@@ -24,30 +24,34 @@ input(){
 }
 
 check_port(){
-	set_var
-	if [ -z "${new_port}" ]; then
-	    ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
-	fi
+    set_var
+    if [ -z "${new_port}" ]; then
+        ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
+    fi
 
-	if [[ ! ${new_port} =~ ^-?[0-9]+$ ]]; then
-	    ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
-	fi
+    if [[ ! ${new_port} =~ ^-?[0-9]+$ ]]; then
+        ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
+    fi
 
-	if [[ "${new_port}" == "${current_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban nhap trung vui Port Admin hien tai.${NC}\n")
-	fi
+    if [[ "${new_port}" == "${current_port}" ]]; then
+        ALERT=$(printf "${RED}Port ban nhap trung vui Port Admin hien tai.${NC}\n")
+    fi
 
-	if [[ "${new_port}" == "${ssh_port}" || "${new_port}" == "${csf_port}" || "${new_port}" == "${ftp_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
-	fi
+    if [[ "${new_port}" == "${ssh_port}" || "${new_port}" == "${csf_port}" || "${new_port}" == "${ftp_port}" ]]; then
+        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    fi
+
+    if ! check_port_exists "${ftp_port}"; then
+        ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
+    fi
 }
 
 change_port(){
-	echo "Dang tien hanh thay đoi port SSH..."
+	  echo "Dang tien hanh thay đoi port SSH..."
    	echo ""
    	sleep 1
-    sed -i 's/,'${current_port}'/,'${new_port}'/g' /etc/csf/csf.conf
-    sed -i 's/'${current_port}'/'${new_port}'/g' /etc/nginx/web_apps.conf
+    sed -i "s/,${current_port}/,${new_port}/g" /etc/csf/csf.conf
+    sed -i "s/${current_port}/${new_port}/g" /etc/nginx/web_apps.conf
     sed -i '/admin_port=/d' "${FILE_INFO}"
     echo "admin_port=${new_port}" >> "${FILE_INFO}"
     csf -x
@@ -59,14 +63,14 @@ change_port(){
 }
 
 _run(){
-	input
-	check_port
-	if [ -z "${ALERT}" ]; then
-		change_port
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+    input
+    check_port
+    if [ -z "${ALERT}" ]; then
+        change_port
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
 _run

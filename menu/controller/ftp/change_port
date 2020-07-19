@@ -20,46 +20,52 @@ input(){
 }
 
 check_port(){
-	set_var
-	if [ -z "${ftp_port}" ]; then
-	    ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
-	fi
+    set_var
+    if [ -z "${ftp_port}" ]; then
+        ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
+    fi
 
-	if [[ ! ${ftp_port} =~ ^-?[0-9]+$ ]]; then
-	    ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
-	fi
+    if [[ ! ${ftp_port} =~ ^-?[0-9]+$ ]]; then
+        ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
+    fi
 
-	if [[ "${ftp_port}" == "${current_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban nhap trung vui Port FTP hien tai.${NC}\n")
-	fi
+    if [[ "${ftp_port}" == "${current_port}" ]]; then
+        ALERT=$(printf "${RED}Port ban nhap trung vui Port FTP hien tai.${NC}\n")
+    fi
 
-	if [[ "${ftp_port}" == "${ssh_port}" || "${ftp_port}" == "${csf_port}" || "${ftp_port}" == "${admin_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
-	fi
+    if [[ "${ftp_port}" == "${ssh_port}" || "${ftp_port}" == "${csf_port}" || "${ftp_port}" == "${admin_port}" ]]; then
+        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    fi
+
+    if ! check_port_exists "${ftp_port}"; then
+	      ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
+    fi
 }
 
 change_port(){
-	sed -i '/Bind/d' /etc/pure-ftpd/pure-ftpd.conf
-	sed -i '/ftp_port=/d' "${FILE_INFO}"
-	sed -i 's/,'${current_port}'/,'${ftp_port}'/g' /etc/csf/csf.conf
-	echo "Bind                         ${IPADDRESS},${ftp_port}" >>  /etc/pure-ftpd/pure-ftpd.conf
-	echo "ftp_port=${ftp_port}" >>  "${FILE_INFO}"
-	semanage port -a -t ftp_port_t -p tcp "${ftp_port}"
-	if [[ "${current_port}" != "21" ]]; then
-		semanage port -d -p tcp "${current_port}"
-	fi
-	systemctl restart pure-ftpd
+    sed -i '/Bind/d' /etc/pure-ftpd/pure-ftpd.conf
+    sed -i '/ftp_port=/d' "${FILE_INFO}"
+    sed -i "s/,${current_port}/,${ftp_port}/g" /etc/csf/csf.conf
+    echo "Bind                         ${IPADDRESS},${ftp_port}" >>  /etc/pure-ftpd/pure-ftpd.conf
+    echo "ftp_port=${ftp_port}" >>  "${FILE_INFO}"
+    semanage port -a -t ftp_port_t -p tcp "${ftp_port}"
+    if [[ "${current_port}" != "21" ]]; then
+        semanage port -d -p tcp "${current_port}"
+    fi
+    systemctl restart pure-ftpd
 }
 
 run(){
-	input
-	check_port
+    input
+    check_port
 
-	if [[ -z "${ALERT}" ]]; then
-		change_port
-		clear
-		printf "${GREEN}Doi port FTP thanh cong.${NC}\n"
-	fi
+    if [[ -z "${ALERT}" ]]; then
+        change_port
+        clear
+        printf "${GREEN}Doi port FTP thanh cong.${NC}\n"
+    else
+        printf "${ALERT}\n"
+    fi
 }
 
 run

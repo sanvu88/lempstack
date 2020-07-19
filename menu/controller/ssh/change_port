@@ -40,6 +40,10 @@ check_port(){
 	if [[ "${port_new}" == "${admin_port}" || "${port_new}" == "${csf_port}" || "${port_new}" == "${ftp_port}" ]]; then
 	    ALERT=$(printf "${RED}Port ban nhap trung voi Port Admin tool.${NC}\n")
 	fi
+
+	if ! check_port_exists "${port_new}"; then
+	    ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
+  fi
 }
 
 change_port(){
@@ -50,13 +54,13 @@ change_port(){
    		cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
    	fi
 
-    sed -i 's/Port '${current_port}'/Port '${port_new}'/g' /etc/ssh/sshd_config
-    sed -i 's/,'${current_port}'/,'${port_new}'/g' /etc/csf/csf.conf
-    sed -i 's/22, '${current_port}'/22, '${port_new}'/g' /etc/csf/csf.conf
-    sed -i '/ssh_port=/d' ${FILE_INFO}
-    echo "ssh_port=${port_new}" >> ${FILE_INFO}
+    sed -i "s/Port ${current_port}/Port ${port_new}/g" /etc/ssh/sshd_config
+    sed -i "s/,${current_port}/,${port_new}/g" /etc/csf/csf.conf
+    sed -i "s/22, ${current_port}/22, ${port_new}/g" /etc/csf/csf.conf
+    sed -i '/ssh_port=/d' "${FILE_INFO}"
+    echo "ssh_port=${port_new}" >> "${FILE_INFO}"
     if [[ "${current_port}" != "22" ]]; then
-    	semanage port -d -p tcp "${current_port}"
+    	  semanage port -d -p tcp "${current_port}"
     fi
     semanage port -a -t ssh_port_t -p tcp "${port_new}"
     systemctl reload sshd.service
@@ -69,14 +73,14 @@ change_port(){
 }
 
 run(){
-	input
-	check_port
-	if [ -z "${ALERT}" ]; then
-		change_port
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+    input
+    check_port
+    if [ -z "${ALERT}" ]; then
+        change_port
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
 run
