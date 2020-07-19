@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -132,7 +133,7 @@ update_user_info(){
 }
 
 create_vhost(){
-	if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
+	  if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
         rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
     fi
 
@@ -188,6 +189,7 @@ server {
         ${fastcgi_pass}
     }
     include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/wordpress/disable_xmlrpc.conf;
     include /etc/nginx/extra/security.conf;
     ${include_seo}
 }

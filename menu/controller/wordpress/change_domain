@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -137,6 +138,7 @@ server {
 
     ${include_seo}
     include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/wordpress/disable_xmlrpc.conf;
     include /etc/nginx/extra/security.conf;
 }
 END

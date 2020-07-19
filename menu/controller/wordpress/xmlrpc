@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
+# shellcheck disable=SC2154
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
+find_string(){
+    string=$(grep -rnw "/etc/nginx/conf.d/${domain}.conf" -e 'disable_xmlrpc.conf')
+}
+
+xmlrpc(){
+    if [ -z "${string}" ]; then
+        sed -i '/wordpress_secure.conf/a include /etc/nginx/wordpress/disable_xmlrpc.conf;' /etc/nginx/conf.d/"${domain}".conf
+    else
+        sed -i '/disable_xmlrpc.conf/d' /etc/nginx/conf.d/"${domain}".conf
+    fi
+
+    systemctl restart nginx
+}
+
+_run(){
+    select_domain
+
+    if [ -z "${ALERT}" ]; then
+        find_string
+        xmlrpc
+    else
+        printf "${ALERT}\n"
+    fi
+}
+
+_run
+menu_wp

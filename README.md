@@ -74,6 +74,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Thêm cache key tránh trùng lặp nội dung giữa các site khi dùng memcached hoặc redis.
 - Bật/tắt Debug.
 - Bật/tắt chế độ bảo trì.
+- Bật/Tắt disable xmlrpc.
 - Huỷ kích hoạt toàn bộ plugins.
 - Random database prefix khi sử dụng chức năng cài đặt tự động.
 

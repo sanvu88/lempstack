@@ -244,6 +244,10 @@ wp_plugin_cache(){
 	. /var/hostvn/menu/controller/wordpress/cache_plugin
 }
 
+wp_xmlrpc(){
+	. /var/hostvn/menu/controller/wordpress/xmlrpc
+}
+
 account_info(){
 	. /var/hostvn/menu/controller/vps/account_info
 }

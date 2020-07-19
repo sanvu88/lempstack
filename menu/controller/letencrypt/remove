@@ -29,38 +29,41 @@ set_variable(){
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""
     wp_secure=""
+    xmlrpc=""
     brute=""
 }
 
 check_plugins_cache(){
+    wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
+
     if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
         cache="include /etc/nginx/wordpress/w3c.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="w3c"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wpfc"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wprocket.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wprocket"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wpsc"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="enabler"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
         cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="swift1"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
         cache="include /etc/nginx/wordpress/swift2.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="swift2"
     else
         plugin_cache="other"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     fi
 }
 
@@ -94,6 +97,10 @@ create_vhost(){
     if [[ "${SOURCE}" == "wordpress" ]]; then
         check_plugins_cache
         brute_force_wp
+
+        sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+        echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
+
         if [[ "${plugins_seo}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
             sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
@@ -138,6 +145,7 @@ server {
 
     ${brute}
     ${wp_secure}
+    ${xmlrpc}
     ${include_seo}
     include /etc/nginx/extra/security.conf;
 }

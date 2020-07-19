@@ -831,12 +831,13 @@ EONGINXCONF
 
 create_wp_cache_conf(){
     mkdir -p /etc/nginx/wordpress
+    cat >> "/etc/nginx/wordpress/disable_xmlrpc.conf" << EOxmlrpc
+# Disable XML-RPC
+location ~ xmlrpc.php { deny all; access_log off; log_not_found off; }
+EOxmlrpc
 
     cat >> "/etc/nginx/wordpress/wordpress_secure.conf" << EOwpsecure
 rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
-
-# Disable XML-RPC
-location ~ xmlrpc.php { deny all; access_log off; log_not_found off; }
 
 # Reduce Comment Spam
 location = /wp-comments-post.php {
