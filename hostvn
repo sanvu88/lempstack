@@ -1112,7 +1112,6 @@ set \$rocket_bypass 1;
 set \$rocket_encryption "";
 set \$rocket_file "";
 set \$rocket_is_bypassed "No";
-Header: X-Rocket-Nginx-Serving-Static
 set \$rocket_reason "";
 set \$rocket_https_prefix "";
 set \$rocket_hsts 0;
