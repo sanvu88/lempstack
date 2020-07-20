@@ -208,7 +208,7 @@ prepare_install(){
 # Install LEMP Stack
 ############################################
 
-#Install Nginx
+# Install Nginx
 install_nginx(){
     cat >> "/etc/yum.repos.d/nginx.repo" << EONGINXREPO
 [nginx-stable]
@@ -238,6 +238,46 @@ nginx_brotli(){
         INCLUDE_BROTLI="include /etc/nginx/extra/brotli.conf;"
         BROTLI_STATIC_OFF="brotli_static off;"
     fi
+}
+
+# Config naxsi
+nginx_naxsi(){
+    mkdir -p /etc/nginx/naxsi
+    wget -q "${EXT_LINK}"/naxsi/"${NGINXV}"/ngx_http_naxsi_module.so -O  "${MODULES_PATH}"/ngx_http_naxsi_module.so
+    wget -q "${EXT_LINK}"/naxsi/rule/naxsi_core.rules -O  /etc/nginx/naxsi/naxsi_core.rules
+    wget -q "${EXT_LINK}"/naxsi/rule/wordpress.rules -O  /etc/nginx/naxsi/wordpress.rules
+    wget -q "${EXT_LINK}"/naxsi/rule/drupal.rules -O  /etc/nginx/naxsi/drupal.rules
+    wget -q "${EXT_LINK}"/naxsi/rule/naxsi_relax.rules -O  /etc/nginx/naxsi/naxsi_relax.rules
+}
+
+create_naxsi_config(){
+    cat >> "/etc/nginx/naxsi/disable_admin.conf" <<EOnaxsi_config
+location /RequestDenied {
+    internal;
+    return 404;
+}
+location /wp-admin {
+    try_files \$uri \$uri/ /index.php?\$args;
+    SecRulesDisabled;
+}
+location /admin {
+    try_files \$uri \$uri/ /index.php?\$args;
+    SecRulesDisabled;
+}
+location /admincp {
+    try_files \$uri \$uri/ /index.php?\$args;
+    SecRulesDisabled;
+}
+location /administrator {
+    try_files \$uri \$uri/ /index.php?\$args;
+    SecRulesDisabled;
+}
+EOnaxsi_config
+}
+
+install_naxsi(){
+    nginx_naxsi
+    create_naxsi_config
 }
 
 #Install Mariadb
@@ -366,6 +406,7 @@ install_lemp(){
     fi
 
     nginx_brotli
+    install_naxsi
     install_mariadb
 
     if [[ ! -f "/usr/lib/systemd/system/mariadb.service" ]]; then
