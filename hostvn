@@ -3275,22 +3275,23 @@ EOphpmyadmin_temp
 }
 
 install_phpmyadmin(){
-    echo ""
+    # Singapore Local
+    echo "89.187.162.49 files.phpmyadmin.net" >> /etc/hosts
 
     if [[ "${PHP_VERSION}" == "php56" ]]; then
         PHPMYADMIN_VERSION="4.9.5"
     fi
 
-    cd_dir "${USR_DIR}"
+    cd_dir "${DEFAULT_DIR_TOOL}"
     wget "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     unzip phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
-    rm -rf "${USR_DIR}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
-    ln -s "${USR_DIR}"/phpmyadmin "${DEFAULT_DIR_TOOL}"/phpmyadmin
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin/setup
     config_phpmyadmin
     cd_dir "${DIR}"
 
-    chown -R nginx:nginx "${USR_DIR}"/nginx/html
+    chown -R nginx:nginx /usr/share/nginx/html /usr/share/phpmyadmin
     create_phpmyadmin_db
 }
 
