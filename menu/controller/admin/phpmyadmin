@@ -18,7 +18,7 @@ set_var(){
 check_php_version(){
 	  php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
 
-	  if [ ${php_v} -lt 7 ]; then
+	  if [ "${php_v}" -lt 7 ]; then
 		    ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
 	  fi
 }
@@ -32,8 +32,8 @@ check_dir(){
 
 update(){
     cd_dir "${DEFAULT_DIR_TOOL}"
+    rm -rf phpmyadmin
 	  wget -O "${DEFAULT_DIR_TOOL}"/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
-
 	  unzip phpmyadmin.zip
 	  rm -rf phpmyadmin.zip
     mv phpMyAdmin-"${phpmyadmin_v}"-english phpmyadmin
@@ -71,19 +71,20 @@ EOCONFIGINC
 }
 
 run(){
-	set_var
-	check_php_version
+    set_var
+    check_php_version
 
-	if [ -z "${ALERT}" ]; then
-		check_dir
-		update
-		config_phpmyadmin
-		clear
-		printf "${GREEN}Update phpMyAdmin thanh cong.${NC}"
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+    if [ -z "${ALERT}" ]; then
+        check_dir
+        update
+        config_phpmyadmin
+        restart_service
+        clear
+        printf "${GREEN}Update phpMyAdmin thanh cong.${NC}"
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
 run
