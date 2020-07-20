@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
@@ -158,7 +159,7 @@ install_igbinary_2(){
     cd_dir /root && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir /root/igbinary-${IGBINARY_VERSION}
-    /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+    /opt/remi/"${php2_version}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${php2_version}"/root/usr/bin/php-config
     make && make install
     cd_dir /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
@@ -177,7 +178,7 @@ install_php_memcached_2(){
     cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir /root/memcached-${PHP_MEMCACHED_VERSION}
-        /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+        /opt/remi/"${php2_version}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${php2_version}"/root/usr/bin/php-config
         make && make install
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
@@ -196,7 +197,7 @@ install_php_redis_2(){
     cd /root && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "/root/redis-${PHP_REDIS_VERSION}"
-    /opt/remi/${php2_version}/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/${php2_version}/root/usr/bin/php-config
+    /opt/remi/"${php2_version}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${php2_version}"/root/usr/bin/php-config
     make && make install
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
@@ -219,11 +220,11 @@ php2_global_config(){
     fi
 
     if [[ -f "${php2_fpm_config_file}" ]]; then
-        rm -rf ${php2_fpm_config_file}
+        rm -rf "${php2_fpm_config_file}"
     fi
 
     if [[ ! -d "/opt/remi/${php2_version}/root/var/run/php-fpm" ]]; then
-        mkdir -p /opt/remi/${php2_version}/root/var/run/php-fpm
+        mkdir -p /opt/remi/"${php2_version}"/root/var/run/php-fpm
     fi
 
     cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
@@ -244,7 +245,7 @@ daemonize = yes
 EOphp_fpm_2_conf
 
     if [[ -f "${www2_config_file}" ]]; then
-        rm -rf ${www2_config_file}
+        rm -rf "${www2_config_file}"
     fi
 cat >> "${www2_config_file}" << EOwww_2_conf
 [www]
@@ -279,24 +280,24 @@ security.limit_extensions = .php
 EOwww_2_conf
 
     if [[ ! -d "/opt/remi/${php2_version}/root/var/lib/php/session" ]]; then
-        mkdir -p /opt/remi/${php2_version}/root/var/lib/php/session
+        mkdir -p /opt/remi/"${php2_version}"/root/var/lib/php/session
     fi
     if [[ ! -d "/opt/remi/${php2_version}/root/var/lib/php/wsdlcache" ]]; then
-        mkdir -p /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+        mkdir -p /opt/remi/"${php2_version}"/root/var/lib/php/wsdlcache
     fi
     if [[ ! -d "/opt/remi/${php2_version}/root/var/log/php-fpm" ]]; then
-        mkdir -p /opt/remi/${php2_version}/root/var/log/php-fpm
+        mkdir -p /opt/remi/"${php2_version}"/root/var/log/php-fpm
     fi
-    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/lib/php/session
-    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
-    chown -R nginx:nginx /opt/remi/${php2_version}/root/var/log/php-fpm
-    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/session
-    chmod 711 /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php2_version}"/root/var/lib/php/session
+    chown -R nginx:nginx /opt/remi/"${php2_version}"/root/var/lib/php/wsdlcache
+    chown -R nginx:nginx /opt/remi/"${php2_version}"/root/var/log/php-fpm
+    chmod 711 /opt/remi/"${php2_version}"/root/var/lib/php/session
+    chmod 711 /opt/remi/"${php2_version}"/root/var/lib/php/wsdlcache
 }
 
 hostvn_custom_ini_2(){
 	if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
-		rm -rf ${php2_ini_path}/00-hostvn-custom.ini
+		rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
 	fi
     cat > "${php2_ini_path}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
@@ -323,7 +324,7 @@ EOhostvn_custom_ini
 
 php_opcache_2(){
     if [[ -f "${php2_ini_path}/10-opcache.ini" ]]; then
-        rm -rf ${php2_ini_path}/10-opcache.ini
+        rm -rf "${php2_ini_path}"/10-opcache.ini
     fi
     cat > "${php2_ini_path}/10-opcache.ini" << EOphp_opcache
 zend_extension=opcache.so

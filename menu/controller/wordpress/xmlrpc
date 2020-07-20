@@ -22,8 +22,6 @@ xmlrpc(){
     else
         sed -i '/disable_xmlrpc.conf/d' /etc/nginx/conf.d/"${domain}".conf
     fi
-
-    systemctl restart nginx
 }
 
 _run(){
@@ -32,7 +30,11 @@ _run(){
     if [ -z "${ALERT}" ]; then
         find_string
         xmlrpc
+        restart_service
+        clear
+        printf "${GREEN}Bat/Tat XMLRPC thanh cong${NC}\n"
     else
+        clear
         printf "${ALERT}\n"
     fi
 }

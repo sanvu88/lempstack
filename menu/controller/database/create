@@ -49,7 +49,7 @@ show_info(){
     sleep 3
 }
 
-run(){
+_run(){
 	input "$@"
 	if [[ ${promtp_db} =~ ^([yY])$  ]]; then
 	   validate
@@ -66,5 +66,5 @@ run(){
 	fi
 }
 
-run "$@"
+_run "$@"
 menu_database

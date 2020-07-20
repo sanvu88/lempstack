@@ -37,7 +37,7 @@ update(){
 	printf "${GREEN}Update ${AUTHOR} Script thanh cong.${NC}\n"
 }
 
-run(){
+_run(){
 	set_var
 	check_update
 
@@ -56,5 +56,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_vps

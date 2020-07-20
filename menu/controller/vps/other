@@ -8,6 +8,8 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+
 show_info(){
 	printf "PHP default version     : %s\n" "$(rpm -qa php-fpm | cut -f3 -d'-')"
 	if [[ "${php2_release}" == "yes" ]]; then

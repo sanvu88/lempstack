@@ -42,11 +42,9 @@ update_plugins(){
 	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp plugin update --all --allow-root
 	chown -R "${username}":"${username}" ./*
-	clear
-	printf "${GREEN}Cap nhat plugins thanh cong.${NC}\n"
 }
 
-run(){
+_run(){
 	select_domain
 
 	set_var
@@ -65,13 +63,16 @@ run(){
 		make_backup_dir "${domain}"
 		backup
 		update_plugins
+		restart_service
+		clear
+		printf "${GREEN}Update plugins thanh cong.${NC}\n"
 	else
 		clear
 		printf "${ALERT}\n"
 	fi
 }
 
-run
+_run
 echo ""
 sleep 1
 menu_wp

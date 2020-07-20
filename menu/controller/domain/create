@@ -390,7 +390,7 @@ show_info(){
     echo   "---------------------------------------------------------------"
 }
 
-run(){
+_run(){
     check_service
     input
     set_var "$@"
@@ -428,7 +428,7 @@ run(){
     fi
 }
 
-run "$@"
+_run "$@"
 echo ""
 sleep 4
 menu_domain

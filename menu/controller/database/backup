@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -36,7 +37,7 @@ backup(){
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 }
 
-run(){
+_run(){
 	select_domain
 
 	set_var
@@ -56,5 +57,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_database

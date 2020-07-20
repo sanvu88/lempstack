@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -34,7 +35,7 @@ action(){
     fi
 }
 
-run(){
+_run(){
     select_domain
 
     if [ -z "${ALERT}" ]; then
@@ -45,5 +46,5 @@ run(){
     fi
 }
 
-run
+_run
 menu_permission

@@ -17,22 +17,22 @@ set_var(){
 }
 
 check_version(){
-	  cd_dir /home/"${username}"/"${domain}"/public_html/
-	  clear
-	  printf "${GREEN}Phien ban WordPress dang su dung: %s ${NC}\n" "$(wp core version --allow-root)"
+    cd_dir /home/"${username}"/"${domain}"/public_html/
+    clear
+    printf "${GREEN}Phien ban WordPress dang su dung: %s ${NC}\n" "$(wp core version --allow-root)"
 }
 
 _run(){
-	  select_domain
+    select_domain
     set_var
-	  check_is_wordpress "${username}" "${domain}"
+    check_is_wordpress "${username}" "${domain}"
 
-	  if [ -z "${ALERT}" ]; then
-		    check_version
-	  else
-		    clear
-		    printf "${ALERT}\n"
-	  fi
+    if [ -z "${ALERT}" ]; then
+        check_version
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
 _run

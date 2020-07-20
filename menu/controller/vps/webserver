@@ -88,12 +88,12 @@ show_info(){
 	printf "Redis        : %s\n" "${redis_status}"
 }
 
-run(){
+_run(){
 	set_var
 	set_color
 	show_info
 }
 
-run
+_run
 sleep 2
 menu_vps

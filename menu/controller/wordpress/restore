@@ -24,7 +24,7 @@ confirm_restore(){
 restore_source(){
   if [ -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
       if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-		    mkdir -p /home/"${username}"/"${domain}"/public_html
+            mkdir -p /home/"${username}"/"${domain}"/public_html
       fi
       rm -rf /home/"${username}"/"${domain}"/public_html/*
       tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
@@ -39,7 +39,7 @@ restore_db(){
 	fi
 }
 
-run(){
+_run(){
 	confirm_restore
 
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
@@ -66,6 +66,7 @@ run(){
 			restore_source
 			empty_db
 			restore_db
+            restart_service
 			clear
 			printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
 		else
@@ -78,5 +79,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_wp

@@ -24,7 +24,7 @@ view_log(){
     printf "${RED}Vi tri file log: /home/${username}/${domain}/logs/error.log${NC}\n"
 }
 
-run(){
+_run(){
     select_domain
 
     if ! if_domain_exists "${domain}"; then
@@ -34,8 +34,10 @@ run(){
     if [[ -z "${ALERT}" ]]; then
         set_var
         view_log
+    else
+      printf "${ALERT}\n"
     fi
 }
 
-run
+_run
 menu_log

@@ -25,7 +25,7 @@ EOF
 	pure-pw mkdb
 }
 
-run(){
+_run(){
 	select_domain
 	set_var
 	input
@@ -38,10 +38,13 @@ run(){
 
 	if [[ -z "${ALERT}" ]]; then
 		change_pass
+		clear
+		printf "${GREEN}Doi password FTP thanh cong.${NC}\n"
 	else
+	  clear
 		printf "${ALERT}\n"
 	fi
 }
 
-run
+_run
 menu_ftp

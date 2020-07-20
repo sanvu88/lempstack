@@ -167,12 +167,12 @@ change_user_config(){
     mv "${USER_DIR}"/."${domain}".conf "${USER_DIR}"/."${newdomain}".conf
 }
 
-run(){
+_run(){
 	select_domain
 
 	set_var
 	check_is_wordpress "${username}" "${domain}"
-  check_wpconfig "${username}" "${domain}"
+    check_wpconfig "${username}" "${domain}"
 	input
 	validate_domain "${newdomain}"
     backup_confirm
@@ -190,12 +190,13 @@ run(){
     fi
 
 	if [ -z "${ALERT}" ]; then
-    backup
+        backup
 		change_path
 		change_vhost
 		change_phpconfig
 		change_in_db
         change_user_config
+        restart_service
         clear
 		printf "${GREEN}Doi ten mien thanh cong.${NC}\n"
 	else
@@ -204,5 +205,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_wp

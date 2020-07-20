@@ -38,7 +38,7 @@ backup(){
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 }
 
-run(){
+_run(){
 	select_domain
 
 	set_var
@@ -53,6 +53,6 @@ run(){
 	fi
 }
 
-run
+_run
 sleep 2
 menu_wp

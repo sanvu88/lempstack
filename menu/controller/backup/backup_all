@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -39,9 +40,11 @@ _run(){
 	if [[ -z "${ALERT}" ]]; then
 		set_var
 		backup
+		clear
 		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
 		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${DATE}/${domain}/${domain}${NC}\n"
 	else
+	  clear
 		printf "${ALERT}\n"
 	fi
 }

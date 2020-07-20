@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -21,8 +22,10 @@ _run(){
 		select_remote
 		if [[ -z "${ALERT}" ]]; then
 			rclone config delete "${remote}"
+			clear
 			printf "${GREEN}Xoa remote thanh cong.${NC}\n"
 		else
+		  clear
 			printf "${ALERT}\n"
 		fi
 	fi

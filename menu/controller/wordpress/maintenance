@@ -26,10 +26,7 @@ _run(){
         else
             wp maintenance-mode deactivate --allow-root
             clear
-            systemctl restart php-fpm
-            if [[ "${php2_release}" == "yes" ]]; then
-                systemctl restart "${php2_version}"-php-fpm
-            fi
+            restart_service
             printf "${GREEN}Tat che do bao tri thanh cong.${NC}\n"
             echo ""
         fi

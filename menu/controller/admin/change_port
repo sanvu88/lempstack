@@ -8,6 +8,9 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 printf "${GREEN}-----------------${NC}\n"
 printf "${GREEN}Thay đoi port SSH${NC}\n"
 printf "${GREEN}-----------------${NC}\n"

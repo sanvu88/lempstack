@@ -12,13 +12,6 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-restart_php(){
-    systemctl restart php-fpm
-    if [[ "${php2_release}" == "yes" ]]; then
-        systemctl restart "${php2_version}"-php-fpm
-    fi
-}
-
 _run(){
     select_domain
     if [[ -z "${ALERT}" ]]; then
@@ -27,13 +20,13 @@ _run(){
         debug=$(wp config get WP_DEBUG --allow-root)
         if [[ "${debug}" == 1 ]]; then
             wp config set WP_DEBUG false --raw --allow-root
-            restart_php
+            restart_service
             clear
             printf "${GREEN}Tat Debug mode thanh cong.${NC}\n"
             echo ""
         else
             wp config set WP_DEBUG true --raw --allow-root
-            restart_php
+            restart_service
             clear
             printf "${GREEN}Bat Debug mode thanh cong.${NC}\n"
             echo ""

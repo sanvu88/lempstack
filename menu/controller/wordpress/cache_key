@@ -20,9 +20,12 @@ _run(){
         sed -i '/WP_CACHE_KEY_SALT/d' /home/"${username}"/"${domain}"/public_html/wp-config.php
         prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
         wp config set WP_CACHE_KEY_SALT "${username}"_"${prefix}" --allow-root
+        restart_service
+        clear
         printf "${GREEN}Tao WP_CACHE_KEY_SALT thanh cong.${NC}\n"
     else
-        printf "${ALERT}\n"
+      clear
+      printf "${ALERT}\n"
     fi
 }
 

@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -19,7 +20,7 @@ delete(){
 	rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql
 }
 
-run(){
+_run(){
 	confirm_delete
 
 	if [[ "${promt_delete}" =~ ^([yY])$ ]]; then
@@ -43,5 +44,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_backup

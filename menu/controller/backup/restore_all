@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -34,7 +35,7 @@ restore_db(){
 	mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
 }
 
-run(){
+_run(){
 	confirm_restore
 
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
@@ -74,5 +75,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_backup

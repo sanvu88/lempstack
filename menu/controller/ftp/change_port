@@ -8,6 +8,9 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 set_var(){
 	current_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
 	csf_port=$(grep "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
@@ -55,7 +58,7 @@ change_port(){
     systemctl restart pure-ftpd
 }
 
-run(){
+_run(){
     input
     check_port
 
@@ -64,9 +67,10 @@ run(){
         clear
         printf "${GREEN}Doi port FTP thanh cong.${NC}\n"
     else
-        printf "${ALERT}\n"
+      clear
+      printf "${ALERT}\n"
     fi
 }
 
-run
+_run
 menu_ftp

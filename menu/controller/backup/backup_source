@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -26,18 +27,20 @@ backup(){
 	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html
 }
 
-run(){
+_run(){
 	select_domain
 
 	if [[ -z "${ALERT}" ]]; then
 		set_var
 		backup
+		clear
 		printf "${GREEN}Sao luu ma nguon thanh cong.${NC}\n"
 		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${DATE}/${domain}/${domain}${NC}\n"
 	else
+	  clear
 		printf "${ALERT}\n"
 	fi
 }
 
-run
+_run
 select_backup

@@ -20,11 +20,13 @@ _run(){
         if [[ ${plugins_seo_current} == "yoast_seo" ]]; then
             sed -i '|etc/nginx/wordpress/yoast_seo.conf;|d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
+            restart_service
             printf "${GREEN}Tat cau hinh Yoast Seo thanh cong.${NC}\n"
         elif [[ ${plugins_seo_current} == "rank_math_seo" ]]; then
             printf "${RED}Ban dang su dung Rank Math Seo.${NC}\n"
         elif [[ -z "${plugins_seo_current}" ]]; then
             sed -i '/index.php/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
+            restart_service
             printf "${GREEN}Bat cau hinh Yoast Seo thanh cong.${NC}\n"
         fi
     else

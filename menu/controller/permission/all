@@ -16,7 +16,7 @@ printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
 printf "${GREEN}======================${NC}\n"
 echo
 
-if [ "$(ls -At ${USER_DIR})" ]; then
+if [ "$(ls -At "${USER_DIR}")" ]; then
     clear
     echo "Dang phan quyen cho cac domain:"
     sleep 1
@@ -32,10 +32,12 @@ if [ "$(ls -At ${USER_DIR})" ]; then
         chown -R "${username}":"${username}" /home/"${username}"
     done
     printf "${GREEN}Phan quyen hoan tat.${NC}\n"
-    menu_permission
 else
     clear
     printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
     menu_permission
 fi
 
+# shellcheck disable=SC2034
+CHOICE=0
+menu_permission

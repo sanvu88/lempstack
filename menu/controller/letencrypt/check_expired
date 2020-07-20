@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -21,17 +22,17 @@ check_expired(){
 	fi
 }
 
-run(){
+_run(){
 	select_domain
 
 	if [ -z "${ALERT}" ]; then
 		check_expired
 	else
 		clear
-        printf "${ALERT}\n"
-    fi
+    printf "${ALERT}\n"
+  fi
 }
 
-run
+_run
 echo ""
 menu_letencrypt

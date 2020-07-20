@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -152,7 +153,7 @@ restart_nginx(){
     systemctl restart nginx.service
 }
 
-run(){
+_run(){
     select_domain
     validate
 
@@ -184,5 +185,5 @@ run(){
     fi
 }
 
-run
+_run
 menu_letencrypt

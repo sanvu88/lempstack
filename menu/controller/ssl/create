@@ -180,7 +180,7 @@ restart_nginx(){
     systemctl restart nginx.service
 }
 
-run(){
+_run(){
     check_nginx_status
     select_domain
 
@@ -206,6 +206,6 @@ run(){
     fi
 }
 
-run
+_run
 sleep 2
 menu_ssl

@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -64,11 +65,14 @@ _run(){
 			rclone delete "${remote}":/"${IPADDRESS}"/"${date}"/"${domain}" --rmdirs > /dev/null  2>&1
 			rclone cleanup "${remote}":"${IPADDRESS}" > /dev/null  2>&1
 			rm -rf /home/backup/"${date}"/"${domain}"
+			clear
 			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
 		else
+		  clear
 			printf "${ALERT}\n"
 		fi
 	else
+	  clear
 		printf "${GREEN}Ban da huy xoa backup.${NC}\n"
 	fi
 }

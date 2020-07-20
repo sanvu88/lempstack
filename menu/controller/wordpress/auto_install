@@ -197,7 +197,7 @@ END
 
 }
 
-run(){
+_run(){
 	select_domain
 
 	set_var
@@ -222,8 +222,11 @@ run(){
 			auto_install "$@"
 			clear
 			select_plugin_cache
-            select_plugin_seo
-            create_vhost
+      select_plugin_seo
+      create_vhost
+      restart_service
+      clear
+      printf "${GREEN}Cai dat WordPress thanh cong.${NC}\n"
 		else
 			clear
 			printf "${ALERT}\n"
@@ -233,3 +236,6 @@ run(){
 		printf "${RED}Ban da huy cai dat tu dong WordPress.${NC}"
 	fi
 }
+
+_run "$@"
+menu_wp

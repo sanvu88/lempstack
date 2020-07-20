@@ -35,8 +35,6 @@ backup(){
 optimize_db(){
 	cd_dir /home/"${username}"/"${domain}"/public_html
 	wp db optimize --allow-root
-	clear
-	printf "${GREEN}Toi uu database thanh cong.${NC}\n"
 }
 
 _run(){
@@ -58,6 +56,9 @@ _run(){
 		make_backup_dir "${domain}"
 		backup
 		optimize_db
+		restart_service
+		clear
+	    printf "${GREEN}Toi uu database thanh cong.${NC}\n"
 	else
 		clear
 		printf "${ALERT}\n"

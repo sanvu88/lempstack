@@ -96,6 +96,7 @@ _run(){
         printf "${GREEN}Backup thanh cong.${NC}\n"
         echo ""
     else
+        clear
         printf "${ALERT}\n"
     fi
 }

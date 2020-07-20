@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -50,7 +51,7 @@ change_pass_admin(){
 	wp user update "${admin_username}" --user_pass="${new_admin_pwd}"
 }
 
-run(){
+_run(){
 	select_domain
 
 	backup_confirm
@@ -68,6 +69,7 @@ run(){
 		input
 		backup
 		change_pass_admin
+		restart_service
 		clear
 		printf "${GREEN}Doi mat khau admin (wp-admin) thanh cong.${NC}\n"
 	else
@@ -76,5 +78,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_wp

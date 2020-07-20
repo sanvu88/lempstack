@@ -156,7 +156,7 @@ restart_nginx(){
     systemctl restart nginx.service
 }
 
-run(){
+_run(){
 
     select_domain
     validate
@@ -180,6 +180,6 @@ run(){
     fi
 }
 
-run
+_run
 sleep 2
 menu_letencrypt

@@ -72,7 +72,7 @@ change_port(){
     printf "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}\n"
 }
 
-run(){
+_run(){
     input
     check_port
     if [ -z "${ALERT}" ]; then
@@ -83,6 +83,6 @@ run(){
     fi
 }
 
-run
+_run
 echo ""
 menu_ssh

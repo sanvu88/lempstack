@@ -49,7 +49,7 @@ change_pass(){
 	fi
 }
 
-run(){
+_run(){
 	input "$@"
 	validate
 
@@ -66,5 +66,5 @@ run(){
 	fi
 }
 
-run "$@"
+_run "$@"
 menu_database

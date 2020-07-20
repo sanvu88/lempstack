@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -24,12 +25,12 @@ restore(){
 		mkdir -p /home/"${username}"/"${domain}"/public_html
 	fi
 	cd_dir /home/backup/"${date}"/"${domain}"
-	rm -rf /home/"${username}"/"${backup}"/public_html/*
+	rm -rf /home/"${username}"/"${domain}"/public_html/*
 	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
 	chown -R "${username}":"${username}" /home/"${username}"
 }
 
-run(){
+_run(){
 	confirm_restore
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
 		list_backup
@@ -61,5 +62,5 @@ run(){
 	fi
 }
 
-run
+_run
 menu_backup

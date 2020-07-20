@@ -8,13 +8,17 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+
 select_date(){
 	echo "Chon ngay: "
     selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     dates=()
     for entry in ${selects}; do
     	select=${entry///}
-        dates+=("${select}")
+      dates+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
     select date in "${dates[@]}"
