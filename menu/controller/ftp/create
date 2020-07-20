@@ -12,53 +12,57 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-  # shellcheck disable=SC2154
-	username=${domain//[-._]/}
+    # shellcheck disable=SC2154
+	  username=${domain//[-._]/}
 }
 
 input(){
-	read -r -p "Nhap vao user muon tao: " ftp_user
-	read -r -p "Nhap vao mat khau muon tao: " ftp_pwd
-	read -r -p "Nhap vao duong dan duoc phep truy cap: " ftp_path
+	  read -r -p "Nhap vao user muon tao: " ftp_user
+	  read -r -p "Nhap vao mat khau muon tao: " ftp_pwd
+	  read -r -p "Nhap vao duong dan duoc phep truy cap: " ftp_path
 }
 
 show_info(){
-	printf "Port FTP: 21"
-	printf "FTP User: %s\n" "${ftp_user}"
-	printf "FTP Pass: %s\n" "${ftp_pwd}"
-	sleep 3
+	  printf "Port FTP: 21"
+	  printf "FTP User: %s\n" "${ftp_user}"
+	  printf "FTP Pass: %s\n" "${ftp_pwd}"
+	  sleep 3
 }
 
 create(){
-	pure-pw useradd "${ftp_user}" -u "${username}" -g "${username}" -d "${ftp_path}" <<EOF
+	  pure-pw useradd "${ftp_user}" -u "${username}" -g "${username}" -d "${ftp_path}" <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF
-	pure-pw mkdb
+	  pure-pw mkdb
 }
 
 _run(){
-	select_domain
+    select_domain
 
-	set_var
-	input
+    set_var
+    input
 
-	if if_pureftpd_user_exists ftp_user; then
-		ALERT=$(printf "${RED}User da ton tai.${NC}\n")
-	fi
+    if if_pureftpd_user_exists ftp_user; then
+        ALERT=$(printf "${RED}User da ton tai.${NC}\n")
+    fi
 
-	if [[ ! -d "${ftp_path}" ]]; then
-		ALERT=$(printf "${RED}Duong dan truy cap ban nhap khong ton tai.${NC}\n")
-	fi
+    if [[ ! -d "${ftp_path}" ]]; then
+        ALERT=$(printf "${RED}Duong dan truy cap ban nhap khong ton tai.${NC}\n")
+    fi
 
-	validate_user ${ftp_user}
+    if [ ! -f "/etc/pure-ftpd/pureftpd.passwd" ]; then
+        ALERT=$(printf "${RED}Ban chua them ten mien. Vui long them ten mien truoc khi tao FTP User.${NC}\n")
+    fi
 
-	if [[ -z "${ALERT}" ]]; then
-		create
-		show_info
-	else
-		printf "${ALERT}\n"
-	fi
+    validate_user "${ftp_user}"
+
+    if [[ -z "${ALERT}" ]]; then
+        create
+        show_info
+    else
+        printf "${ALERT}\n"
+    fi
 }
 
 _run

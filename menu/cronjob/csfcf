@@ -9,12 +9,12 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
-CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
 CFINCLUDEFILE='/etc/nginx/extra/cloudflare.conf'
 
-CFIPS=$(/usr/bin/curl -4s "${CURL_TIMEOUTS}" https://www.cloudflare.com/ips-v4/)
-CFIP6S=$(/usr/bin/curl -4s "${CURL_TIMEOUTS}" https://www.cloudflare.com/ips-v6/)
+CFIPS=$(/usr/bin/curl https://www.cloudflare.com/ips-v4/)
+CFIP6S=$(/usr/bin/curl https://www.cloudflare.com/ips-v6/)
 
+# Config CSF Firewall
 for ip in $CFIPS;
 do
     if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
@@ -39,6 +39,7 @@ fi
 
 sed -i '/^ip/d' /etc/csf/csf.ignore
 
+# Config Nginx
 if [ -f "$CFINCLUDEFILE" ]; then
 		cp -af "$CFINCLUDEFILE" "${CFINCLUDEFILE}.bak"
 fi
