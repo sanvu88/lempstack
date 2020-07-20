@@ -53,9 +53,10 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Chống Bruteforce wp-admin.
 - BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web) và menu quản lý CSF.
 - Disable User API - /wp-json/wp/v2/users - trên WordPress tránh lộ thông tin User (Sẽ phát triển menu bật tắt disable).
-- Menu thay đổi Port SSH.
-- Menu thay đổi port Admin.
-- Menu thay đổi port FTP.
+- Thay đổi Port SSH tránh scan SSH.
+- Cho phép thay đổi port Admin.
+- Cho phép thay đổi port FTP.
+- Cấu hình bảo mật FTP
 - Tự động tạo mật khẩu mạnh.
 - And More ...
 
@@ -100,12 +101,12 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ## 4. Các tính năng sẽ phát triển
 
 - Deploy nhanh mã nguồn trên VPS
-- Scan Malware
-- Scan bug WordPress
+- Menu Scan Malware với ClamAV, Linux Malware Detect – LMD
+- Menu Scan bug WordPress
 - Thay đổi WordPress database prefix
 - Tích hợp Firewall hạn chế XSS, SQL Injection ....
 - Cảnh báo qua email, telegram
-- Rewrite config
+- Rewrite config vhost về mặc định
 
 ## 5. Cách sử dụng
 
