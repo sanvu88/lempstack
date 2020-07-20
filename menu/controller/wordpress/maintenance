@@ -8,13 +8,13 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 _run(){
     select_domain
     if [[ -z "${ALERT}" ]]; then
-        # shellcheck disable=SC2154
         username=${domain//[-._]/}
         cd_dir /home/"${username}"/"${domain}"/public_html
         wp maintenance-mode is-active --allow-root
@@ -25,6 +25,11 @@ _run(){
             echo ""
         else
             wp maintenance-mode deactivate --allow-root
+            clear
+            systemctl restart php-fpm
+            if [[ "${php2_release}" == "yes" ]]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
             printf "${GREEN}Tat che do bao tri thanh cong.${NC}\n"
             echo ""
         fi

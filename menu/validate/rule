@@ -35,8 +35,8 @@ check_service(){
 
     if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd_status}" != 'active' ]]; then
         ALERT=$(
-            printf "${RED}Co loi xay ra.${NC}\n"
-            printf "${RED}Vui long kiem tra lai cac service:${NC}\n"
+            printf "${RED}${ERROR_OCCURRED}${NC}\n"
+            printf "${RED}${CHECK_SERVICES}{NC}\n"
             echo "-------------------------------------------------"
             printf "Nginx: %s\n" "${nginx_status}";
             printf "PHP-FPM: %s\n" "${phpfpm_status}";
@@ -58,8 +58,8 @@ validate_domain(){
 check_domain_exists(){
     if [[ -f "${USER_DIR}/.${1}.conf" || -f "${VHOST_DIR}/${1}.conf" ]]; then
         ALERT=$(
-                    printf "${RED}Ten mien da ton tai tren vps.${NC}\n"
-                    printf "${RED}Ban can xoa Ten mien neu muon them lai.${NC}\n"
+                    printf "${RED}${DOMAIN_EXISTS1}${NC}\n"
+                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
                 )
     fi
 }
@@ -74,7 +74,7 @@ if_domain_exists(){
 
 validate_user(){
     if ! [[ ${1} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}User ban nhap khong dung dinh dang.${NC}\n")
+        ALERT=$(printf "${RED}${WRONG_USER}${NC}\n")
     fi
 }
 
@@ -100,8 +100,8 @@ check_database(){
     RESULT_DB=$(mysqlshow "${1}" | grep -v Wildcard | grep -o "${1}")
     if [ "$RESULT_DB" == "${1}" ]; then
         ALERT=$(
-                    printf "${RED}Database da ton tai tren VPS.${NC}\n"
-                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                    printf "${RED}${DATABASE_EXISTS}${NC}\n"
+                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
                 )
     fi
 }
@@ -129,8 +129,8 @@ check_mysql_user(){
     RESULT_MYSQL_USER="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
     if [ "${RESULT_MYSQL_USER}" = 1 ]; then
         ALERT=$(
-                    printf "${RED}Mysql User da ton tai tren VPS.${NC}\n"
-                    printf "${RED}Ban can xoa domain neu muon them lai.${NC}\n"
+                    printf "${RED}${MYSQL_USER_EXISTS}${NC}\n"
+                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
                 )
     fi
 }
@@ -148,7 +148,7 @@ check_nginx_status(){
     nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
     if [ "$nginx" != "active" ]; then
-        ALERT=$(printf "${RED}Nginx hien tai khong hoat đong. Vui long kiem tra lai.${NC}\n")
+        ALERT=$(printf "${RED}${NGINX_NO_WORK}${NC}\n")
     fi
 }
 
@@ -157,8 +157,8 @@ check_a_record(){
 
     if [[ "${a_record}" != "${IPADDRESS}" ]]; then
         ALERT=$(
-            printf "${RED}Ten mien chua đuoc tro ve VPS hoac DNS chua đuoc cap nhat. Vui long kiem tra lai.${NC}\n"
-            printf "${RED}Neu ban moi tro ten mien vui long đoi 30 phut đen 24 tieng đe DNS cap nhat sau đo thu lai.${NC}\n"
+            printf "${RED}${DNS_FAIL1}${NC}\n"
+            printf "${RED}${DNS_FAIL2}${NC}\n"
         )
     fi
 }
@@ -175,28 +175,28 @@ check_www_record(){
 
 check_le_exists(){
     if [ ! -d "/etc/letsencrypt/live/${1}" ]; then
-        ALERT=$(printf "${RED}Ten mien ${1} chua duoc cai dat Let's Encrypt.${NC}\n")
+        ALERT=$(printf "${RED}${LE_NO_EXISTS}${NC}\n")
     fi
 }
 
 check_is_wordpress(){
     if [ ! -d "/home/${1}/${2}/public_html/wp-content" ]; then
-        ALERT=$(printf "${RED}Website nay khong su dung WordPress.${NC}\n")
+        ALERT=$(printf "${RED}${NO_WP}${NC}\n")
     fi
 }
 
 if_is_wordpress(){
     if [ -d "/home/${1}/${2}/public_html/wp-content" ]; then
         ALERT=$(
-            printf "${RED}Website nay dang su dung WordPress.${NC}\n"
-            printf "${RED}Vui long su dung menu Quan ly WordPress de thuc hien chuc nang nay.${NC}\n"
+            printf "${RED}${IS_WP1}${NC}\n"
+            printf "${RED}${IS_WP2}${NC}\n"
         )
     fi
 }
 
 check_backup_exists(){
     if [ ! -d "/home/backup/${1}/${2}" ]; then
-        ALERT=$(printf "${RED}Ten mien nay khong co backup.${NC}\n")
+        ALERT=$(printf "${RED}${NO_BACKUP}${NC}\n")
     fi
 }
 
@@ -226,6 +226,6 @@ check_docroot_empty(){
 
 check_wpconfig(){
     if [[ ! -f "/home/${1}/${2}/public_html/wp-config.php" ]]; then
-        ALERT=$(printf "${RED}File wp-config.php khong ton tai. vui long kiem tra lai.${NC}")
+        ALERT=$(printf "${RED}${WPCONFIG_NOT_EXISTS}${NC}")
     fi
 }

@@ -55,7 +55,7 @@ gen_pass(){
 select_domain(){
     domain=""
     if [ "$(ls -At "${USER_DIR}")" ]; then
-        echo "Danh sach domain"
+        echo "${LIST_DOMAIN}"
         selects=()
         cd_dir "${USER_DIR}"
         for entry in .*.conf; do
@@ -64,7 +64,6 @@ select_domain(){
                 selects+=("${domain}")
             fi
         done
-        PS3="Nhap lua chon cua ban [0 = Thoat]: "
         select select in "${selects[@]}"
         do
             domain=$select
@@ -72,18 +71,17 @@ select_domain(){
         done
 
         if ! validate_domain "${domain}"; then
-            ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
+            ALERT=$(printf "${RED}${WRONG_DOMAIN}${NC}\n")
         fi
     else
-        ALERT=$(printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n")
+        ALERT=$(printf "${RED}${EMPTY_DOMAIN}${NC}\n")
     fi
 }
 
 # Select Source
 select_source(){
     SOURCE="Other"
-    echo "Lua chon ma nguon de tao Rewrite Url"
-    PS3='Nhap lua chon cua ban (1-14): '
+    echo "${SELECT_SOURCE}"
     options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
     select opt in "${options[@]}"
     do
@@ -102,7 +100,7 @@ select_source(){
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
-            *) printf "${RED}Ban nhap sai, he thong se tao Rewrite Url mac dinh.${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
         esac
     done
 }
@@ -165,20 +163,20 @@ make_backup_dir(){
 list_backup(){
     date=""
     if [ "$(ls -At /home/backup)" ]; then
-        echo "Danh sach backup"
+        echo "${LIST_BACKUP}"
         selects=()
         cd_dir /home/backup
         for date in * ; do
             selects+=("${date}")
         done
-        PS3="Nhap lua chon cua ban [0 = Thoat]: "
+        PS3="${SELECT_OPTION}"
         select select in "${selects[@]}"
         do
             date=${select}
             break
         done
     else
-        ALERT=$(printf "${RED}Khong co ban backup nao ton tai tren he thong.${NC}\n")
+        ALERT=$(printf "${RED}${BACKUP_EMPTY}${NC}\n")
     fi
 }
 
@@ -192,8 +190,7 @@ empty_db(){
 
 select_plugin_cache(){
     plugins_cache="other"
-    echo "Lua chon Plugins cache ma se ban su dung ?"
-    PS3='Nhap lua chon cua ban (1-8): '
+    echo "${SELECT_PLUGINS_CACHE}"
     options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
     select opt in "${options[@]}"
     do
@@ -206,43 +203,42 @@ select_plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
         esac
     done
 }
 
 select_plugin_seo(){
     plugins_seo=""
-    echo "Lua chon Plugins SEO ma se ban su dung ?"
-    PS3='Nhap lua chon cua ban (1-2): '
+    echo "${SELECT_PLUGINS_SEO}"
     options=("Yoast Seo" "Rank Math Seo")
     select opt in "${options[@]}"
     do
         case $opt in
             "Yoast Seo") plugins_seo="yoast_seo"; break;;
             "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
-            *) printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins seo.${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
         esac
     done
 }
 
 wp_auto_install_info(){
-    read -r -p "Nhap vao tai khoan wp-admin (Viet lien, khong dau. VD: hostvn: " admin_user
+    read -r -p "${INPUT_WP_ADMIN}" admin_user
     admin_pwd=$(gen_pass "$@")
 
     while true
     do
-        read -r -p "Nhap vao email cua ban: " admin_email
+        read -r -p "${INPUT_EMAIL}" admin_email
         echo
         if [[ "${admin_email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
         then
             break
         else
-            echo "Email ban nhap khong chinh xac vui long nhap lai."
+            echo "${WRONG_EMAIL}"
         fi
     done
 
-    read -r -p "Nhap vao ten website: " site_name
+    read -r -p "${INPUT_SITE_NAME}" site_name
 
     if [ -z "${admin_user}" ]; then
         admin_user="admin"
@@ -263,7 +259,7 @@ brute_force_wp(){
 }
 
 select_remote(){
-    echo "Chon Remote: "
+    echo "${SELECT_REMOTE}"
     remotes=()
     selects=( $(rclone listremotes) )
     for entry in "${selects[@]}"; do
@@ -271,7 +267,7 @@ select_remote(){
         remotes+=("${select}")
     done
 
-    PS3="Nhap lua chon cua ban [0 = Thoat]: "
+    PS3="${SELECT_OPTION}}"
     select remote in "${remotes[@]}"
     do
         remote=${remote}
@@ -279,6 +275,6 @@ select_remote(){
     done
 
     if [[ -z "${remote}" || ! ${remote} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
+        ALERT=$(printf "${RED}${WRONG_REMOTE}${NC}\n")
     fi
 }

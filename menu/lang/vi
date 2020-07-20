@@ -1,0 +1,44 @@
+#!/bin/bash
+
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
+# shellcheck disable=SC2034
+
+ERROR_OCCURRED="Co loi xay ra."
+CHECK_SERVICES="Vui long kiem tra lai cac service: "
+DOMAIN_EXISTS1="Ten mien da ton tai tren vps."
+DOMAIN_EXISTS2="Ban can xoa Ten mien neu muon them lai."
+WRONG_USER="User ban nhap khong dung dinh dang."
+DATABASE_EXISTS="Database da ton tai tren VPS."
+MYSQL_USER_EXISTS="Mysql User da ton tai tren VPS."
+NGINX_NO_WORK="Nginx hien tai khong hoat đong. Vui long kiem tra lai."
+DNS_FAIL1="Ten mien chua đuoc tro ve VPS hoac DNS chua đuoc cap nhat. Vui long kiem tra lai."
+DNS_FAIL2="Neu ban moi tro ten mien vui long đoi 30 phut đen 24 tieng đe DNS cap nhat sau đo thu lai."
+LE_NO_EXISTS="Ten mien chua duoc cai dat Let's Encrypt."
+NO_WP="Website nay khong su dung WordPress."
+IS_WP1="Website nay dang su dung WordPress."
+IS_WP2="Vui long su dung menu Quan ly WordPress de thuc hien chuc nang nay."
+WPCONFIG_NOT_EXISTS="File wp-config.php khong ton tai. vui long kiem tra lai."
+NO_BACKUP="Ten mien nay khong co backup."
+LIST_DOMAIN="Danh sach ten mien: "
+LIST_BACKUP="Danh sach backup: "
+SELECT_OPTION="Nhap lua chon cua ban [0 = Thoat]: "
+SELECT_SOURCE="Lua chon ma nguon ban su dung: "
+WRONG_DOMAIN="Ten mien khong dung dinh dang."
+EMPTY_DOMAIN="Khong co ten mien nao ton tai tren he thong."
+WRONG_SELECT="Ban nhap sai, he thong se tao gia tri mac dinh."
+BACKUP_EMPTY="Khong co ban backup nao ton tai tren he thong."
+SELECT_PLUGINS_CACHE="Lua chon Plugins cache ma se ban su dung ? "
+SELECT_PLUGINS_SEO="Lua chon Plugins SEO ma se ban su dung ? "
+INPUT_WP_ADMIN="Nhap vao tai khoan wp-admin (Viet lien, khong dau. VD: hostvn: "
+INPUT_EMAIL="Nhap vao email cua ban: "
+WRONG_EMAIL="Email ban nhap khong chinh xac vui long nhap lai."
+INPUT_SITE_NAME="Nhap vao ten website: "
+SELECT_REMOTE="Chon Remote GG Drive ban muon su dung: "
+WRONG_REMOTE="Remote ban chon khong chinh xac."

@@ -31,10 +31,13 @@ _run(){
 	  select_cron
 	  if [[ -z "${ALERT}" ]]; then
 		    destroy_cronjob
-		    printf "${GREEN}Xoa Cronjob thanh cong.{$NC}\n"
+		    clear
+		    printf "${GREEN}Xoa Cronjob thanh cong.${NC}\n"
 		    echo ""
 	  else
+	      clear
 		    printf "${ALERT}\n"
+		    echo ""
 	  fi
 }
 

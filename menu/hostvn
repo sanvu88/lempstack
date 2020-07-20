@@ -11,10 +11,10 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/menu
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
+# shellcheck source=/var/hostvn/menu/lang/*
+source /var/hostvn/menu/lang/"${lang}"
 
 CHOICE=1
 

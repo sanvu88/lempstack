@@ -8,6 +8,8 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
+
 CHOICE=1
 
 printf "${GREEN}==================================${NC}\n"

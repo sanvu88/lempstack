@@ -48,8 +48,8 @@ NC='\033[0m'
 welcome(){
     clear
     printf "========================================================\n"
-    echo   "                     HOSTVN.NET Scripts                   "
-    echo   "       Auto Install & Optimize LEMP Stack on CentOS 7     "
+    echo   "                   HOSTVN.NET Scripts                     "
+    echo   "     Auto Install & Optimize LEMP Stack on CentOS 7, 8    "
     printf " Neu can ho tro vui long lien he %s\n" "kythuat@hostvn.net"
     printf "========================================================\n"
     echo ""
@@ -158,7 +158,7 @@ create_swap(){
 #Dowload primary Script #
 #########################
 dowload_script(){
-    curl -sO ${SCRIPT_LINK}/hostvn && chmod +x hostvn && sh hostvn
+    curl -sO ${SCRIPT_LINK}/hostvn && dos2unix hostvn &> /dev/null && chmod +x hostvn && sh hostvn
 }
 
 welcome

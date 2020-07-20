@@ -11,7 +11,7 @@
 CHOICE=1
 
 nginx_status=$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-nginx_v=$(echo "$(nginx -v 2>&1)" | grep -o '[0-9.]*$')
+nginx_v=$(nginx -v 2>&1 | grep -o '[0-9.]*$'; echo)
 set_cl(){
     if [[ ${nginx_status} == "active" ]]; then
         nginx_status=$(printf "${GREEN}${nginx_status}${NC}")
