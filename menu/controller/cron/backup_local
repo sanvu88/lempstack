@@ -61,7 +61,7 @@ set_backup_num(){
 }
 
 create_cron(){
-	crontab -l | grep -q 'backup_local' && ALERT=$(printf '${RED}Cronjob da ton tai.${NC}\n') || cat <(crontab -l) <(echo "${time} ./var/hostvn/menu/cronjob/backup_local >/dev/null 2>&1") | crontab -
+	crontab -l | grep -q 'backup_local' && ALERT=$(printf "${RED}Cronjob da ton tai.${NC}\n") || cat <(crontab -l) <(echo "${time} /var/hostvn/menu/cronjob/backup_local.sh >/dev/null 2>&1") | crontab -
 	if [[ -z "${ALERT}" ]]; then
 		printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
 	else
