@@ -82,12 +82,8 @@ set_backup_num(){
 }
 
 create_cron(){
-	crontab -l | grep -q 'backup_ggdrive' && ALERT=$(printf "${RED}Cronjob da ton tai.${NC}\n") || cat <(crontab -l) <(echo "${time} /var/hostvn/menu/cronjob/backup_ggdrive.sh >/dev/null 2>&1") | crontab -
-	if [[ -z "${ALERT}" ]]; then
-		printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
-	else
-		printf "${ALERT}\n"
-	fi
+	  crontab -l | grep -q 'backup_ggdrive' || cat <(crontab -l) <(echo "${time} /var/hostvn/menu/cronjob/backup_ggdrive.sh >/dev/null 2>&1") | crontab -
+	  printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
 }
 
 _run(){

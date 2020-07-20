@@ -24,18 +24,18 @@ select_cron(){
 }
 
 destroy_cronjob(){
-	crontab -u root -l | grep -v "${cron}"  | crontab -u root -
+	  crontab -u root -l | grep -v "${cron}"  | crontab -u root -
 }
 
 _run(){
-	select_cron
-	if [[ -z "${ALERT}" ]]; then
-		destroy_cronjob
-		printf "${GREEN}Xoa Cronjob thanh cong.{$NC}\n"
-		echo ""
-	else
-		printf "${ALERT}\n"
-	fi
+	  select_cron
+	  if [[ -z "${ALERT}" ]]; then
+		    destroy_cronjob
+		    printf "${GREEN}Xoa Cronjob thanh cong.{$NC}\n"
+		    echo ""
+	  else
+		    printf "${ALERT}\n"
+	  fi
 }
 
 _run

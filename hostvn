@@ -3512,7 +3512,7 @@ EOCSF
 # Cronjob Update Cloudflare IP Range
 ############################################
 cf_ip(){
-    crontab -l | grep -q 'csfcf' && echo "" || cat <(crontab -l) <(echo "23 */36 * * * /var/hostvn/menu/cronjob/csfcf.sh >/dev/null 2>&1") | crontab -
+    crontab -l | grep -q 'csfcf' || cat <(crontab -l) <(echo "23 */36 * * * /var/hostvn/menu/cronjob/csfcf.sh >/dev/null 2>&1") | crontab -
 }
 
 

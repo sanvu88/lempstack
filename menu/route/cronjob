@@ -38,12 +38,8 @@ do
             echo ""
             ;;
         2)
-            crontab -l | grep -q 'certbot-auto renew' && ALERT=$(printf "${RED}Cronjob da ton tai.${NC}\n") || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
-            if [[ -z "${ALERT}" ]]; then
-                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
-            else
-                printf "${ALERT}\n"
-            fi
+            crontab -l | grep -q 'certbot-auto renew' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
+            printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
             echo ""
             menu_cronjob
             ;;
@@ -80,12 +76,8 @@ do
                 weekday="*"
             fi
 
-            crontab -l | grep -q "${command}" && ALERT=$(printf "${RED}Cronjob da ton tai.${NC}\n") || cat <(crontab -l) <(echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1") | crontab -
-            if [[ -z "${ALERT}" ]]; then
-                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
-            else
-                printf "${ALERT}\n"
-            fi
+            crontab -l | grep -q "${command}" || cat <(crontab -l) <(echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1") | crontab -
+            printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
             echo ""
             menu_cronjob
             ;;
