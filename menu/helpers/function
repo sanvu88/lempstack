@@ -64,6 +64,7 @@ select_domain(){
                 selects+=("${domain}")
             fi
         done
+        PS3="${INPUT_SELECT}"
         select select in "${selects[@]}"
         do
             domain=$select
@@ -82,6 +83,7 @@ select_domain(){
 select_source(){
     SOURCE="Other"
     echo "${SELECT_SOURCE}"
+    PS3="${INPUT_SELECT}"
     options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
     select opt in "${options[@]}"
     do
@@ -191,6 +193,7 @@ empty_db(){
 select_plugin_cache(){
     plugins_cache="other"
     echo "${SELECT_PLUGINS_CACHE}"
+    PS3="${INPUT_SELECT}"
     options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
     select opt in "${options[@]}"
     do
@@ -211,6 +214,7 @@ select_plugin_cache(){
 select_plugin_seo(){
     plugins_seo=""
     echo "${SELECT_PLUGINS_SEO}"
+    PS3="${INPUT_SELECT}"
     options=("Yoast Seo" "Rank Math Seo")
     select opt in "${options[@]}"
     do

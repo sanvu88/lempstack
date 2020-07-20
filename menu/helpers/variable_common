@@ -20,7 +20,7 @@ MENU_NAME="hostvn"
 AUTHOR="HOSTVN.NET"
 AUTHOR_WEB="HOSTVN.NET"
 UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
-IPADDRESS=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
+IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 DATE=$(date +%Y-%m-%d)
 ALERT=""
 
