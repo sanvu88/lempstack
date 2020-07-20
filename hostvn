@@ -129,6 +129,7 @@ config_selinux(){
     se_status=$(getenforce)
     if [ "${se_status}" == "Disabled" ]; then
         sed -i 's/SELINUX=disabled/SELINUX=permissive/g' /etc/selinux/config
+        setenforce 0
     fi
 
     semanage permissive -a httpd_t
@@ -3520,6 +3521,47 @@ cf_ip(){
 }
 
 ############################################
+# Install ClamAV, Linux Malware Detect – LMD
+############################################
+
+install_clamav(){
+    if [ "${OS_VER}" -eq 8 ]; then
+        dnf install clamav clamav-update clamd -y
+    else
+        yum install -y clamav-server clamav-server-systemd clamav-scanner-systemd clamav-data clamav-update clamav-filesystem clamav clamav-devel clamav-lib
+    fi
+
+    setsebool -P antivirus_can_scan_system 1
+    setsebool -P clamd_use_jit 1
+    sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+    sed -i -e "s/#LocalSocket /LocalSocket /" /etc/clamd.d/scan.conf
+    sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+    {
+        "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ndb"
+        "DatabaseCustomURL http://cdn.malware.expert/malware.expert.hdb"
+        "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
+        "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
+    } >> /etc/freshclam.conf
+
+    freshclam
+}
+
+install_lmd(){
+    wget http://www.rfxn.com/downloads/maldetect-current.tar.gz
+    tar xfz maldetect-current.tar.gz
+    cd_dir maldetect-*
+    ./install.sh
+    cd .. && rm -rf maldetect-current.tar.gz maldetect-*
+    sed -i "s|email_addr=\"you@domain.com\"|email_addr=\"${ADMIN_EMAIL}\"|g" /usr/local/maldetect/conf.maldet
+    maldet -u
+}
+
+install_av(){
+    install_clamav
+    install_lmd
+}
+
+############################################
 # Finished
 ############################################
 check_service_status(){
@@ -3650,6 +3692,7 @@ install_certbot_auto
 install_csf
 install_admin_tool
 cf_ip
+install_av
 
 # End install
 start_service
