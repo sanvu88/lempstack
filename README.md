@@ -24,8 +24,9 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cài đặt memcached, redis cache. (Mặc định sẽ không bật).
 - Cài đặt CSF Firewall và CSF GUI - Quản lý CSF với giao diện web.
 - Tích hợp Let's Encrypt SSL.
-- Cung cấp Menu nâng cấp Nginx, MariaDB/, PHP, Redis, Memcached, phpMyAdmin.
-- WP-CLI, Composer, Rclone.
+- Cung cấp Menu nâng cấp Nginx, MariaDB, PHP, Redis, Memcached, phpMyAdmin.
+- Cài đặt WP-CLI, Composer, Rclone.
+- Cài đặt: ClamAV, Linux Malware Detect, Naxsi Firewall.
 - KHÔNG THU THẬP BẤT KỲ THÔNG TIN GÌ TRÊN VPS CỦA BẠN.
 
 ### 1.2. Tối ưu
@@ -48,7 +49,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Không tắt Selinux trên CentOS.
 - Cấu hình website chạy với user khác nhau hạn chế lây lan mã độc giữa các website.
 - Disable các hàm nguy hiểm, bật open_basedir và một số config khác nhằm tăng cường bảo mật.
-- Auto block bruteforce SSH, FTP ....
+- Auto block bruteforce SSH, FTP .... với CSF Firewall.
 - Block run shell trong thư mục uploads WordPress. Chặn truy cập các thư mục, file nhạy cảm trên WordPress.
 - Chống Bruteforce wp-admin.
 - BLock, Unblock IP dễ dàng với CSF Gui (Quản lý CSF qua giao diện Web) và menu quản lý CSF.
@@ -58,6 +59,8 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cho phép thay đổi port FTP.
 - Cấu hình bảo mật FTP
 - Tự động tạo mật khẩu mạnh.
+- Scan Malware với Clamav và Linux Malware Detect.
+- Hạn chế XSS, SQL Injection ... với Naxsi Firewall.
 - And More ...
 
 ### 1.4. Quản lý WordPress
@@ -101,10 +104,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ## 4. Các tính năng sẽ phát triển
 
 - Deploy nhanh mã nguồn trên VPS
-- Menu Scan Malware với ClamAV, Linux Malware Detect – LMD
-- Menu Scan bug WordPress
-- Thay đổi WordPress database prefix
-- Tích hợp Firewall hạn chế XSS, SQL Injection ....
+- Scan bug WordPress
 - Cảnh báo qua email, telegram
 - Rewrite config vhost về mặc định
 
@@ -125,6 +125,9 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Rclone: https://rclone.org/
 - WP-CLI: https://wp-cli.org/
 - Composer: https://getcomposer.org/
+- ClamAV: https://www.clamav.net/
+- Linux Malware Detect: https://www.rfxn.com/projects/linux-malware-detect/
+- Naxsi Firewall: https://github.com/nbs-system/naxsi
 
 ## 7. Contact
 
