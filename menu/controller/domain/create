@@ -369,11 +369,6 @@ END
     chmod 600 "${USER_DIR}"/."${domain}".conf
 }
 
-restart_service(){
-    systemctl restart nginx.service
-    systemctl restart php-fpm.service
-}
-
 show_info(){
     clear
     echo ""

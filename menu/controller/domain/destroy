@@ -8,6 +8,7 @@
 # Please don't remove copyright. Thank!         #
 #################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
@@ -72,20 +73,20 @@ destroy_ftp_user(){
 }
 
 destroy_db(){
-	mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${db_user}'@'localhost'"
+	  mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${db_user}'@'localhost'"
     mysql -e "DROP USER IF EXISTS '${db_user}'@'localhost'"
     mysql -e "DROP DATABASE IF EXISTS ${db_name}"
 }
 
 remove_path(){
 	if [[ "${php_mode}" -eq 2 ]]; then
-    	php_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
+    	  php_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
         if [[ "${php2_version}" == "php56" ]]; then
             php_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
         fi
 	fi
 
-	if [ -d "/home/${username}" ]; then
+	  if [ -d "/home/${username}" ]; then
         rm -rf /home/"${username}"
     fi
     if [ -f "${vhost_config}" ]; then
