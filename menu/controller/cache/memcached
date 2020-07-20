@@ -33,11 +33,16 @@ do
     fi
     case ${CHOICE} in
         1)
-            if [ "${redis_status}" == "active" ]; then
+            if [[ "${redis_status}" == "active" && "${memcached_status}" == "inactive" ]]; then
                 printf "${RED}Ban dang su dung Redis Cache.${NC}\n"
+            elif [[ "${redis_status}" == "active" && "${memcached_status}" == "active" ]]; then
+                printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
+                printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
+            elif [[ "${redis_status}" == "inactive" && "${memcached_status}" == "active" ]]; then
+                printf "${RED}Memcached hien dang hoat dong.${NC}\n"
             else
                 printf "${GREEN}Dang tien hanh mo Memcached...${NC}\n"
-                sleep 1
+                sleep 2
                 systemctl start memcached
                 systemctl enable memcached
                 clear

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#################################################
+# Auto Install & Optimize LEMP Stack on CentOS 7#
+# Version: 1.0                                  #
+# Author: Sanvv - HOSTVN Technical              #
+#                                               #
+# Please don't remove copyright. Thank!         #
+#################################################
+
+for users in /home/*; do
+	  if [[ -d "${users}" ]]; then
+		    user=${users##*/}
+		    for domains in /home/"${user}"/*; do
+			      if [[ -d "${domains}" ]]; then
+				        domain=${domains##*/}
+				        if [ -f "/home/${user}/${domain}/public_html/wp-cron.php" ]; then
+                    wget -q -O - http://"${domain}"/wp-cron.php?doing_wp_cron
+                fi
+			      fi
+		    done
+	  fi
+done

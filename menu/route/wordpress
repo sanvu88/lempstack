@@ -20,7 +20,7 @@ do
     printf "${GREEN}1. Kiem tra phien ban WordPress${NC}\n"
     printf "${GREEN}2. Cap nhat phien ban WordPress${NC}\n"
     printf "${GREEN}3. Cap nhat plugins (Tru plugins tra phi)${NC}\n"
-    printf "${GREEN}4. Toi ưu database${NC}\n"
+    printf "${GREEN}4. Toi uu database${NC}\n"
     printf "${GREEN}5. Repair database${NC}\n"
     printf "${GREEN}6. Sao luu du lieu (Local)${NC}\n"
     printf "${GREEN}7. Khoi phuc du lieu (Local)${NC}\n"
@@ -37,6 +37,7 @@ do
     printf "${GREEN}18. Bat/Tat disable xmlrpc${NC}\n"
     printf "${GREEN}19. Sao luu len Google Drive${NC}\n"
     printf "${GREEN}20. Thiet lap backup tu dong${NC}\n"
+    printf "${GREEN}21. Toi uu WordPress Cron${NC}\n"
     printf "${GREEN} ----------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -70,6 +71,7 @@ do
         18) clear; wp_xmlrpc ;;
         19) clear; menu_ggdrive ;;
         20) clear; menu_cronjob ;;
+        21) clear; printf "${RED}Comming son!${NC}\n";menu_wp ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
