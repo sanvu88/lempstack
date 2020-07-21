@@ -195,6 +195,7 @@ ssh_login_noti(){
 
 prepare_install(){
     echo ""
+    create_bash_dir
     config_selinux
     set_timezone
     set_os_arch
@@ -3627,7 +3628,6 @@ write_info(){
 ############################################
 # Prepare before install
 prepare_install
-create_bash_dir
 
 # Install
 install_lemp
