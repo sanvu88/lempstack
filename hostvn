@@ -2403,9 +2403,9 @@ opcache.blacklist_filename=/etc/php.d/opcache-default.blacklist
 EOphp_opcache
 
     cat > "/etc/php.d/opcache-default.blacklist" << EOopcache_blacklist
-/home/*/public_html/wp-content/plugins/backwpup/*
-/home/*/public_html/wp-content/plugins/duplicator/*
-/home/*/public_html/wp-content/plugins/updraftplus/*
+/home/*/*/public_html/wp-content/plugins/backwpup/*
+/home/*/*/public_html/wp-content/plugins/duplicator/*
+/home/*/*/public_html/wp-content/plugins/updraftplus/*
 EOopcache_blacklist
 }
 
@@ -2430,9 +2430,9 @@ opcache.blacklist_filename=${PHP2_INI_PATH}/opcache-default.blacklist
 EOphp_opcache
 
     cat > "${PHP2_INI_PATH}/opcache-default.blacklist" << EOopcache_blacklist
-/home/*/public_html/wp-content/plugins/backwpup/*
-/home/*/public_html/wp-content/plugins/duplicator/*
-/home/*/public_html/wp-content/plugins/updraftplus/*
+/home/*/*/public_html/wp-content/plugins/backwpup/*
+/home/*/*/public_html/wp-content/plugins/duplicator/*
+/home/*/*/public_html/wp-content/plugins/updraftplus/*
 EOopcache_blacklist
 }
 
