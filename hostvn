@@ -3397,7 +3397,6 @@ exe:/usr/sbin/rpcbind
 pexe:/usr/libexec/postfix/.*
 EOCSF
     csf_gui
-    csf -e
 }
 
 ############################################
@@ -3495,6 +3494,7 @@ start_service() {
     systemctl start php-fpm
     systemctl start pure-ftpd
     systemctl enable pure-ftpd
+    csf -e
     systemctl start lfd
     systemctl enable lfd
     systemctl start csf
@@ -3584,9 +3584,9 @@ cf_ip
 install_av
 
 # End install
-start_service
 add_menu
 write_info
+start_service
 change_ssh_port
 
 clear
