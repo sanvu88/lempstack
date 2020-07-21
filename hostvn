@@ -3187,15 +3187,14 @@ EOmysql_log
 #Config phpMyAdmin
 config_phpmyadmin(){
     BLOWFISH_SECRET=$(generate_random_pwd)
-    mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
-    rm -rf "${USR_DIR}"/phpmyadmin/setup
-    mkdir -p "${USR_DIR}"/phpmyadmin/tmp
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin/setup
+    mkdir -p "${DEFAULT_DIR_TOOL}"/phpmyadmin/tmp
 
     if [[ "${PHP_VERSION}" != "php56" ]]; then
         DECLARE="declare(strict_types=1);"
     fi
 
-    cat > "${USR_DIR}/phpmyadmin/config.inc.php" <<EOCONFIGINC
+    cat > "${DEFAULT_DIR_TOOL}/phpmyadmin/config.inc.php" <<EOCONFIGINC
 <?php
 ${DECLARE}
 \$cfg['blowfish_secret'] = '${BLOWFISH_SECRET}';
@@ -3210,14 +3209,14 @@ ${DECLARE}
 \$cfg['SaveDir'] = '';
 \$cfg['PmaNoRelation_DisableWarning'] = true;
 \$cfg['VersionCheck'] = false;
-\$cfg['TempDir'] = '${USR_DIR}/phpmyadmin/tmp';
+\$cfg['TempDir'] = '${DEFAULT_DIR_TOOL}/phpmyadmin/tmp';
 \$cfg['CaptchaLoginPublicKey'] = '';
 \$cfg['CaptchaLoginPrivateKey'] = '';
 \$cfg['ExecTimeLimit'] = 600;
 EOCONFIGINC
 
-    chown -R nginx:nginx "${USR_DIR}"/phpmyadmin
-    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/phpmyadmin
 }
 
 create_phpmyadmin_db(){
@@ -3251,7 +3250,7 @@ install_phpmyadmin(){
     config_phpmyadmin
     cd_dir "${DIR}"
 
-    chown -R nginx:nginx /usr/share/nginx/html /usr/share/phpmyadmin
+    chown -R nginx:nginx /usr/share/nginx/html "${DEFAULT_DIR_TOOL}"/phpmyadmin
     create_phpmyadmin_db
 }
 
