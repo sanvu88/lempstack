@@ -158,9 +158,7 @@ set_os_arch(){
 # Set DNS
 set_dns(){
     sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
-    {
-        echo "nameserver 8.8.8.8"
-    } >> /etc/resolv.conf
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 }
 
 # Admin Email
@@ -257,10 +255,7 @@ nginx_naxsi(){
 
 create_naxsi_config(){
     cat >> "/etc/nginx/naxsi/disable_admin.conf" <<EOnaxsi_config
-location /RequestDenied {
-    internal;
-    return 404;
-}
+location /RequestDenied { internal; return 404; }
 location /wp-admin {
     try_files \$uri \$uri/ /index.php?\$args;
     SecRulesDisabled;
@@ -1169,69 +1164,26 @@ set \$rocket_reason "";
 set \$rocket_https_prefix "";
 set \$rocket_hsts 0;
 set \$rocket_hsts_value "max-age=31536000; includeSubDomains";
-if (\$http_accept_encoding ~ gzip) {
-    set \$rocket_encryption "_gzip";
-}
-if (\$http_accept_encoding ~ br) {
-    set \$rocket_encryption "";
-}
-
-if (\$https = "on") {
-    set \$rocket_https_prefix "-https";
-    set \$rocket_hsts 1;
-}
-if (\$rocket_hsts = "0") {
-    set \$rocket_hsts_value "";
-}
-
+if (\$http_accept_encoding ~ gzip) { set \$rocket_encryption "_gzip"; }
+if (\$http_accept_encoding ~ br) { set \$rocket_encryption ""; }
+if (\$https = "on") { set \$rocket_https_prefix "-https"; set \$rocket_hsts 1; }
+if (\$rocket_hsts = "0") { set \$rocket_hsts_value ""; }
 set \$rocket_end "/cache/wp-rocket/\$http_host/\$request_uri/index\$rocket_https_prefix.html\$rocket_encryption";
 set \$rocket_url "/wp-content\$rocket_end";
 set \$rocket_file "\$document_root/wp-content\$rocket_end";
 set \$rocket_mobile_detection "\$document_root/wp-content/cache/wp-rocket/\$http_host/\$request_uri/.mobile-active";
-
-if (\$request_method = POST) {
-    set \$rocket_bypass 0;
-    set \$rocket_reason "POST request";
-}
-
-if (\$is_args) {
-    set \$rocket_bypass 0;
-    set \$rocket_reason "Arguments found";
-}
-
-if (-f "\$document_root/.maintenance") {
-    set \$rocket_bypass 0;
-    set \$rocket_reason "Maintenance mode";
-}
-
+if (\$request_method = POST) { set \$rocket_bypass 0; set \$rocket_reason "POST request"; }
+if (\$is_args) { set \$rocket_bypass 0; set \$rocket_reason "Arguments found"; }
+if (-f "\$document_root/.maintenance") { set \$rocket_bypass 0; set \$rocket_reason "Maintenance mode"; }
 if (\$http_cookie ~* "(wordpress_logged_in_|wp\-postpass_|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle|comment_author_|comment_author_email_)") {
     set \$rocket_bypass 0;
     set \$rocket_reason "Cookie";
 }
-
-if (-f "\$rocket_mobile_detection") {
-    set \$rocket_bypass 0;
-    set \$rocket_reason "Specific mobile cache activated";
-}
-
-if (!-f "\$rocket_file") {
-    set \$rocket_bypass 0;
-    set \$rocket_reason "File not cached";
-}
-
-if (\$rocket_bypass = 1) {
-    set \$rocket_is_bypassed "Yes";
-    set \$rocket_reason "\$rocket_url";
-}
-
-if (\$rocket_debug = 0) {
-    set \$rocket_reason "";
-    set \$rocket_file "";
-}
-
-if (\$rocket_bypass = 1) {
-    rewrite .* "\$rocket_url" last;
-}
+if (-f "\$rocket_mobile_detection") { set \$rocket_bypass 0; set \$rocket_reason "Specific mobile cache activated"; }
+if (!-f "\$rocket_file") { set \$rocket_bypass 0; set \$rocket_reason "File not cached"; }
+if (\$rocket_bypass = 1) { set \$rocket_is_bypassed "Yes"; set \$rocket_reason "\$rocket_url"; }
+if (\$rocket_debug = 0) { set \$rocket_reason ""; set \$rocket_file ""; }
+if (\$rocket_bypass = 1) { rewrite .* "\$rocket_url" last; }
 
 location ~ /wp-content/cache/wp-rocket/.*html\$ {
     etag on;
@@ -1281,12 +1233,8 @@ EOwprocket
 
     cat >> "/etc/nginx/wordpress/wpsc.conf" << EOwpsc
 set \$cache_uri \$request_uri;
-if (\$request_method = POST) {
-    set \$cache_uri 'null cache';
-}
-if (\$query_string != "") {
-    set \$cache_uri 'null cache';
-}
+if (\$request_method = POST) { set \$cache_uri 'null cache'; }
+if (\$query_string != "") { set \$cache_uri 'null cache'; }
 if (\$request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
     set \$cache_uri 'null cache';
 }
@@ -1334,18 +1282,9 @@ EOenabler
 
     cat >> "/etc/nginx/wordpress/swift2.conf" << EOswift2
 set \$swift_cache 1;
-if (\$request_method = POST){
-    set \$swift_cache 0;
-}
-
-if (\$args != ''){
-    set \$swift_cache 0;
-}
-
-if (\$http_cookie ~* "wordpress_logged_in") {
-    set \$swift_cache 0;
-}
-
+if (\$request_method = POST){ set \$swift_cache 0; }
+if (\$args != ''){ set \$swift_cache 0; }
+if (\$http_cookie ~* "wordpress_logged_in") { set \$swift_cache 0; }
 if (\$request_uri ~ ^/wp-content/cache/swift-performance/([^/]*)/assetproxy) {
     set \$swift_cache 0;
 }
@@ -1546,15 +1485,8 @@ EOCF
 
     # Include Server block
     cat >> "/etc/nginx/extra/staticfiles.conf" << EOSTATICFILES
-location = /favicon.ico {
-    log_not_found off;
-    access_log off;
-}
-location = /robots.txt {
-    allow all;
-    log_not_found off;
-    access_log off;
-}
+location = /favicon.ico { allow all; log_not_found off; access_log off; }
+location = /robots.txt { allow all; log_not_found off; access_log off; }
 location ~* \.(gif|jpg|jpeg|png|ico|webp)\$ {
     gzip_static off;
     ${BROTLI_STATIC_OFF}
@@ -1879,9 +1811,7 @@ location / {
 location @opencart {
     rewrite ^/(.+)\$ /index.php?_route_=\$1 last;
 }
-location /admin {
-    index index.php;
-}
+location /admin { index index.php; }
 EOopencart
 
 cat >> "${REWRITE_CONFIG_PATH}/yii.conf" << EOyii
