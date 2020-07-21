@@ -313,8 +313,8 @@ server {
     listen 80;
     server_name ${domain} www.${domain};
 
-    #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log on;
+    access_log /home/${username}/${domain}/logs/access.log;
     #error_log off;
     error_log /home/${username}/${domain}/logs/error.log;
     ${root}
