@@ -10,7 +10,7 @@
 #################################################
 
 # Set link
-SCRIPT_LINK="https://scripts.sanvu88.net/lemp"
+SCRIPT_LINK="https://scripts.hostvn.net"
 
 # VPS Info
 OS_VER=$(rpm -E %centos)

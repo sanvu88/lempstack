@@ -18,8 +18,8 @@ DIR=$(pwd)
 BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
 GITHUB_RAW_LINK="https://raw.githubusercontent.com"
-EXT_LINK="https://scripts.sanvu88.net/lemp"
-UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
+EXT_LINK="https://scripts.hostvn.net"
+UPDATE_LINK="https://scripts.hostvn.net/update"
 GITHUB_URL="https://github.com"
 PECL_PHP_LINK="https://pecl.php.net/get"
 PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
@@ -277,8 +277,8 @@ EOnaxsi_config
     cat >> "/etc/nginx/naxsi/enable_naxsi.conf" <<EOenable_naxsi
 ## Naxsi rules
 #LearningMode;
-SecRulesEnabled;
-#SecRulesDisabled;
+#SecRulesEnabled;
+SecRulesDisabled;
 DeniedUrl /RequestDenied;
 ## check rules
 CheckRule "\$SQL >= 8" BLOCK;

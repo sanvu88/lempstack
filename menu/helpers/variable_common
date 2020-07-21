@@ -19,7 +19,7 @@ NC='\033[0m'
 MENU_NAME="hostvn"
 AUTHOR="HOSTVN.NET"
 AUTHOR_WEB="HOSTVN.NET"
-UPDATE_LINK="https://scripts.sanvu88.net/lemp/update"
+UPDATE_LINK="https://scripts.hostvn.net/update"
 IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 DATE=$(date +%Y-%m-%d)
 ALERT=""
