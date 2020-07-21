@@ -61,14 +61,17 @@ set_backup_num(){
 }
 
 create_cron(){
-    crontab -l | grep -q 'backup_local' || cat <(crontab -l) <(echo "${time} /var/hostvn/menu/cronjob/backup_local.sh >/dev/null 2>&1") | crontab -
+    crontab -l > backuplocal
+    echo "${time} /var/hostvn/menu/cronjob/backup_local.sh >/dev/null 2>&1" >> backuplocal
+    crontab backuplocal
+    rm -rf backuplocal
     printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
 }
 
 _run(){
-	  select_time
+    select_time
     set_backup_num
-	  create_cron
+    create_cron
 }
 
 _run

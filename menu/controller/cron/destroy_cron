@@ -24,7 +24,7 @@ select_cron(){
 }
 
 destroy_cronjob(){
-	  crontab -u root -l | grep -v "${cron}"  | crontab -u root -
+	  crontab -u root -l | grep -v "${cron}" | crontab -u root -
 }
 
 _run(){

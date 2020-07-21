@@ -45,6 +45,10 @@ do
                 sleep 1
                 systemctl enable redis.service
                 systemctl start redis.service
+                crontab -l > clear_redis
+                echo "23 */38 * * * service redis restart >/dev/null 2>&1" >> clear_redis
+                crontab clear_redis
+                rm -rf clear_redis
                 clear
                 printf "${GREEN}Da bat Redis Cache.${NC}\n"
             fi
@@ -57,6 +61,7 @@ do
                 sleep 1
                 systemctl stop redis.service
                 systemctl disable redis.service
+                crontab -u root -l | grep -v "redis" | crontab -u root -
                 clear
                 printf "${GREEN}Da tat Redis Cache.${NC}\n"
             else
