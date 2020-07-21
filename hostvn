@@ -942,18 +942,18 @@ location ~ ^/wp-includes/js/tinymce/langs/.+\.php\$ { deny all; access_log off; 
 location ~ ^/wp-includes/theme-compat/ { deny all; access_log off; log_not_found off; }
 
 #Deny access to wp-content folders for suspicious files
-location ~* ^/(wp-content)/(.*?)\.(gz|tar|bzip2|7z|php|php5|php7|log|error|py|pl|kid|love)\$ { deny all; access_log off; log_not_found off; }
+location ~* ^/(wp-content)/(.*?)\.(gz|tar|bzip2|7z|php|php5|php7|log|error|py|pl|kid|love|cgi)\$ { deny all; access_log off; log_not_found off; }
 location ~ ^/wp-content/updraft { deny all; access_log off; log_not_found off; }
 location ~* /wp-content/uploads/nginx-helper/ { deny all; access_log off; log_not_found off; }
 
 # Disable PHP in Uploads
-location ~ ^/wp\-content/uploads/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp\-content/uploads/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|cgi|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
 
 # Disable PHP in Plugins
-location ~ ^/wp\-content/plugins/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp\-content/plugins/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|cgi|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
 
 # Disable PHP in Themes
-location ~ ^/wp\-content/themes/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
+location ~ ^/wp\-content/themes/.*\.(?:php[1-7]?|pht|log|error|py|pl|kid|cgi|love|phtml?|phps)\$ { deny all; access_log off; log_not_found off; }
 
 # WordPress: deny general stuff
 location ~* ^/(?:xmlrpc\.php|wp-links-opml\.php|wp-config\.php|wp-config-sample\.php|wp-comments-post\.php|readme\.html|license\.txt)\$ {
@@ -1627,7 +1627,7 @@ location ~ ^/(\.user.ini|\.htaccess|\.htpasswd|\.user\.ini|\.ht|\.env|\.git|\.sv
     log_not_found off;
 }
 # Deny backup extensions & log files and return 403 forbidden
-location ~* "\.(love|error|kid|old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|bz2|7z|pem|asc|conf|dump)\$" {
+location ~* "\.(love|error|kid|cgi|old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|bz2|7z|pem|asc|conf|dump)\$" {
     deny all;
 }
 location ~* "/(=|\/\$&|_mm|(wp-)?config\.|cgi-|etc/passwd|muieblack)" {
