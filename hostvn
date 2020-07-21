@@ -248,6 +248,10 @@ nginx_naxsi(){
     wget -q "${EXT_LINK}"/naxsi/rule/wordpress.rules -O  /etc/nginx/naxsi/wordpress.rules
     wget -q "${EXT_LINK}"/naxsi/rule/drupal.rules -O  /etc/nginx/naxsi/drupal.rules
     wget -q "${EXT_LINK}"/naxsi/rule/naxsi_relax.rules -O  /etc/nginx/naxsi/naxsi_relax.rules
+
+    if [[ -f "${MODULES_PATH}/ngx_http_naxsi_module.so" ]]; then
+        LOAD_NAXSI="load_module modules/ngx_http_naxsi_module.so;"
+    fi
 }
 
 create_naxsi_config(){
@@ -273,6 +277,24 @@ location /administrator {
     SecRulesDisabled;
 }
 EOnaxsi_config
+
+    cat >> "/etc/nginx/naxsi/enable_naxsi.conf" <<EOenable_naxsi
+## Naxsi rules
+#LearningMode;
+SecRulesEnabled;
+#SecRulesDisabled;
+DeniedUrl /RequestDenied;
+## check rules
+CheckRule "\$SQL >= 8" BLOCK;
+CheckRule "\$RFI >= 8" BLOCK;
+CheckRule "\$TRAVERSAL >= 4" BLOCK;
+CheckRule "\$EVADE >= 4" BLOCK;
+CheckRule "\$XSS >= 8" BLOCK;
+# nginx-naxsi relaxation rules
+include /etc/nginx/naxsi_config/naxsi_relax.rules;
+include /etc/nginx/naxsi_config/wordpress.rules;
+include /etc/nginx/naxsi_config/drupal.rules;
+EOenable_naxsi
 }
 
 install_naxsi(){
@@ -793,6 +815,7 @@ pid        /var/run/nginx.pid;
 
 ${LOAD_BROTLI_FILTER}
 ${LOAD_BROTLI_STATIC}
+${LOAD_NAXSI}
 
 events {
     worker_connections  ${MAX_CLIENT};
@@ -3584,7 +3607,7 @@ install_clamav(){
         "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
     } >> /etc/freshclam.conf
 
-    freshclam
+    freshclam > /dev/null
 }
 
 install_lmd(){
@@ -3594,7 +3617,7 @@ install_lmd(){
     ./install.sh
     cd .. && rm -rf maldetect-current.tar.gz maldetect-*
     sed -i "s|email_addr=\"you@domain.com\"|email_addr=\"${ADMIN_EMAIL}\"|g" /usr/local/maldetect/conf.maldet
-    maldet -u
+    maldet -u > /dev/null
 }
 
 install_av(){
@@ -3669,7 +3692,8 @@ add_menu(){
     unzip menu.zip && rm -rf menu.zip  > /dev/null
     mkdir -p "${BASH_DIR}"/users
     mkdir -p /var/log/hostvn
-    chmod 711 menu && chmod 711 users
+    mkdir -p /var/hostvn/wpcron
+    chmod 711 menu users wpcron
     chmod +x ./menu/* ./menu/*/* ./menu/*/*/* > /dev/null
     dos2unix ./menu/* > /dev/null
     dos2unix ./menu/*/* > /dev/null

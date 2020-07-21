@@ -60,7 +60,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cấu hình bảo mật FTP
 - Tự động tạo mật khẩu mạnh.
 - Scan Malware với Clamav và Linux Malware Detect.
-- Hạn chế XSS, SQL Injection ... với Naxsi Firewall.
+- Hạn chế XSS, SQL Injection, RFI ... với Naxsi Firewall.
 - And More ...
 
 ### 1.4. Quản lý WordPress
