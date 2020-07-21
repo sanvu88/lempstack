@@ -441,7 +441,9 @@ install_lemp(){
 
         if [[ ! -f "/usr/lib/systemd/system/${PHP_VERSION_2}-php-fpm.service" ]]; then
             clear
+            PHP2_RELEASE="no"
             printf "%s\n" "${INST_PHP_ERR_2}"
+            sleep 3
         fi
     fi
 
