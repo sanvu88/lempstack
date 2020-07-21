@@ -3575,7 +3575,6 @@ log_rotation
 # Install other tool
 install_phpmyadmin
 install_pure_ftpd
-change_ssh_port
 install_certbot_auto
 install_csf
 install_admin_tool
@@ -3586,6 +3585,7 @@ install_av
 start_service
 add_menu
 write_info
+change_ssh_port
 
 clear
 sleep 1
