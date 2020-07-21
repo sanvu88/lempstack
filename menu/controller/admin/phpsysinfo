@@ -12,7 +12,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	phpsysinfo_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
+	phpsysinfo_v=$(curl -s "${UPDATE_LINK}"/version | grep "phpsysinfo_version=" | cut -f2 -d'=')
 }
 
 check_dir(){

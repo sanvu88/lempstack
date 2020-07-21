@@ -12,7 +12,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	  phpmyadmin_v=$(curl -s https://scripts.sanvu88.net/lemp/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
+	  phpmyadmin_v=$(curl -s "${UPDATE_LINK}"/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
 }
 
 check_php_version(){
