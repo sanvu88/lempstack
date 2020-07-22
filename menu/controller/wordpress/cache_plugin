@@ -30,7 +30,7 @@ browser_cache(){
         rewrite=""
     elif [[ "${plugins_cache}" == "wprocket" ]]; then
         plugin_cache="wprocket"
-        set_cache="include /etc/nginx/wordpress/wprocket.conf;"
+        set_cache="include /etc/nginx/rocket-nginx/default.conf;"
         rewrite=""
     elif [[ "${plugins_cache}" == "wpsc" ]]; then
         plugin_cache="wpsc"

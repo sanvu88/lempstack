@@ -58,7 +58,7 @@ check_plugins_cache(){
         cache="include /etc/nginx/wordpress/wpfc.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
-        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        cache="include /etc/nginx/rocket-nginx/default.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"

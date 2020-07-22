@@ -41,7 +41,7 @@ check_plugins_cache(){
         wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
-        cache="include /etc/nginx/wordpress/wprocket.conf;"
+        cache="include /etc/nginx/rocket-nginx/default.conf;"
         wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
