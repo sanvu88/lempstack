@@ -210,6 +210,7 @@ create_docrot(){
     chmod 711 /home/"${username}"/"${domain}"
     chmod 711 /home/"${username}"/"${domain}"/logs
     chmod 755 /home/"${username}"/"${domain}"/public_html
+    chcon -Rt httpd_sys_content_t /home/"${username}"/"${domain}"/public_html
 }
 
 set_owner(){

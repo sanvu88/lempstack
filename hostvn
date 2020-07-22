@@ -3440,6 +3440,15 @@ install_wpcli_packages(){
 }
 
 ############################################
+# Allow Nginx directory
+############################################
+
+sys_content(){
+    chcon -Rt httpd_sys_content_t "${DEFAULT_DIR_WEB}"
+    chcon -Rt httpd_sys_content_t "${DEFAULT_DIR_TOOL}"
+}
+
+############################################
 # Create menu
 ############################################
 add_menu(){
@@ -3484,7 +3493,6 @@ write_info(){
     chmod 600 "${FILE_INFO}" /etc/hostvn.lock
 }
 
-
 ############################################
 # Run Script
 ############################################
@@ -3518,6 +3526,7 @@ install_av
 add_menu
 write_info
 start_service
+sys_content
 change_ssh_port
 
 clear
