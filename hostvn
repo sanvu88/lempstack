@@ -3428,6 +3428,17 @@ start_service() {
     check_service_status
 }
 
+install_wpcli_packages(){
+    sed -i '/memory_limit/d' /etc/php.d/00-hostvn-custom.ini
+    echo "memory_limit = -1" >> /etc/php.d/00-hostvn-custom.ini
+    systemctl php-fpm restart
+    wp package install iandunn/wp-cli-rename-db-prefix
+    wp package install markri/wp-sec
+    sed -i '/memory_limit/d' /etc/php.d/00-hostvn-custom.ini
+    echo "memory_limit = ${MAX_MEMORY}M" >> /etc/php.d/00-hostvn-custom.ini
+    systemctl php-fpm restart
+}
+
 ############################################
 # Create menu
 ############################################
