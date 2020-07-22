@@ -3424,8 +3424,7 @@ start_service() {
         systemctl enable "${PHP_VERSION_2}"-php-fpm
         systemctl start "${PHP_VERSION_2}"-php-fpm
     fi
-    cd_dir /etc/nginx/rocket-nginx/
-    php rocket-parser.php
+    php /etc/nginx/rocket-nginx/rocket-parser.php
     check_service_status
 }
 
