@@ -59,7 +59,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cho phép thay đổi port FTP.
 - Cấu hình bảo mật FTP
 - Tự động tạo mật khẩu mạnh.
-- Scan Malware với Clamav và Linux Malware Detect.
+- Scan Malware với Clamav.
 - Hạn chế XSS, SQL Injection, RFI ... với Naxsi Firewall.
 - And More ...
 
@@ -103,10 +103,11 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 4. Các tính năng sẽ phát triển
 
-- Deploy nhanh mã nguồn trên VPS
-- Scan bug WordPress
-- Cảnh báo qua email, telegram
-- Rewrite config vhost về mặc định
+- Deploy nhanh mã nguồn trên VPS.
+- Scan bug WordPress.
+- Cảnh báo qua email, telegram.
+- Rewrite config vhost về mặc định.
+- Tối ưu hình ảnh.
 
 ## 5. Cách sử dụng
 
@@ -126,7 +127,6 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - WP-CLI: https://wp-cli.org/
 - Composer: https://getcomposer.org/
 - ClamAV: https://www.clamav.net/
-- Linux Malware Detect: https://www.rfxn.com/projects/linux-malware-detect/
 - Naxsi Firewall: https://github.com/nbs-system/naxsi
 
 ## 7. Contact
