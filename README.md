@@ -26,7 +26,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Tích hợp Let's Encrypt SSL.
 - Cung cấp Menu nâng cấp Nginx, MariaDB, PHP, Redis, Memcached, phpMyAdmin.
 - Cài đặt WP-CLI, Composer, Rclone.
-- Cài đặt: ClamAV, Linux Malware Detect, Naxsi Firewall.
+- Cài đặt: ClamAV, Naxsi Firewall.
 - KHÔNG THU THẬP BẤT KỲ THÔNG TIN GÌ TRÊN VPS CỦA BẠN.
 
 ### 1.2. Tối ưu
