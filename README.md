@@ -7,6 +7,8 @@
 
 Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - MariaDB - PHP-FPM) trên CentOS 7, CentOS 8.
 
+Vui lòng không sao chép, phát hành lại với mục đích thương mại, donate. Xin cảm ơn.
+
 ## 1. Chi tiết Script:
 
 ### 1.1. Cài đặt
