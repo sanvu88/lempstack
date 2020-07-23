@@ -27,7 +27,7 @@ PMA_LINK="https://files.phpmyadmin.net/phpMyAdmin"
 FILE_INFO="${BASH_DIR}/hostvn.conf"
 HOSTNAME=$(hostname)
 PHP2_RELEASE="no"
-ADMIN_TOOL_PWD=$(date +%s%N | sha256sum | base64 | head -c 16)
+ADMIN_TOOL_PWD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c8)
 
 # Copyright
 AUTHOR="HOSTVN.NET"
@@ -111,7 +111,7 @@ cd_dir(){
 }
 
 generate_random_pwd(){
-    date +%s%N | sha256sum | base64 | head -c 16
+    < /dev/urandom tr -dc A-Za-z0-9 | head -c8
 }
 
 ############################################
