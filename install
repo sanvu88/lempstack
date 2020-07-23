@@ -1,13 +1,14 @@
 #!/bin/bash
 
-#################################################
-# Auto Install & Optimize LEMP Stack on CentOS 7#
-# Version: 1.0                                  #
-# Author: Sanvv - HOSTVN Technical              #
-# Website: https://hostvn.net                   #
-#                                               #
-# Please don't remove copyright. Thank!         #
-#################################################
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+# Please don't copy copy under any circumstance for business reason! #
+######################################################################
 
 # Set link
 SCRIPT_LINK="https://scripts.hostvn.net"
