@@ -113,7 +113,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 5. Cách sử dụng
 
-- Vui lòng truy cập: https://scripts.hostvn.net
+- Vui lòng truy cập: https://hostvn.vn/huong-dan/
 
 ## 6. Nguồn download các phần mềm
 
@@ -133,7 +133,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 7. Contact
 
-- Homepage: https://scripts.hostvn.net
+- Homepage: https://hostvn.vn
 - Group: https://www.facebook.com/groups/scripthostvn/
 - Email: Sanvv@hostvn.com
 
