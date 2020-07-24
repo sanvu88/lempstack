@@ -229,7 +229,18 @@ select_plugin_seo(){
 }
 
 wp_auto_install_info(){
-    read -r -p "${INPUT_WP_ADMIN}" admin_user
+    while true
+    do
+        read -r -p "${INPUT_WP_ADMIN}" admin_user
+        echo
+        if [[ "${admin_user}" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]];
+        then
+            break
+        else
+            echo "${WRONG_USERNAME}"
+        fi
+    done
+
     admin_pwd=$(gen_pass "$@")
 
     while true
