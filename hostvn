@@ -3356,8 +3356,6 @@ install_clamav(){
         echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
         echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
     } >> /etc/freshclam.conf
-
-    freshclam
 }
 
 install_av(){
