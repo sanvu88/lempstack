@@ -29,7 +29,7 @@ printf "${GREEN}        Quan ly Nginx        ${NC}\n"
 printf "${GREEN}=============================${NC}\n"
 printf "${GREEN}Phien ban : %s${NC}\n" "${nginx_v}"
 printf "${GREEN}-----------------------------${NC}\n"
-printf "${GREEN}Trạng thái: %s${NC}\n" "${nginx_status}"
+printf "${GREEN}Trang thai: %s${NC}\n" "${nginx_status}"
 printf "${GREEN}-----------------------------${NC}\n"
 echo
 
