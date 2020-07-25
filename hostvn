@@ -3342,7 +3342,7 @@ install_clamav(){
     if [ "${OS_VER}" -eq 8 ]; then
         dnf install clamav clamav-update clamd -y
     else
-        yum install -y clamav-server clamav-server-systemd clamav-scanner-systemd clamav-data clamav-update clamav-filesystem clamav clamav-devel clamav-lib
+        yum install -y clamav clamav-update
     fi
 
     setsebool -P antivirus_can_scan_system 1
