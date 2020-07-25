@@ -194,7 +194,6 @@ prepare_install(){
     set_timezone
     set_os_arch
     create_log
-    ssh_login_noti
     set_email
 }
 
@@ -3539,6 +3538,7 @@ add_menu
 write_info
 start_service
 sys_content
+ssh_login_noti
 change_ssh_port
 
 clear
