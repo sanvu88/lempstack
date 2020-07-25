@@ -24,21 +24,19 @@ backup(){
 	fi
 	if [ ! -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
 	    cd_dir /home/"${user}"/"${domain}"
-      tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+        tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
 	fi
 	if [ ! -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
 	    cd_dir /home/backup/"${DATE}"/"${domain}"
-      mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 	fi
 }
 
 _run(){
-  select_remote
-  select_domain
+    select_remote
+    select_domain
 
 	if [[ -z "${ALERT}" ]]; then
-		set_var
-
 		for users in /home/*; do
 			if [[ -d "${users}" ]]; then
 				user=${users##*/}
