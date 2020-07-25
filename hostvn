@@ -364,7 +364,7 @@ select_php_multi(){
         case $opt in
             "Yes") MULTI_PHP="y"; break;;
             "No") MULTI_PHP="n"; break;;
-            *) printf "%s\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
 }
