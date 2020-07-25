@@ -39,6 +39,7 @@ do
         1) php -v; menu_php ;;
         2)
             if [[ "${php2_release}" != "yes" ]]; then
+                clear
                 printf "${RED}Ban chua cai dat phien ban PHP thu 2.${NC}\n"
             else
                 php2_ver=$(grep "php2_version" "${FILE_INFO}" | cut -f2 -d'=')
