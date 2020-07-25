@@ -108,12 +108,22 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 4. Các tính năng sẽ phát triển
 
-- Deploy nhanh mã nguồn trên VPS.
-- Scan bug WordPress.
+- Lựa chọn phiên bản PHP từng website.
+- Deploy nhanh mã nguồn trên VPS (giải nén file, import Database).
 - Cảnh báo qua email, telegram.
 - Rewrite config vhost về mặc định.
 - Tối ưu hình ảnh.
 - Tối ưu lại các thông số VPS trong trường hợp bạn nâng cấp cấu hình VPS.
+- Cronjob auto xoá cache redis, memcached tránh full cache.
+- Hỗ trợ tạo Subdomain, Alias Domain.
+- Menu check DDOS.
+- Menu tạo Swap.
+- Hỗ trợ Wordpress Multisite.
+- Scan bug WordPress.
+- Thay đổi Prefix database cho wordpress.
+- Bật/tắt bảo vệ 2 lớp cho wp-admin.
+- Option disable wp cron, chuyển sang dùng cronjob giúp tăng tốc độ cho WordPress.
+- Các tính năng được người dùng yêu cầu.
 
 ## 5. Cách sử dụng
 
