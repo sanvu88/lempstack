@@ -18,8 +18,6 @@ set_variable(){
 
 # MariaDB calculation
 mariadb_calculation(){
-    set_variable
-
     if [[ ${RAM_TOTAL} -gt 524288 && ${RAM_TOTAL} -le 2099152 ]]; then #1GB Ram
         max_allowed_packet="32M"
         back_log="100"
@@ -259,4 +257,5 @@ mariadb_calculation(){
     fi
 }
 
+set_variable
 mariadb_calculation
