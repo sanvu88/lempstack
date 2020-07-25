@@ -284,7 +284,7 @@ select_remote(){
             remotes+=("${select}")
         done
 
-        PS3="${SELECT_OPTION}}"
+        PS3="${SELECT_OPTION}"
         select remote in "${remotes[@]}"
         do
             remote=${remote}
