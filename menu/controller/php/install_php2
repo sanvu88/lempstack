@@ -361,12 +361,13 @@ write_info(){
 }
 
 _run(){
+    ALERT=""
+    set_var
 	check_php2_release
 	select_php_ver
 	check_duplicate_php
 
 	if [[ -z "${ALERT}" ]]; then
-		set_var
 		memory_calculation
 		install_php_2
 		install_igbinary_2
@@ -381,6 +382,7 @@ _run(){
 		clear
 		printf "${GREEN}Cai dat thanh cong.${NC}\n"
 	else
+	    clear
 		printf "${ALERT}\n"
 	fi
 }
