@@ -118,6 +118,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Hỗ trợ tạo Subdomain, Alias Domain.
 - Menu check DDOS.
 - Menu tạo Swap.
+- Menu quản lý Naxsi Firewall.
 - Hỗ trợ Wordpress Multisite.
 - Scan bug WordPress.
 - Thay đổi Prefix database cho wordpress.
