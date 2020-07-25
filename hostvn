@@ -313,14 +313,24 @@ EOMARIADBREPO
 # Install php-fpm
 select_php_ver(){
     clear
-    printf "%s\n" "${SELECT_PHP}"
-    PS3="${ENTER_OPTION}"
-    select opt in "${PHP_LIST[@]}"
+    while true
     do
-        case $opt in
-            "${opt}") PHP_VERSION="${opt/.}"; break;;
-            *) printf "%s\n" "${WRONG_PHP_OPTION} $REPLY" ;;
-        esac
+        printf "%s\n" "${SELECT_PHP}"
+        PS3="${ENTER_OPTION}"
+        select opt in "${PHP_LIST[@]}"
+        do
+            case $opt in
+                "$opt") PHP_VERSION="${opt/.}"; break;;
+            esac
+        done
+        echo
+
+        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION}" | fold -w4 | paste -sd'.') "* ]]; then
+            break
+        else
+            clear
+            printf "${RED}%s${NC}\n" "${WRONG_PHP_OPTION}"
+        fi
     done
 }
 
@@ -361,14 +371,24 @@ select_php_multi(){
 
 select_php_ver_2(){
     clear
-    printf "%s\n" "${SELECT_PHP_2}"
-    PS3="${ENTER_OPTION}"
-    select opt in "${PHP_LIST[@]}"
+    while true
     do
-        case $opt in
-            "${opt}") PHP_VERSION_2="${opt/.}"; break;;
-            *) printf "%s\n" "${INVALID_PHP2_OPTION} $REPLY";;
-        esac
+        printf "%s\n" "${SELECT_PHP_2}"
+        PS3="${ENTER_OPTION}"
+        select opt in "${PHP_LIST[@]}"
+        do
+            case $opt in
+                "$opt") PHP_VERSION_2="${opt/.}"; break;;
+            esac
+        done
+        echo
+
+        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION_2}" | fold -w4 | paste -sd'.') "* ]]; then
+            break
+        else
+            clear
+            printf "${RED}%s\n${NC}" "${INVALID_PHP2_OPTION}"
+        fi
     done
 }
 
