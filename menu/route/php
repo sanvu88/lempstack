@@ -63,7 +63,7 @@ do
             menu_php
             ;;
         5) clear; php_setting ;;
-        6) clear; change_php ;;
+        6) clear; php_change ;;
         7) clear; php_inst_ver_2 ;;
         0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
