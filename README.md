@@ -113,6 +113,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cảnh báo qua email, telegram.
 - Rewrite config vhost về mặc định.
 - Tối ưu hình ảnh.
+- Tối ưu lại các thông số VPS trong trường hợp bạn nâng cấp cấu hình VPS.
 
 ## 5. Cách sử dụng
 
