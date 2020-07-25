@@ -22,7 +22,8 @@ list_domain(){
         cd_dir "${USER_DIR}"
         for entry in .*.conf; do
             [[ -e "${entry}" ]] || break
-            domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
+            domain=${entry/.}
+            domain=${domain//.conf}
             printf "$i) ${GREEN}${domain}${NC}\n"
             i=$((i+1));
         done
