@@ -22,7 +22,7 @@ MENU_NAME="hostvn"
 AUTHOR="HOSTVN.VN"
 AUTHOR_WEB="HOSTVN.VN"
 UPDATE_LINK="https://scripts.hostvn.net/update"
-IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+IPADDRESS=$(curl -s http://myip.directadmin.com)
 DATE=$(date +%Y-%m-%d)
 ALERT=""
 

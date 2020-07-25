@@ -15,7 +15,7 @@
 # Set variables
 OS_VER=$(rpm -E %centos)
 OS_ARCH=$(uname -m)
-IPADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+IPADDRESS=$(curl -s http://myip.directadmin.com)
 DIR=$(pwd)
 BASH_DIR="/var/hostvn"
 PHP_MODULES_DIR="/usr/lib64/php/modules"
