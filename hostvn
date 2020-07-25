@@ -2238,7 +2238,7 @@ php_value[session.save_handler] = files
 php_value[session.save_path]    = /opt/remi/${PHP_VERSION_2}/root/var/lib/php/session
 php_value[soap.wsdl_cache_dir]  = /opt/remi/${PHP_VERSION_2}/root/var/lib/php/wsdlcache
 php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
-;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
+;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:${DEFAULT_DIR_TOOL}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
 security.limit_extensions = .php
 EOwww_2_conf
 
@@ -3335,7 +3335,7 @@ cf_ip(){
 }
 
 ############################################
-# Install ClamAV, Linux Malware Detect – LMD
+# Install ClamAV
 ############################################
 
 install_clamav(){

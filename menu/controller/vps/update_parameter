@@ -1,0 +1,323 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+# shellcheck disable=SC2034
+# shellcheck disable=SC1091
+source /var/hostvn/menu/helpers/function
+source /var/hostvn/menu/helpers/variable_php
+source /var/hostvn/menu/helpers/mysql_php
+
+config_my_cnf(){
+    mariadb_calculation
+    mkdir -p /var/log/mysql
+    chown -R mysql:mysql /var/log/mysql
+    mv /etc/my.cnf /etc/my.cnf.orig
+
+cat >> "/etc/my.cnf" << EOmy_cnf
+[client]
+socket=/var/lib/mysql/mysql.sock
+
+[mysql]
+max_allowed_packet = ${max_allowed_packet}
+
+[mysqld]
+local-infile=0
+ignore-db-dir=lost+found
+#character-set-server=utf8
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+
+#bind-address=127.0.0.1
+
+tmpdir=/tmp
+
+innodb=ON
+#skip-federated
+#skip-pbxt
+#skip-pbxt_statistics
+#skip-archive
+#skip-name-resolve
+#old_passwords
+back_log = ${back_log}
+max_connections = ${max_connections}
+key_buffer_size = ${key_buffer_size}
+myisam_sort_buffer_size = ${myisam_sort_buffer_size}
+myisam_max_sort_file_size = ${myisam_max_sort_file_size}
+join_buffer_size = ${join_buffer_size}
+read_buffer_size = ${read_buffer_size}
+sort_buffer_size = ${sort_buffer_size}
+table_definition_cache = ${table_definition_cache}
+table_open_cache = ${table_open_cache}
+thread_cache_size = ${thread_cache_size}
+wait_timeout = 1800
+connect_timeout = 10
+tmp_table_size = ${tmp_table_size}
+max_heap_table_size = ${max_heap_table_size}
+max_allowed_packet = ${max_allowed_packet}
+#max_seeks_for_key = 4294967295
+#group_concat_max_len = 1024
+max_length_for_sort_data = 1024
+net_buffer_length = ${net_buffer_length}
+max_connect_errors = 100000
+concurrent_insert = 2
+read_rnd_buffer_size = ${read_rnd_buffer_size}
+bulk_insert_buffer_size = 8M
+# query_cache boost for MariaDB >10.1.2+
+query_cache_limit = ${query_cache_limit}
+query_cache_size = ${query_cache_size}
+query_cache_type = 1
+query_cache_min_res_unit = 2K
+query_prealloc_size = 262144
+query_alloc_block_size = 65536
+transaction_alloc_block_size = 8192
+transaction_prealloc_size = 4096
+default-storage-engine = InnoDB
+
+log_warnings=1
+slow_query_log=0
+long_query_time=1
+slow_query_log_file=/var/lib/mysql/slowq.log
+log-error=/var/log/mysql/mysqld.log
+
+# innodb settings
+#innodb_large_prefix=1
+innodb_purge_threads=1
+#innodb_file_format = Barracuda
+innodb_file_per_table = 1
+innodb_open_files = ${innodb_open_files}
+innodb_data_file_path= ibdata1:10M:autoextend
+innodb_buffer_pool_size = ${innodb_buffer_pool_size}
+
+## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
+#innodb_buffer_pool_instances=2
+
+#innodb_log_files_in_group = 2
+innodb_log_file_size = ${innodb_log_file_size}
+innodb_log_buffer_size = ${innodb_log_buffer_size}
+innodb_flush_log_at_trx_commit = 2
+innodb_thread_concurrency = 0
+innodb_lock_wait_timeout=50
+innodb_flush_method = O_DIRECT
+#innodb_support_xa=1
+
+# 200 * # DISKS
+innodb_io_capacity = ${innodb_io_capacity}
+innodb_io_capacity_max = 2000
+innodb_read_io_threads = ${innodb_read_io_threads}
+innodb_write_io_threads = 2
+innodb_flush_neighbors = 1
+
+# mariadb settings
+[mariadb]
+#thread-handling = pool-of-threads
+#thread-pool-size= 20
+#mysql --port=3307 --protocol=tcp
+#extra-port=3307
+#extra-max-connections=1
+
+userstat = 0
+key_cache_segments = 1
+aria_group_commit = none
+aria_group_commit_interval = 0
+aria_log_file_size = ${aria_log_file_size}
+aria_log_purge_type = immediate
+aria_pagecache_buffer_size = ${aria_pagecache_buffer_size}
+aria_sort_buffer_size = ${aria_sort_buffer_size}
+
+[mariadb-5.5]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+#ignore_db_dirs=
+query_cache_strip_comments=0
+
+innodb_read_ahead = linear
+innodb_adaptive_flushing_method = estimate
+innodb_flush_neighbor_pages = 1
+innodb_stats_update_need_lock = 0
+innodb_log_block_size = 512
+
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+
+[mysqld_safe]
+socket=/var/lib/mysql/mysql.sock
+log-error=/var/log/mysqld/mysqld.log
+#nice = -5
+open-files-limit = 8192
+
+[mysqldump]
+quick
+max_allowed_packet = ${max_allowed_packet}
+
+[myisamchk]
+tmpdir=/tmp
+key_buffer = ${key_buffer}
+sort_buffer = ${sort_buffer}
+read_buffer = ${read_buffer}
+write_buffer = ${write_buffer}
+
+[mysqlhotcopy]
+interactive-timeout
+
+[mariadb-10.0]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+# 2 variables needed to switch from XtraDB to InnoDB plugins
+#plugin-load=ha_innodb
+#ignore_builtin_innodb
+
+## MariaDB 10 only save and restore buffer pool pages
+## warm up InnoDB buffer pool on server restarts
+innodb_buffer_pool_dump_at_shutdown=1
+innodb_buffer_pool_load_at_startup=1
+innodb_buffer_pool_populate=0
+## Disabled settings
+performance_schema=OFF
+innodb_stats_on_metadata=OFF
+innodb_sort_buffer_size=2M
+innodb_online_alter_log_max_size=128M
+query_cache_strip_comments=0
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+EOmy_cnf
+}
+
+php_global_config(){
+    php_parameter
+    if [[ -f "/etc/php-fpm.conf" ]]; then
+        rm -rf /etc/php-fpm.conf
+    fi
+
+    cat >> "/etc/php-fpm.conf" << EOphp_fpm_conf
+;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+include=/etc/php-fpm.d/*.conf
+
+[global]
+pid = /var/run/php-fpm/php-fpm.pid
+error_log = /var/log/php-fpm/error.log
+log_level = warning
+emergency_restart_threshold = 10
+emergency_restart_interval = 1m
+process_control_timeout = 10s
+daemonize = yes
+EOphp_fpm_conf
+
+    if [[ -f "/etc/php-fpm.d/www.conf" ]]; then
+        mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf.orig
+    fi
+cat >> "/etc/php-fpm.d/www.conf" << EOwww_conf
+[www]
+listen = /var/run/php-fpm.sock;
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660
+user = nginx
+group = nginx
+pm = dynamic
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.start_servers = ${PM_START_SERVERS}
+pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
+pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.max_requests = ${PM_MAX_REQUEST}
+request_terminate_timeout = 300
+rlimit_files = 65536
+rlimit_core = 0
+;slowlog = /var/log/php-fpm/www-slow.log
+chdir = /
+php_admin_value[error_log] = /var/log/php-fpm/www-error.log
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = /var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[open_basedir] = ${DEFAULT_DIR_TOOL}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
+security.limit_extensions = .php
+EOwww_conf
+}
+
+php_global_config_2(){
+    php2_fpm_config_file="/etc/opt/remi/${php2_version}/php-fpm.conf"
+    php2_fpm_config_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+    www2_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/www.conf"
+
+    if [[ ${PHP_VERSION_2} == "php56" ]]; then
+        php2_fpm_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.conf"
+        php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
+        www2_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+    fi
+
+    if [[ -f "${php2_fpm_config_file}" ]]; then
+        mv "${php2_fpm_config_file}" "${php2_fpm_config_file}".orig
+    fi
+
+    if [[ ! -d "/opt/remi/${php2_version}/root/var/run/php-fpm" ]]; then
+        mkdir -p /opt/remi/"${php2_version}"/root/var/run/php-fpm
+    fi
+
+    cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
+;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+include=${php2_fpm_config_path}/*.conf
+
+[global]
+pid = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.pid
+error_log = /opt/remi/${php2_version}/root/var/log/php-fpm/error.log
+log_level = warning
+emergency_restart_threshold = 10
+emergency_restart_interval = 1m
+process_control_timeout = 10s
+daemonize = yes
+EOphp_fpm_2_conf
+
+    if [[ -f "${www2_config_file}" ]]; then
+        mv "${www2_config_file}" "${www2_config_file}".orig
+    fi
+cat >> "${www2_config_file}" << EOwww_2_conf
+[www]
+listen = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.sock;
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660
+user = nginx
+group = nginx
+pm = dynamic
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.start_servers = ${PM_START_SERVERS}
+pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
+pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.max_requests = ${PM_MAX_REQUEST}
+request_terminate_timeout = 300
+rlimit_files = 65536
+rlimit_core = 0
+;slowlog = /opt/remi/${php2_version}/root/var/log/php-fpm/www-slow.log
+chdir = /
+php_admin_value[error_log] = /opt/remi/${php2_version}/root/var/log/php-fpm/www-error.log
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = /opt/remi/${php2_version}/root/var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:${DEFAULT_DIR_TOOL}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
+security.limit_extensions = .php
+EOwww_2_conf
+}
