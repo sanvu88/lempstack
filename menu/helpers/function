@@ -274,22 +274,27 @@ brute_force_wp(){
 }
 
 select_remote(){
-    echo "${SELECT_REMOTE}"
-    remotes=()
-    selects=( $(rclone listremotes) )
-    for entry in "${selects[@]}"; do
-        select=${entry//:}
-        remotes+=("${select}")
-    done
-
-    PS3="${SELECT_OPTION}}"
-    select remote in "${remotes[@]}"
+    while true
     do
-        remote=${remote}
-        break
-    done
+        echo "${SELECT_REMOTE}"
+        remotes=()
+        selects=( $(rclone listremotes) )
+        for entry in "${selects[@]}"; do
+            select=${entry//:}
+            remotes+=("${select}")
+        done
 
-    if [[ -z "${remote}" || ! ${remote} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}${WRONG_REMOTE}${NC}\n")
-    fi
+        PS3="${SELECT_OPTION}}"
+        select remote in "${remotes[@]}"
+        do
+            remote=${remote}
+        done
+
+        if [[ " ${remotes[*]} " == *" ${remote} "* ]];
+        then
+            printf "${RED}${WRONG_REMOTE}${NC}\n"
+        else
+            break
+        fi
+    done
 }

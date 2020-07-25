@@ -83,6 +83,8 @@ do
             if [[ "${php2_release}" == "yes" ]]; then
                 systemctl restart "${php2_version}"-php-fpm
             fi
+            clear
+            printf "${GREEN}Khoi dong lai PHP thanh cong.${NC}\n"
             menu_php
             ;;
         5) clear; php_setting ;;
