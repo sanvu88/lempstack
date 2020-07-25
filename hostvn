@@ -42,8 +42,8 @@ IGBINARY_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "igbinary_version=" | c
 PHP_MEMCACHED_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_memcached_version=" | cut -f2 -d'=')
 PHP_REDIS_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "php_redis_version=" | cut -f2 -d'=')
 MARIADB_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "mariadb_version=" | cut -f2 -d'=')
-PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
-PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
+#PHP_VERSION_1=$(curl -s ${UPDATE_LINK}/version | grep "php_version=" | cut -f2 -d'=')
+#PHP_VERSION_2=$(curl -s ${UPDATE_LINK}/version | grep "php2_version=" | cut -f2 -d'=')
 PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
 if [[ "${OS_VER}" -eq 8 ]]; then
     index=0
@@ -58,11 +58,11 @@ fi
 # Set Lang
 ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
 SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
-WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, he thong se cai dat ${PHP_VERSION_1}"
+WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, vui long chon lai."
 SELECT_INST_PHP_2="Ban co muon cai dat phien ban PHP thu hai khong - Multiple PHP ?"
 ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
-WRONG_PHP_SELECT_2="Ban nhap sai. He thong se cai mot phien ban PHP."
-WRONG_PHP_OPTION_2="Ban nhap sai, he thong cai dat ${PHP_VERSION_2}"
+WRONG_PHP_SELECT_2="Ban nhap sai. Vui long nhap lai."
+INVALID_PHP2_OPTION="${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}"
 SELECT_PHP_2="Lua chon phien ban PHP thu hai ban muon su dung:"
 INST_MARIADB_ERR="Cai dat MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
 INST_NGINX_ERR="Cai dat Nginx that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
@@ -319,7 +319,7 @@ select_php_ver(){
     do
         case $opt in
             "${opt}") PHP_VERSION="${opt/.}"; break;;
-            *) printf "%s\n" "${WRONG_PHP_OPTION}"; PHP_VERSION="${PHP_VERSION_1}"; break;;
+            *) printf "%s\n" "${WRONG_PHP_OPTION} $REPLY" ;;
         esac
     done
 }
@@ -354,7 +354,7 @@ select_php_multi(){
         case $opt in
             "Yes") MULTI_PHP="y"; break;;
             "No") MULTI_PHP="n"; break;;
-            *) printf "%s\n" "${WRONG_PHP_SELECT_2}"; break;;
+            *) printf "%s\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
 }
@@ -367,7 +367,7 @@ select_php_ver_2(){
     do
         case $opt in
             "${opt}") PHP_VERSION_2="${opt/.}"; break;;
-            *) printf "%s\n" "${WRONG_PHP_OPTION_2}"; PHP_VERSION_2=${PHP_VERSION_2}; break;;
+            *) printf "%s\n" "${INVALID_PHP2_OPTION} $REPLY";;
         esac
     done
 }
