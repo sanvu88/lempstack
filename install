@@ -17,6 +17,7 @@ SCRIPT_LINK="https://scripts.hostvn.net"
 
 OS_VER=$(rpm -E %centos)
 RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+LOW_RAM='524288'
 
 # Control Panel path
 CPANEL="/usr/local/cpanel/cpanel"
