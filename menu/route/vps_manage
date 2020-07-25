@@ -13,7 +13,7 @@
 CHOICE=1
 
 printf "${GREEN}==========================${NC}\n"
-printf "${GREEN}Kiem tra thong tin may chu${NC}\n"
+printf "${GREEN}         Quan ly VPS      ${NC}\n"
 printf "${GREEN}==========================${NC}\n"
 echo
 
@@ -27,6 +27,7 @@ do
     printf "${GREEN}6. Thay doi thong tin SSH${NC}\n"
     printf "${GREEN}7. Cap nhat VPS${NC}\n"
     printf "${GREEN}8. Cap nhat HOSTVN Script${NC}\n"
+    printf "${GREEN}9. Cap nhat lai cau hinh (Sau khi nang cap VPS)${NC}\n"
     printf "${GREEN} ----------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
@@ -74,6 +75,7 @@ do
             menu_vps
             ;;
         8) update_script ;;
+        9) change_all_parameter ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

@@ -417,3 +417,7 @@ cron_backup_gg(){
 cron_destroy(){
 	. /var/hostvn/menu/controller/cron/destroy_cron
 }
+
+change_all_parameter(){
+    . /var/hostvn/menu/controller/vps/update_parameter
+}

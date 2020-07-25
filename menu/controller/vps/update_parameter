@@ -15,13 +15,14 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 source /var/hostvn/menu/helpers/variable_php
-source /var/hostvn/menu/helpers/mysql_php
+source /var/hostvn/menu/helpers/mysql_variable
+
+confirm(){
+    read -r -p "Ban muon cap nhat lai thong so SCRIPT ? (y/n) " promtp_update
+}
 
 config_my_cnf(){
-    mariadb_calculation
-    mkdir -p /var/log/mysql
-    chown -R mysql:mysql /var/log/mysql
-    mv /etc/my.cnf /etc/my.cnf.orig
+    rm -rf /etc/my.cnf
 
 cat >> "/etc/my.cnf" << EOmy_cnf
 [client]
@@ -193,131 +194,157 @@ EOmy_cnf
 }
 
 php_global_config(){
-    php_parameter
-    if [[ -f "/etc/php-fpm.conf" ]]; then
-        rm -rf /etc/php-fpm.conf
-    fi
+    sed -i '/pm.max_children/d' /etc/php-fpm.d/www.conf
+    sed -i '/pm.start_servers/d' /etc/php-fpm.d/www.conf
+    sed -i '/pm.min_spare_servers/d' /etc/php-fpm.d/www.conf
+    sed -i '/pm.max_spare_servers/d' /etc/php-fpm.d/www.conf
+    sed -i '/pm.max_requests/d' /etc/php-fpm.d/www.conf
 
-    cat >> "/etc/php-fpm.conf" << EOphp_fpm_conf
-;;;;;;;;;;;;;;;;;;;;;
-; FPM Configuration ;
-;;;;;;;;;;;;;;;;;;;;;
-
-include=/etc/php-fpm.d/*.conf
-
-[global]
-pid = /var/run/php-fpm/php-fpm.pid
-error_log = /var/log/php-fpm/error.log
-log_level = warning
-emergency_restart_threshold = 10
-emergency_restart_interval = 1m
-process_control_timeout = 10s
-daemonize = yes
-EOphp_fpm_conf
-
-    if [[ -f "/etc/php-fpm.d/www.conf" ]]; then
-        mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf.orig
-    fi
-cat >> "/etc/php-fpm.d/www.conf" << EOwww_conf
-[www]
-listen = /var/run/php-fpm.sock;
-listen.backlog = -1
-listen.allowed_clients = 127.0.0.1
-listen.owner = nginx
-listen.group = nginx
-listen.mode = 0660
-user = nginx
-group = nginx
-pm = dynamic
-pm.max_children = ${PM_MAX_CHILDREN}
-pm.start_servers = ${PM_START_SERVERS}
-pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
-pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
-pm.max_requests = ${PM_MAX_REQUEST}
-request_terminate_timeout = 300
-rlimit_files = 65536
-rlimit_core = 0
-;slowlog = /var/log/php-fpm/www-slow.log
-chdir = /
-php_admin_value[error_log] = /var/log/php-fpm/www-error.log
-php_admin_flag[log_errors] = on
-php_value[session.save_handler] = files
-php_value[session.save_path]    = /var/lib/php/session
-php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache
-php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
-;php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
-;php_admin_value[open_basedir] = ${DEFAULT_DIR_TOOL}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
-security.limit_extensions = .php
-EOwww_conf
+    {
+        echo "pm.max_children = ${PM_MAX_CHILDREN}"
+        echo "pm.start_servers = ${PM_START_SERVERS}"
+        echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
+        echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
+        echo "pm.max_requests = ${PM_MAX_REQUEST}"
+    } >> /etc/php-fpm.d/www.conf
 }
 
 php_global_config_2(){
-    php2_fpm_config_file="/etc/opt/remi/${php2_version}/php-fpm.conf"
-    php2_fpm_config_path="/etc/opt/remi/${php2_version}/php-fpm.d"
     www2_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/www.conf"
 
     if [[ ${PHP_VERSION_2} == "php56" ]]; then
-        php2_fpm_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.conf"
-        php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
         www2_config_file="/opt/remi/${php2_version}/root/etc/php-fpm.d"
     fi
 
-    if [[ -f "${php2_fpm_config_file}" ]]; then
-        mv "${php2_fpm_config_file}" "${php2_fpm_config_file}".orig
-    fi
+    sed -i '/pm.max_children/d' "${www2_config_file}"
+    sed -i '/pm.start_servers/d' "${www2_config_file}"
+    sed -i '/pm.min_spare_servers/d' "${www2_config_file}"
+    sed -i '/pm.max_spare_servers/d' "${www2_config_file}"
+    sed -i '/pm.max_requests/d' "${www2_config_file}"
 
-    if [[ ! -d "/opt/remi/${php2_version}/root/var/run/php-fpm" ]]; then
-        mkdir -p /opt/remi/"${php2_version}"/root/var/run/php-fpm
-    fi
-
-    cat >> "${php2_fpm_config_file}" << EOphp_fpm_2_conf
-;;;;;;;;;;;;;;;;;;;;;
-; FPM Configuration ;
-;;;;;;;;;;;;;;;;;;;;;
-
-include=${php2_fpm_config_path}/*.conf
-
-[global]
-pid = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.pid
-error_log = /opt/remi/${php2_version}/root/var/log/php-fpm/error.log
-log_level = warning
-emergency_restart_threshold = 10
-emergency_restart_interval = 1m
-process_control_timeout = 10s
-daemonize = yes
-EOphp_fpm_2_conf
-
-    if [[ -f "${www2_config_file}" ]]; then
-        mv "${www2_config_file}" "${www2_config_file}".orig
-    fi
-cat >> "${www2_config_file}" << EOwww_2_conf
-[www]
-listen = /opt/remi/${php2_version}/root/var/run/php-fpm/php-fpm.sock;
-listen.backlog = -1
-listen.allowed_clients = 127.0.0.1
-listen.owner = nginx
-listen.group = nginx
-listen.mode = 0660
-user = nginx
-group = nginx
-pm = dynamic
-pm.max_children = ${PM_MAX_CHILDREN}
-pm.start_servers = ${PM_START_SERVERS}
-pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
-pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
-pm.max_requests = ${PM_MAX_REQUEST}
-request_terminate_timeout = 300
-rlimit_files = 65536
-rlimit_core = 0
-;slowlog = /opt/remi/${php2_version}/root/var/log/php-fpm/www-slow.log
-chdir = /
-php_admin_value[error_log] = /opt/remi/${php2_version}/root/var/log/php-fpm/www-error.log
-php_admin_flag[log_errors] = on
-php_value[session.save_handler] = files
-php_value[session.save_path]    = /opt/remi/${php2_version}/root/var/lib/php/session
-php_value[soap.wsdl_cache_dir]  = /opt/remi/${php2_version}/root/var/lib/php/wsdlcache
-php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
-;php_admin_value[open_basedir] = ${DEFAULT_DIR_WEB}/:${DEFAULT_DIR_TOOL}/:/tmp/:/var/tmp/:/dev/urandom:/usr/share/php/:/dev/shm:/var/lib/php/sessions/
-security.limit_extensions = .php
-EOwww_2_conf
+    {
+        echo "pm.max_children = ${PM_MAX_CHILDREN}"
+        echo "pm.start_servers = ${PM_START_SERVERS}"
+        echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
+        echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
+        echo "pm.max_requests = ${PM_MAX_REQUEST}"
+    } >> "${www2_config_file}"
 }
+
+# Custom PHP Ini
+hostvn_custom_ini(){
+    sed -i '/realpath_cache_size/d' /etc/php.d/00-hostvn-custom.ini
+    sed -i '/realpath_cache_ttl/d' /etc/php.d/00-hostvn-custom.ini
+    sed -i '/memory_limit/d' /etc/php.d/00-hostvn-custom.ini
+    sed -i '/upload_max_filesize/d' /etc/php.d/00-hostvn-custom.ini
+    sed -i '/post_max_size/d' /etc/php.d/00-hostvn-custom.ini
+    sed -i '/max_input_vars/d' /etc/php.d/00-hostvn-custom.ini
+    {
+        echo "realpath_cache_size = ${PHP_REAL_PATH_LIMIT}"
+        echo "realpath_cache_ttl = ${PHP_REAL_PATH_TTL}"
+        echo "memory_limit = ${MAX_MEMORY}M"
+        echo "upload_max_filesize = ${MAX_MEMORY}M"
+        echo "post_max_size = ${MAX_MEMORY}M"
+        echo "max_input_vars = ${MAX_INPUT_VARS}"
+    } >> /etc/php.d/00-hostvn-custom.ini
+}
+
+hostvn_custom_ini_2(){
+    sed -i '/realpath_cache_size/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    sed -i '/realpath_cache_ttl/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    sed -i '/memory_limit/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    sed -i '/upload_max_filesize/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    sed -i '/post_max_size/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    sed -i '/max_input_vars/d' "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+    {
+        echo "realpath_cache_size = ${PHP_REAL_PATH_LIMIT}"
+        echo "realpath_cache_ttl = ${PHP_REAL_PATH_TTL}"
+        echo "memory_limit = ${MAX_MEMORY}M"
+        echo "upload_max_filesize = ${MAX_MEMORY}M"
+        echo "post_max_size = ${MAX_MEMORY}M"
+        echo "max_input_vars = ${MAX_INPUT_VARS}"
+    } >> "${PHP2_INI_PATH}"/00-hostvn-custom.ini
+}
+
+# Config PHP Opcache
+php_opcache(){
+    sed -i '/memory_consumption=/d' /etc/php.d/10-opcache.ini
+    echo "opcache.memory_consumption=${OPCACHE_MEM}" >> /etc/php.d/10-opcache.ini
+}
+
+php_opcache_2(){
+    sed -i '/memory_consumption=/d' "${PHP2_INI_PATH}"/10-opcache.ini
+    echo "opcache.memory_consumption=${OPCACHE_MEM}" >> "${PHP2_INI_PATH}"/10-opcache.ini
+}
+
+# Change php user config
+change_php_user(){
+    selects=()
+    cd_dir "${USER_DIR}"
+    for entry in .*.conf; do
+        domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
+        if [ "${domain}" != "${domain/.}" ]; then
+            php_mode=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+            php_conf_path="/etc/php-fpm.d"
+            if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+                php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+                if [[ "${php2_version}" == "php56" ]]; then
+                    php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+                fi
+            fi
+
+            sed -i '/pm.max_children/d' "${php_conf_path}"/"${domain}".conf
+            sed -i '/pm.start_servers/d' "${php_conf_path}"/"${domain}".conf
+            sed -i '/pm.min_spare_servers/d' "${php_conf_path}"/"${domain}".conf
+            sed -i '/pm.max_spare_servers/d' "${php_conf_path}"/"${domain}".conf
+            sed -i '/pm.max_requests/d' "${php_conf_path}"/"${domain}".conf
+
+            {
+                echo "pm.max_children = ${PM_MAX_CHILDREN}"
+                echo "pm.start_servers = ${PM_START_SERVERS}"
+                echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
+                echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
+                echo "pm.max_requests = ${PM_MAX_REQUEST}"
+            } >> "${php_conf_path}"/"${domain}".conf
+        fi
+    done
+}
+
+_run(){
+    confirm
+    if yes_no_confirm "${promtp_update}"; then
+        php_parameter
+        memory_calculation
+        mariadb_calculation
+
+        config_my_cnf
+
+        php_global_config
+        php_opcache
+        hostvn_custom_ini
+
+        if [ "${php2_release}" == "yes" ]; then
+            PHP2_INI_PATH="/etc/opt/remi/${php2_version}/php.d"
+
+            if [[ ${php2_version} == "php56" ]]; then
+                PHP2_INI_PATH="/opt/remi/${php2_version}/root/etc/php.d"
+            fi
+
+            php_global_config_2
+            hostvn_custom_ini_2
+            php_opcache_2
+        fi
+
+        change_php_user
+
+        restart_service
+        systemctl restart mariadb
+        clear
+        printf "${GREEN}Cap nhat lai thong so thanh cong.${NC}\n"
+    else
+        printf "${GREEN}Ban da huy cap nhat lai thong so SCRIPT.${NC}\n"
+    fi
+}
+
+_run
+menu_vps

@@ -89,3 +89,79 @@ php_parameter(){
         PM_MAX_REQUEST=500
     fi
 }
+
+memory_calculation(){
+    if [[ "${PHP_MEM}" -le '262144' ]]; then
+        OPCACHE_MEM='32'
+        MAX_MEMORY='48'
+        PHP_REAL_PATH_LIMIT='512k'
+        PHP_REAL_PATH_TTL='14400'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '262144' && "${PHP_MEM}" -le '393216' ]]; then
+        OPCACHE_MEM='80'
+        MAX_MEMORY='96'
+        PHP_REAL_PATH_LIMIT='640k'
+        PHP_REAL_PATH_TTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
+        OPCACHE_MEM='112'
+        MAX_MEMORY='128'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='21600'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
+        OPCACHE_MEM='144'
+        MAX_MEMORY='160'
+        PHP_REAL_PATH_LIMIT='768k'
+        PHP_REAL_PATH_TTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '1049576' && "${PHP_MEM}" -le '2097152' ]]; then
+        OPCACHE_MEM='160'
+        MAX_MEMORY='320'
+        PHP_REAL_PATH_LIMIT='1536k'
+        PHP_REAL_PATH_TTL='28800'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '2097152' && "${PHP_MEM}" -le '3145728' ]]; then
+        OPCACHE_MEM='192'
+        MAX_MEMORY='384'
+        PHP_REAL_PATH_LIMIT='2048k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '3145728' && "${PHP_MEM}" -le '4194304' ]]; then
+        OPCACHE_MEM='224'
+        MAX_MEMORY='512'
+        PHP_REAL_PATH_LIMIT='3072k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="6000"
+    elif [[ "${PHP_MEM}" -gt '4194304' && "${PHP_MEM}" -le '8180000' ]]; then
+        OPCACHE_MEM='288'
+        MAX_MEMORY='640'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '8180000' && "${PHP_MEM}" -le '16360000' ]]; then
+        OPCACHE_MEM='320'
+        MAX_MEMORY='800'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '16360000' && "${PHP_MEM}" -le '32400000' ]]; then
+        OPCACHE_MEM='480'
+        MAX_MEMORY='1024'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '32400000' && "${PHP_MEM}" -le '64800000' ]]; then
+        OPCACHE_MEM='600'
+        MAX_MEMORY='1280'
+        PHP_REAL_PATH_LIMIT='4096k'
+        PHP_REAL_PATH_TTL='43200'
+        MAX_INPUT_VARS="10000"
+    elif [[ "${PHP_MEM}" -gt '64800000' ]]; then
+        OPCACHE_MEM='800'
+        MAX_MEMORY='2048'
+        PHP_REAL_PATH_LIMIT='8192k'
+        PHP_REAL_PATH_TTL='86400'
+        MAX_INPUT_VARS="10000"
+    fi
+}
