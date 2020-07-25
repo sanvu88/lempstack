@@ -149,7 +149,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 
 ## 7. Contact
 
-- Homepage: https://hostvn.vn
+- Homepage: https://hostvn.vn , https://hostvn.net
 - Group: https://www.facebook.com/groups/scripthostvn/
 - Email: Sanvv@hostvn.com
 

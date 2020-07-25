@@ -15,7 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 confirm_delete(){
-	read -r -p "Ban muon xoa backup ? (y\n) " promt_delete
+	read -r -p "Ban muon xoa backup ? (y/n) " promt_delete
 }
 
 delete(){
