@@ -113,7 +113,6 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Cảnh báo qua email, telegram.
 - Rewrite config vhost về mặc định.
 - Tối ưu hình ảnh.
-- Tối ưu lại các thông số VPS trong trường hợp bạn nâng cấp cấu hình VPS.
 - Cronjob auto xoá cache redis, memcached tránh full cache.
 - Hỗ trợ tạo Subdomain, Alias Domain.
 - Menu check DDOS.
