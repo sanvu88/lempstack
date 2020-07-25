@@ -88,10 +88,15 @@ _run(){
 	set_variable
 	select_parameter
 	input_parameter
-	remove_ini_bak
-	change_parameter
-	restart_php
-	printf "${GREEN}Thay đoi thong so PHP thanh cong.${NC}\n"
+
+	if valid_number "${num}"; then
+	    remove_ini_bak
+        change_parameter
+        restart_php
+        printf "${GREEN}Thay đoi thong so PHP thanh cong.${NC}\n"
+    else
+        printf "${RED}Gia tri ban nhap khong chinh xac.${NC}\n"
+	fi
 }
 
 _run
