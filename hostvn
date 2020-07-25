@@ -31,9 +31,9 @@ PHP2_RELEASE="no"
 ADMIN_TOOL_PWD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c8)
 
 # Copyright
-AUTHOR="HOSTVN.NET"
+AUTHOR="HOSTVN.VN"
 AUTHOR_CONTACT="kythuat@hostvn.net"
-AUTHOR_WEBSITE="https://hostvn.net"
+AUTHOR_WEBSITE="https://hostvn.vn"
 
 # Service Version
 PHPMYADMIN_VERSION=$(curl -s ${UPDATE_LINK}/version | grep "phpmyadmin_version=" | cut -f2 -d'=')

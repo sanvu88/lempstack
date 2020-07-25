@@ -50,7 +50,7 @@ NC='\033[0m'
 welcome(){
     clear
     printf "========================================================\n"
-    echo   "                   HOSTVN.NET Scripts                     "
+    echo   "                   HOSTVN.VN Scripts                     "
     echo   "     Auto Install & Optimize LEMP Stack on CentOS 7, 8    "
     printf " Neu can ho tro vui long lien he %s\n" "kythuat@hostvn.net"
     printf "========================================================\n"
