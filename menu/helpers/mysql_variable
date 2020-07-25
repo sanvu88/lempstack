@@ -258,3 +258,5 @@ mariadb_calculation(){
         write_buffer="384M"
     fi
 }
+
+mariadb_calculation

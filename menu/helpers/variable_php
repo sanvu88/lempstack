@@ -19,8 +19,6 @@ set_variable(){
 }
 
 php_parameter(){
-    set_variable
-
     if [[ ${CPU_CORES} -ge 4 && ${CPU_CORES} -lt 6 && ${RAM_TOTAL} -gt 1049576 && ${RAM_TOTAL} -le 2097152 ]]; then
         PM_MAX_CHILDREN=$((CPU_CORES * 6))
         PM_START_SERVERS=$((CPU_CORES * 4))
@@ -165,3 +163,7 @@ memory_calculation(){
         MAX_INPUT_VARS="10000"
     fi
 }
+
+set_variable
+php_parameter
+memory_calculation

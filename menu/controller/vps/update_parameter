@@ -282,41 +282,36 @@ change_php_user(){
     selects=()
     cd_dir "${USER_DIR}"
     for entry in .*.conf; do
-        domain=$( echo "$entry" | sed 's/^.//' | sed 's/.conf//')
-        if [ "${domain}" != "${domain/.}" ]; then
-            php_mode=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-            php_conf_path="/etc/php-fpm.d"
-            if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
-                php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
-                if [[ "${php2_version}" == "php56" ]]; then
-                    php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
-                fi
+        domain=${entry/.}
+        domain=${domain//.conf}
+        php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        php_conf_path="/etc/php-fpm.d"
+        if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+            php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+            if [[ "${php2_version}" == "php56" ]]; then
+                php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
             fi
-
-            sed -i '/pm.max_children/d' "${php_conf_path}"/"${domain}".conf
-            sed -i '/pm.start_servers/d' "${php_conf_path}"/"${domain}".conf
-            sed -i '/pm.min_spare_servers/d' "${php_conf_path}"/"${domain}".conf
-            sed -i '/pm.max_spare_servers/d' "${php_conf_path}"/"${domain}".conf
-            sed -i '/pm.max_requests/d' "${php_conf_path}"/"${domain}".conf
-
-            {
-                echo "pm.max_children = ${PM_MAX_CHILDREN}"
-                echo "pm.start_servers = ${PM_START_SERVERS}"
-                echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
-                echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
-                echo "pm.max_requests = ${PM_MAX_REQUEST}"
-            } >> "${php_conf_path}"/"${domain}".conf
         fi
+
+        sed -i '/pm.max_children/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/pm.start_servers/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/pm.min_spare_servers/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/pm.max_spare_servers/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/pm.max_requests/d' "${php_conf_path}"/"${domain}".conf
+
+        {
+            echo "pm.max_children = ${PM_MAX_CHILDREN}"
+            echo "pm.start_servers = ${PM_START_SERVERS}"
+            echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
+            echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
+            echo "pm.max_requests = ${PM_MAX_REQUEST}"
+        } >> "${php_conf_path}"/"${domain}".conf
     done
 }
 
 _run(){
     confirm
     if yes_no_confirm "${promtp_update}"; then
-        php_parameter
-        memory_calculation
-        mariadb_calculation
-
         config_my_cnf
 
         php_global_config
