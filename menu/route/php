@@ -50,9 +50,31 @@ do
             menu_php
             ;;
         3)
-            yum -y update php-fpm;
+            UPDATES_PHP1=$(yum check-update php-fpm --quiet | grep -v "^$")
+            UPDATES_PHP1_COUNT=$(echo "${UPDATES_PHP1}" | wc -l)
+            if [[ UPDATES_PHP1_COUNT -gt 0 ]]; then
+                printf "${GREEN}Chuan bi cap nhat phien ban PHP mac dinh.${NC}\n"
+                sleep 2
+                yum -y update php-fpm;
+                clear
+                printf "${GREEN}Update phien ban PHP mac dinh thanh cong.${NC}\n"
+            else
+                clear
+                printf "${RED}Phien ban PHP mac dinh dang la moi nhat.${NC}\n"
+            fi
+
             if [[ "${php2_release}" == "yes" ]]; then
-                yum -y update "${php2_version}"-php-fpm
+                UPDATES_PHP2=$(yum check-update "${php2_version}"-php-fpm --quiet | grep -v "^$")
+                UPDATES_PHP2_COUNT=$(echo "${UPDATES_PHP2}" | wc -l)
+                if [[ UPDATES_PHP2_COUNT -gt 0 ]]; then
+                    clear
+                    printf "${GREEN}Chuan bi cap nhat phien ban PHP 2.${NC}\n"
+                    sleep 2
+                    yum -y update "${php2_version}"-php-fpm
+                else
+                    clear
+                    printf "${RED}Phien ban PHP 2 dang la moi nhat.${NC}\n"
+                fi
             fi
             menu_php
             ;;

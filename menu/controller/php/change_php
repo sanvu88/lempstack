@@ -133,30 +133,52 @@ select_php_ver(){
 	prompt_php1="n"
     read -r -p "Ban co muon thay doi phien ban PHP mac dinh khong ? (y/n) " prompt_php1
     if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
-	    printf "Lua chon phien ban PHP mac dinh\n"
-	    PS3="Nhap vao lua chon cua ban [1-6]: "
-	    select opt in "${PHP_LIST[@]}"
-	    do
-	        case $opt in
-	            "${opt}") php1_new="${opt/.}"; break;;
-	            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
-	        esac
-	    done
+        clear
+        while true
+        do
+            printf "Lua chon phien ban PHP mac dinh\n"
+            PS3="Nhap vao lua chon cua ban: "
+            select opt in "${PHP_LIST[@]}"
+            do
+                case $opt in
+                    "${opt}") php1_new="${opt/.}"; break;;
+                esac
+            done
+            echo
+
+            if [[ " ${PHP_LIST[*]} " == *" $(echo "${php1_new}" | fold -w4 | paste -sd'.') "* ]]; then
+                break
+            else
+                clear
+                printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
+            fi
+        done
 	fi
 
     prompt_php2="n"
     if [[ "${php2_release}" == "yes" ]]; then
     	read -r -p "Ban co muon thay doi phien ban PHP thu 2 khong ? (y/n) " prompt_php2
     	if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
-    		printf "Lua chon phien ban PHP thu 2\n"
-		    PS3="Nhap vao lua chon cua ban [1-6]: "
-		    select opt2 in "${PHP_LIST[@]}"
-		    do
-		        case ${opt2} in
-		            "${opt2}") php2_new="${opt2/.}"; break;;
-		            *) printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
-		        esac
-		    done
+    	    clear
+            while true
+            do
+                printf "Lua chon phien ban PHP thu 2\n"
+                PS3="Nhap vao lua chon cua ban: "
+                select opt2 in "${PHP_LIST[@]}"
+                do
+                    case $opt2 in
+                        "${opt2}") php2_new="${opt2/.}"; break;;
+                    esac
+                done
+                echo
+
+                if [[ " ${PHP_LIST[*]} " == *" $(echo "${php2_new}" | fold -w4 | paste -sd'.') "* ]]; then
+                    break
+                else
+                    clear
+                    printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
+                fi
+            done
     	fi
     fi
 }

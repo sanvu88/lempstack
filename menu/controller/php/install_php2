@@ -119,14 +119,24 @@ check_php2_release(){
 
 select_php_ver(){
     clear
-    printf "Lua chon phien ban PHP\n"
-    PS3="Nhap vao lua chon cua ban [1-6]: "
-    select opt in "${PHP_LIST[@]}"
+    while true
     do
-        case $opt in
-            "${opt}") php2_version="${opt/.}"; break;;
-            *) printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC} $REPLY";;
-        esac
+        printf "Lua chon phien ban PHP ban muon cai dat\n"
+        PS3="Nhap vao lua chon cua ban: "
+        select opt in "${PHP_LIST[@]}"
+        do
+            case $opt in
+                "${opt}") php2_version="${opt/.}"; break;;
+            esac
+        done
+        echo
+
+        if [[ " ${PHP_LIST[*]} " == *" $(echo "${php2_version}" | fold -w4 | paste -sd'.') "* ]]; then
+            break
+        else
+            clear
+            printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
+        fi
     done
 }
 
