@@ -43,7 +43,7 @@ check_plugins_cache(){
         plugin_cache="wpfc"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         rewrite=""
-        ccache="include /etc/nginx/rocket-nginx/default.conf;"
+        cache="include /etc/nginx/rocket-nginx/default.conf;"
         plugin_cache="wprocket"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
@@ -150,8 +150,6 @@ restart_nginx(){
 
 _run(){
     check_nginx_status
-    select_domain
-    #validate_domain ${domain}
 
     if [ -z "${ALERT}" ]; then
         select_source
@@ -171,6 +169,13 @@ _run(){
     fi
 }
 
-_run
-sleep 2
-menu_ssl
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
+
+menu_sslpaid

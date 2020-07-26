@@ -75,7 +75,6 @@ backup_vhost(){
 }
 
 sign_ssl(){
-
     if check_www_record "${domain}";
     then
         /usr/local/bin/certbot-auto --nginx --no-bootstrap -d "${domain}" -d www."${domain}"
@@ -159,7 +158,6 @@ restart_nginx(){
 }
 
 _run(){
-    select_domain
     validate
 
     # if [ -d "/etc/letsencrypt/live/${domain}" ]; then
@@ -190,5 +188,12 @@ _run(){
     fi
 }
 
-_run
+select_domain
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
+
 menu_letencrypt

@@ -184,7 +184,6 @@ restart_nginx(){
 
 _run(){
     check_nginx_status
-    select_domain
 
     if [ -z "${ALERT}" ]; then
         select_source
@@ -208,6 +207,13 @@ _run(){
     fi
 }
 
-_run
-sleep 2
-menu_ssl
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
+
+menu_sslpaid
