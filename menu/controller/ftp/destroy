@@ -25,19 +25,22 @@ delete(){
 _run(){
     ALERT=""
 	input
+    if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
+        if ! if_pureftpd_user_exists ftp_user; then
+            ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
+        fi
 
-	if ! if_pureftpd_user_exists ftp_user; then
-		ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
-	fi
+        validate_user "${ftp_user}"
 
-	validate_user "${ftp_user}"
-
-	if [[ -z "${ALERT}" ]]; then
-		delete
-		printf "${GREEN}Xoa FTP User thanh cong.${NC}\n"
-	else
-		printf "${ALERT}\n"
-	fi
+        if [[ -z "${ALERT}" ]]; then
+            delete
+            printf "${GREEN}Xoa FTP User thanh cong.${NC}\n"
+        else
+            printf "${ALERT}\n"
+        fi
+    else
+        printf "${RED}Khong co user FTP nao ton tai tren VPS.${NC}\n"
+    fi
 }
 
 pureftpd_status="$(pgrep -f pure-ftpd)"
