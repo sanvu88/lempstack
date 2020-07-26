@@ -20,13 +20,13 @@ set_var(){
 
 backup(){
 	cd_dir /home/"${username}"/"${domain}"
-	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/"${DATE}"/"${domain}"
+	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+		mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
 	fi
-	if [ -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
-	    /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz
+	if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
+	    /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
 	fi
-	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html
+	tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html
 }
 
 _run(){
@@ -37,7 +37,7 @@ _run(){
 		backup
 		clear
 		printf "${GREEN}Sao luu ma nguon thanh cong.${NC}\n"
-		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${DATE}/${domain}/${domain}${NC}\n"
+		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${CURRENT_DATE}/${domain}/${domain}${NC}\n"
 	else
 	  clear
 		printf "${ALERT}\n"

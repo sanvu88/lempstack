@@ -29,11 +29,11 @@ set_var(){
 }
 
 backup(){
-	if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
-		rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 	fi
 
-	cd_dir /home/backup/"${DATE}"/"${domain}"
+	cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
 	mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 	clear
 	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"

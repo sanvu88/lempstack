@@ -19,15 +19,15 @@ set_var(){
 }
 
 backup(){
-	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/"${DATE}"/"${domain}"
+	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+		mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
 	fi
-	if [ ! -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]; then
+	if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
 	    cd_dir /home/"${user}"/"${domain}"
-        tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
 	fi
-	if [ ! -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]; then
-	    cd_dir /home/backup/"${DATE}"/"${domain}"
+	if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
+	    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
         mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 	fi
 }

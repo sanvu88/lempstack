@@ -25,13 +25,13 @@ backup_confirm(){
 
 backup(){
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
-		rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 	fi
-	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${domain}"
+	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-    wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 }
 
 repair_db(){

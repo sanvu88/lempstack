@@ -25,19 +25,19 @@ backup_confirm(){
 
 backup(){
 	cd_dir /home/"${username}"/"${domain}"
-	if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${domain}"
+	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-	if [[ -f "/home/backup/${DATE}/${domain}/${domain}.tar.gz" ]]; then
-		rm -rf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz
+	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]]; then
+		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
 	fi
-	tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
+	tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
 
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
-		rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 	fi
-	wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql.gz
+	wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql.gz
 }
 
 update_wp(){

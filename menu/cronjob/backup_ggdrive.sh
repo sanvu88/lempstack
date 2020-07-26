@@ -26,15 +26,15 @@ for users in /home/*; do
 					if [[ -d "${publics}" ]]; then
 						public=${publics##*/}
 						db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-						if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-							mkdir -p /home/backup/"${DATE}"/"${domain}"
+						if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+							mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
 						fi
-						rm -rf /home/backup/"${DATE}"/"${domain}"/*
-						cd_dir /home/backup/"${DATE}"/"${domain}"
+						rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
+						cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
 						mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 
 						cd_dir /home/"${user}"/"${domain}"
-						tar -cpzvf /home/backup/"${DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+						tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
 					fi
 				done
 			fi

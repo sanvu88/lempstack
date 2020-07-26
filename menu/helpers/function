@@ -158,8 +158,8 @@ restart_service(){
 }
 
 make_backup_dir(){
-    if [[ ! -d "/home/backup/${DATE}/${1}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${1}"
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${1}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${1}"
     fi
 }
 
