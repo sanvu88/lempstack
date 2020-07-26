@@ -56,7 +56,11 @@ if [[ "${OS_VER}" -eq 8 ]]; then
 fi
 
 # Set Lang
-ENTER_OPTION="Nhap vao lua chon cua ban [1-6]: "
+OPTION_INST_PUREFTP="Ban co muon cai dat PURE-FTPD (Quan ly FTP) khong ? "
+OPTION_INST_AV="Ban co muon cai dat Clamav (Scan Malware) khong ? "
+OPTION_INST_MEMCACHED="Ban co muon cai dat Memcached khong ? "
+OPTION_INST_REDIS="Ban co muon cai dat Redis khong ? "
+ENTER_OPTION="Nhap vao lua chon cua ban: "
 SELECT_PHP="Hay lua chon phien ban PHP muon cai dat:"
 WRONG_PHP_OPTION="Lua chon cua ban khong chinh xac, vui long chon lai."
 SELECT_INST_PHP_2="Ban co muon cai dat phien ban PHP thu hai khong - Multiple PHP ?"
@@ -198,6 +202,140 @@ prepare_install(){
 }
 
 ############################################
+# Option Install
+############################################
+select_php_ver(){
+    clear
+    while true
+    do
+        printf "%s\n" "${SELECT_PHP}"
+        PS3="${ENTER_OPTION}"
+        select opt in "${PHP_LIST[@]}"
+        do
+            case $opt in
+                "$opt") PHP_VERSION="${opt/.}"; break;;
+            esac
+        done
+        echo
+
+        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION}" | fold -w4 | paste -sd'.') "* ]]; then
+            break
+        else
+            clear
+            printf "${RED}%s${NC}\n" "${WRONG_PHP_OPTION}"
+        fi
+    done
+}
+
+select_php_multi(){
+    clear
+    printf "%s\n" "${SELECT_INST_PHP_2}"
+    PS3="${ENTER_OPTION_PHP_2}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") MULTI_PHP="y"; break;;
+            "No") MULTI_PHP="n"; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+}
+
+select_php_ver_2(){
+    clear
+    while true
+    do
+        printf "%s\n" "${SELECT_PHP_2}"
+        PS3="${ENTER_OPTION}"
+        select opt in "${PHP_LIST[@]}"
+        do
+            case $opt in
+                "$opt") PHP_VERSION_2="${opt/.}"; break;;
+            esac
+        done
+        echo
+
+        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION_2}" | fold -w4 | paste -sd'.') "* ]]; then
+            break
+        else
+            clear
+            printf "${RED}%s\n${NC}" "${INVALID_PHP2_OPTION}"
+        fi
+    done
+}
+
+option_clamav(){
+    clear
+    printf "%s\n" "${OPTION_INST_AV}"
+    PS3="${ENTER_OPTION}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") prompt_inst_av="y"; break;;
+            "No") prompt_inst_av="n"; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+}
+
+option_memcached(){
+    clear
+    printf "%s\n" "${OPTION_INST_MEMCACHED}"
+    PS3="${ENTER_OPTION}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") prompt_memcached="y"; break;;
+            "No") prompt_memcached="n"; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+}
+
+option_redis(){
+    clear
+    printf "%s\n" "${OPTION_INST_REDIS}"
+    PS3="${ENTER_OPTION}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") prompt_redis="y"; break;;
+            "No") prompt_redis="n"; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+}
+
+option_pureftp(){
+    clear
+    printf "%s\n" "${OPTION_INST_PUREFTP}"
+    PS3="${ENTER_OPTION}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") prompt_pureftpd="y"; break;;
+            "No") prompt_pureftpd="n"; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+}
+
+options(){
+    select_php_ver
+    select_php_multi
+    select_php_ver_2
+    option_clamav
+    option_memcached
+    option_redis
+    option_pureftp
+}
+
+############################################
 # Install LEMP Stack
 ############################################
 
@@ -310,29 +448,6 @@ EOMARIADBREPO
 }
 
 # Install php-fpm
-select_php_ver(){
-    clear
-    while true
-    do
-        printf "%s\n" "${SELECT_PHP}"
-        PS3="${ENTER_OPTION}"
-        select opt in "${PHP_LIST[@]}"
-        do
-            case $opt in
-                "$opt") PHP_VERSION="${opt/.}"; break;;
-            esac
-        done
-        echo
-
-        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION}" | fold -w4 | paste -sd'.') "* ]]; then
-            break
-        else
-            clear
-            printf "${RED}%s${NC}\n" "${WRONG_PHP_OPTION}"
-        fi
-    done
-}
-
 install_php(){
     if [ "${OS_VER}" -eq 8 ]; then
         PHP1_VERSION=${PHP_VERSION//php}
@@ -351,44 +466,6 @@ install_php(){
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
         php-hash php-iconv php-libxml php-pecl-imagick php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl \
         php-tokenizer php-bz2 php-pgsql php-sqlite3 php-fileinfo
-}
-
-select_php_multi(){
-    clear
-    printf "%s\n" "${SELECT_INST_PHP_2}"
-    PS3="${ENTER_OPTION_PHP_2}"
-    options=("Yes" "No")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "Yes") MULTI_PHP="y"; break;;
-            "No") MULTI_PHP="n"; break;;
-            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
-        esac
-    done
-}
-
-select_php_ver_2(){
-    clear
-    while true
-    do
-        printf "%s\n" "${SELECT_PHP_2}"
-        PS3="${ENTER_OPTION}"
-        select opt in "${PHP_LIST[@]}"
-        do
-            case $opt in
-                "$opt") PHP_VERSION_2="${opt/.}"; break;;
-            esac
-        done
-        echo
-
-        if [[ " ${PHP_LIST[*]} " == *" $(echo "${PHP_VERSION_2}" | fold -w4 | paste -sd'.') "* ]]; then
-            break
-        else
-            clear
-            printf "${RED}%s\n${NC}" "${INVALID_PHP2_OPTION}"
-        fi
-    done
 }
 
 install_php_2(){
@@ -419,9 +496,6 @@ check_duplicate_php(){
 
 install_lemp(){
     echo ""
-
-    select_php_ver
-    select_php_multi
 
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
         select_php_ver_2
@@ -581,9 +655,9 @@ memory_calculation(){
 # Install Memcached
 install_memcached(){
     if [[ "${OS_VER}" -eq 8 ]]; then
-        dnf -y install memcached libmemcached libmemcached-devel
+        dnf -y install memcached
     else
-        yum -y install memcached libmemcached libmemcached-devel
+        yum -y install memcached
     fi
 
     if [[ -f "/etc/sysconfig/memcached" ]]; then
@@ -744,8 +818,14 @@ EOF
 
 install_cache(){
     echo ""
-    install_memcached
-    install_redis
+    if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
+        install_memcached
+    fi
+
+    if [[ "${prompt_redis}" =~ ^([yY])$ ]]; then
+        install_redis
+    fi
+
     install_igbinary
 
     if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
@@ -3510,6 +3590,9 @@ write_info(){
 # Prepare before install
 prepare_install
 
+# Select options
+options
+
 # Install
 install_lemp
 install_composer
@@ -3526,18 +3609,25 @@ log_rotation
 
 # Install other tool
 install_phpmyadmin
-install_pure_ftpd
+
+if [[ "${prompt_pureftpd}" =~ ^([yY])$ ]]; then
+    install_pure_ftpd
+fi
+
 install_certbot_auto
 install_csf
 install_admin_tool
 cf_ip
-install_av
+
+if [[ "${prompt_inst_av}" =~ ^([yY])$ ]]; then
+    install_av
+fi
 
 # End install
 add_menu
-write_info
 start_service
 sys_content
+write_info
 ssh_login_noti
 change_ssh_port
 
