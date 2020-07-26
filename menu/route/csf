@@ -49,26 +49,35 @@ do
         2)
             read -r -p "Nhap vao IP muon block: " ip
             csf -d "${ip}"
+            clear
+            printf "${GREEN}Block IP thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
         3)
             read -r -p "Nhap vao IP muon go block: " ip
             csf -dr "${ip}"
+            clear
+            printf "${GREEN}Go Block IP thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
         4)
             csf -tf
             csf -df
-            systemctl restart csf
             systemctl restart lfd
+            clear
+            printf "${GREEN}Go Block toan bo IP thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
         5)
             read -r -p "Nhap vao IP muon allow: " ip
             csf -a "${ip}"
+            csf -x
+            csf -e
+            clear
+            printf "${GREEN}Allow IP thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
@@ -77,14 +86,17 @@ do
             echo "${ip}" >>  /etc/csf/ui/ui.allow
             csf -x
             csf -e
+            clear
+            printf "${GREEN}Cap quyen truy cap CSF GUI thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
         7)
             csf -x
             csf -e
-            systemctl restart csf
             systemctl restart lfd
+            clear
+            printf "${GREEN}Khoi dong lai CSF thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
@@ -94,6 +106,8 @@ do
             systemctl stop lfd
             systemctl disable csf
             systemctl disable lfd
+            clear
+            printf "${GREEN}Tat CSF thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
@@ -103,6 +117,8 @@ do
             systemctl start lfd
             systemctl enable csf
             systemctl enable lfd
+            clear
+            printf "${GREEN}Bat CSF thanh cong.${NC}\n"
             echo ""
             menu_csf
             ;;
