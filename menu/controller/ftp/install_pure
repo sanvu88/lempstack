@@ -72,3 +72,6 @@ EOpure_ftpd_conf
         printf "${RED}Cai dat PURE-FTPD thanh cong.${NC}\n"
     fi
 }
+
+install
+menu_ftp

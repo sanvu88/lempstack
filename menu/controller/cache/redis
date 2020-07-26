@@ -35,26 +35,29 @@ do
     fi
     case ${CHOICE} in
         1)
-            if [[ "${memcached_status}" == "active" && "${redis_status}" == "inactive" ]]; then
-                printf "${RED}Ban dang su dung Memcached.${NC}\n"
-            elif [[ "${redis_status}" == "active" && "${memcached_status}" == "active" ]]; then
-                printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
-                printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
-            elif [[ "${redis_status}" == "active" && "${memcached_status}" == "inactive" ]]; then
-                printf "${RED}Redis Cache hien dang hoat dong.${NC}\n"
+            if [ ! -f "/etc/redis.conf" ]; then
+                printf "${RED}Redis chua duoc cai dat.${NC}\n"
             else
-                printf "${GREEN}Dang tien hanh mo Redis Cache...${NC}\n"
-                sleep 1
-                systemctl enable redis.service
-                systemctl start redis.service
-                crontab -l > clear_redis
-                echo "23 */38 * * * service redis restart >/dev/null 2>&1" >> clear_redis
-                crontab clear_redis
-                rm -rf clear_redis
-                clear
-                printf "${GREEN}Da bat Redis Cache.${NC}\n"
+                if [[ "${memcached_status}" == "active" && "${redis_status}" == "inactive" ]]; then
+                    printf "${RED}Ban dang su dung Memcached.${NC}\n"
+                elif [[ "${redis_status}" == "active" && "${memcached_status}" == "active" ]]; then
+                    printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
+                    printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
+                elif [[ "${redis_status}" == "active" && "${memcached_status}" == "inactive" ]]; then
+                    printf "${RED}Redis Cache hien dang hoat dong.${NC}\n"
+                else
+                    printf "${GREEN}Dang tien hanh mo Redis Cache...${NC}\n"
+                    sleep 1
+                    systemctl enable redis.service
+                    systemctl start redis.service
+                    crontab -l > clear_redis
+                    echo "23 */38 * * * service redis restart >/dev/null 2>&1" >> clear_redis
+                    crontab clear_redis
+                    rm -rf clear_redis
+                    clear
+                    printf "${GREEN}Da bat Redis Cache.${NC}\n"
+                fi
             fi
-
             menu_cache
             ;;
         2)

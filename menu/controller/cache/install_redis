@@ -1,0 +1,37 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/helpers/variable_php
+
+install(){
+    yum --enablerepo=remi install redis -y
+    mv /etc/redis.conf /etc/redis.conf.bak
+    cat >> "/etc/redis.conf" << EOFREDIS
+maxmemory ${MAX_MEMORY}mb
+maxmemory-policy allkeys-lru
+save ""
+EOFREDIS
+    semanage permissive -a redis_t
+}
+
+_run(){
+    if [ ! -f "/etc/redis.conf" ]; then
+        install
+        clear
+        printf "Cai dat Redis thanh cong.\n"
+    else
+        printf "${RED}Redis da duoc cai dat truoc do roi.${NC}\n"
+    fi
+}
+
+_run
+menu_cache

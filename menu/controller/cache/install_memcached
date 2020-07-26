@@ -1,0 +1,52 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/helpers/variable_php
+
+set_var(){
+    NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
+    MAX_CLIENT=$((NGINX_PROCESSES * 1024))
+}
+
+install(){
+    if [[ "${OS_VER}" -eq 8 ]]; then
+        dnf -y install memcached
+    else
+        yum -y install memcached
+    fi
+
+    if [[ -f "/etc/sysconfig/memcached" ]]; then
+        mv /etc/sysconfig/memcached /etc/sysconfig/memcached.bak
+        cat >> "/etc/sysconfig/memcached" << EOMEMCACHED
+PORT="11211"
+USER="memcached"
+MAXCONN="${MAX_CLIENT}"
+CACHESIZE="${MAX_MEMORY}mb"
+OPTIONS="-l 127.0.0.1 -U 0"
+EOMEMCACHED
+    fi
+    semanage permissive -a memcached_t
+}
+
+_run(){
+    if [ ! -f "/etc/sysconfig/memcached" ]; then
+        set_var
+        install
+        clear
+        printf "Cai dat Memcached thanh cong.\n"
+    else
+        printf "${RED}Memcached da duoc cai dat truoc do roi.${NC}\n"
+    fi
+}
+
+_run
+menu_cache

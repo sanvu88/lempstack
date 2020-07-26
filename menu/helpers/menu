@@ -425,3 +425,11 @@ cron_destroy(){
 change_all_parameter(){
     . /var/hostvn/menu/controller/vps/update_parameter
 }
+
+inst_memcached(){
+    . /var/hostvn/menu/controller/cache/install_memcached
+}
+
+inst_redis(){
+    . /var/hostvn/menu/controller/cache/install_redis
+}

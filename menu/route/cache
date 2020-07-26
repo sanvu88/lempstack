@@ -21,7 +21,9 @@ while [ "${CHOICE}" != "0" ]
 do
     printf "${GREEN}1. Memcached${NC}\n"
     printf "${GREEN}2. Redis${NC}\n"
-    printf "${GREEN}3. Xoá Cache${NC}\n"
+    printf "${GREEN}3. Xoa Cache${NC}\n"
+    printf "${GREEN}4. Cai dat Memcached${NC}\n"
+    printf "${GREEN}5. Cai dat Redis${NC}\n"
     printf "${GREEN} -----------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -33,6 +35,8 @@ do
         1) clear; memcached_c ;;
         2) clear; redis_c ;;
         3) clear; clear_cache ;;
+        4) clear; inst_memcached ;;
+        5) clear; inst_redis ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
