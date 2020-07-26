@@ -47,5 +47,4 @@ run(){
 }
 
 run
-sleep 3
 menu_account

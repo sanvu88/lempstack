@@ -24,7 +24,7 @@ select_time(){
             "Backup 1 lan/tuan") time="@weekly"; break;;
             "Backup 1 lan/thang") time="@monthly"; break;;
             "Backup 1 lan/nam") time="@yearly"; break;;
-			      "Huy tao cronjob") clear; menu_cronjob; break;;
+            "Huy tao cronjob") clear; menu_cronjob; break;;
             *) printf "${RED}Ban nhap sai, vui long nhap lai.${NC}\n";;
         esac
     done
