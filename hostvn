@@ -344,7 +344,8 @@ option_change_ssh_port(){
                 prompt_ssh="y";
                 SSH_PORT="9292";
                 sleep 2
-                printf "${RED}Luu y: Voi Google Cloud cac ban can mo port 9292 trong tab VPS network";
+                printf "${RED}Port SSH moi là: 9292${NC}\n";
+                printf "${RED}Luu y: Voi Google Cloud cac ban can mo port 9292 trong tab VPC network${NC}\n";
                 break;;
             "No") prompt_ssh="n"; SSH_PORT="22" ; break;;
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
