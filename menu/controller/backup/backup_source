@@ -38,7 +38,7 @@ _run(){
 		backup
 		clear
 		printf "${GREEN}Sao luu ma nguon thanh cong.${NC}\n"
-		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${CURRENT_DATE}/${domain}/${domain}${NC}\n"
+		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${CURRENT_DATE}/${domain}${NC}\n"
 	else
 	  clear
 		printf "${ALERT}\n"
