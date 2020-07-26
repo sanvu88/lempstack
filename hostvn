@@ -56,7 +56,7 @@ if [[ "${OS_VER}" -eq 8 ]]; then
 fi
 
 # Set Lang
-OPTION_CHANGE_SSH="Ban co muon they doi port SSH khong ? "
+OPTION_CHANGE_SSH="Ban co muon thay doi port SSH khong ? "
 OPTION_INST_PUREFTP="Ban co muon cai dat PURE-FTPD (Quan ly FTP) khong ? "
 OPTION_INST_AV="Ban co muon cai dat Clamav (Scan Malware) khong ? "
 OPTION_INST_MEMCACHED="Ban co muon cai dat Memcached khong ? "
