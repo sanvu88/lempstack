@@ -13,6 +13,10 @@
 source /var/hostvn/menu/helpers/variable_php
 source /var/hostvn/menu/helpers/function
 
+confirm(){
+    read -r -p "Ban muon cai dat Memcached ? (y/n) " prompt_memcached
+}
+
 set_var(){
     NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
     MAX_CLIENT=$((NGINX_PROCESSES * 1024))
@@ -52,11 +56,17 @@ _run(){
         install
         inst_phpmemcachedadmin
         clear
-        printf "Cai dat Memcached thanh cong.\n"
+        printf "${GREEN}Cai dat Memcached thanh cong.${NC}\n"
     else
         printf "${RED}Memcached da duoc cai dat truoc do roi.${NC}\n"
     fi
 }
 
-_run
+if yes_no_confirm "${prompt_memcached}";then
+    _run
+else
+    clear
+    printf "${GREEN}Ban da huy cai dat Memcached.${NC}\n"
+fi
+
 menu_cache

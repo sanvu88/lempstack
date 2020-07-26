@@ -12,6 +12,10 @@
 
 source /var/hostvn/menu/helpers/variable_php
 
+confirm(){
+    read -r -p "Ban muon cai dat Redis ? (y/n) " prompt_redis
+}
+
 install(){
     yum --enablerepo=remi install redis -y
     mv /etc/redis.conf /etc/redis.conf.bak
@@ -43,5 +47,11 @@ _run(){
     fi
 }
 
-_run
+if yes_no_confirm "${prompt_redis}";then
+    _run
+else
+    clear
+    printf "${GREEN}Ban da huy cai dat Memcached.${NC}\n"
+fi
+
 menu_cache
