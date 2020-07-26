@@ -36,6 +36,7 @@ do
     case ${CHOICE} in
         1)
             if [ ! -f "/etc/redis.conf" ]; then
+                clear
                 printf "${RED}Redis chua duoc cai dat.${NC}\n"
             else
                 if [[ -n "${memcached_status}" && -z "${redis_status}" ]]; then
@@ -75,7 +76,7 @@ do
 
             menu_cache
             ;;
-        0) menu_primary ;;
+        0) menu_cache ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done
