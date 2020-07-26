@@ -29,8 +29,6 @@ EOF
 
 _run(){
     ALERT=""
-	select_domain
-	set_var
 	input
 
 	if ! if_pureftpd_user_exists ftp_user; then
