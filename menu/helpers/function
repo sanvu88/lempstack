@@ -212,6 +212,7 @@ select_plugin_seo(){
         case $opt in
             "Yoast Seo") plugins_seo="yoast_seo"; break;;
             "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
+            "Other") plugins_seo=""; break;;
             *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
         esac
     done
