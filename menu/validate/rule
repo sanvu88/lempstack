@@ -147,9 +147,9 @@ if_mysql_user_exists(){
 }
 
 check_nginx_status(){
-    nginx="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    nginx="$(pgrep -f nginx)"
 
-    if [ "$nginx" != "active" ]; then
+    if [ -z "${nginx}" ]; then
         ALERT=$(printf "${RED}${NGINX_NO_WORK}${NC}\n")
     fi
 }

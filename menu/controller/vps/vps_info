@@ -25,8 +25,8 @@ show_info(){
 	set_variable
 	printf "Uptime       : %s\n" "$(uptime | xargs)"
 	printf "CPU loading  : %s\n" "$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')"
-	printf "Ram          : %s\n" "$(convert_to_mb "$totalRam") (available: $(convert_to_mb "$memAvailable"))"
-	printf "Swap         : %s\n" "$(convert_to_mb "$totalSwap") (available: $(convert_to_mb "$freeSwap") )"
+	printf "Ram          : %s\n" "$(bytes_for_humans "$totalRam") (available: $(bytes_for_humans "$memAvailable"))"
+	printf "Swap         : %s\n" "$(bytes_for_humans "$totalSwap") (available: $(bytes_for_humans "$freeSwap") )"
 	printf "Disk         : %s\n" "$disk"
 	printf "System OS    : %s\n" "$(hostnamectl | grep "Operating System" | cut -f2 -d":" | xargs)"
 	printf "Virtual      : %s\n" "$(hostnamectl | grep "Virtualization" | cut -f2 -d":" | cut -f2 -d" ")"
