@@ -3473,33 +3473,28 @@ install_av(){
 ############################################
 check_service_status(){
     echo ""
-    NGINX_STATUS="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${NGINX_STATUS}" != "active" ]]; then
+    NGINX_STATUS="$(pgrep -f nginx)"
+    if [[ -z "${NGINX_STATUS}" ]]; then
         echo "${NGINX_NOT_WORKING}" >> "${LOG}"
     fi
 
-    MARIADB_STATUS="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${MARIADB_STATUS}" != 'active' ]]; then
+    MARIADB_STATUS="$(pgrep -f mariadb)"
+    if [[ -z "${MARIADB_STATUS}" ]]; then
         echo "${MARIADB_NOT_WORKING}" >> "${LOG}"
     fi
 
-    PURE_STATUS="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${PURE_STATUS}" != 'active' ]]; then
+    PURE_STATUS="$(pgrep -f pure-ftpd)"
+    if [[ -z "${PURE_STATUS}" ]]; then
         echo "${PUREFTP_NOT_WORKING}" >> "${LOG}"
     fi
 
-    PHP_STATUS="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${PHP_STATUS}" != 'active' ]]; then
+    PHP_STATUS="$(pgrep -f php-fpm)"
+    if [[ -z "${PHP_STATUS}" ]]; then
         echo "${PHP_NOT_WORKING}" >> "${LOG}"
     fi
 
-    CSF_STATUS="$(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${CSF_STATUS}" != 'active' ]]; then
-        echo "${CSF_NOT_WORKING}" >> "${LOG}"
-    fi
-
-    LFD_STATUS="$(systemctl status lfd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    if [[ "${LFD_STATUS}" != "active" ]]; then
+    LFD_STATUS="$(pgrep -f lfd)"
+    if [[ -z "${LFD_STATUS}" ]]; then
         echo "${LFD_NOT_WORKING}" >> "${LOG}"
     fi
 }
