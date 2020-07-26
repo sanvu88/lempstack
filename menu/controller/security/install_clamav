@@ -21,9 +21,9 @@ install(){
         printf "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}\n"
     else
         if [[ ${OS_VER} -eq 8 ]]; then
-            dnf install clamav clamav-update clamd -y
+            dnf install clamav-server clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd -y
         else
-            yum -y install clamav-update clamav-scanner-systemd clamav-server-systemd
+            yum -y install clamav-server clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd
         fi
 
         setsebool -P antivirus_can_scan_system 1
