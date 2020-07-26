@@ -23,9 +23,19 @@ EOFREDIS
     semanage permissive -a redis_t
 }
 
+inst_redisdadmin(){
+    cd_dir "${DEFAULT_DIR_TOOL}"
+    git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
+    mv phpRedisAdmin redis
+    cd_dir "${DEFAULT_DIR_TOOL}"/redis
+    git clone https://github.com/nrk/predis.git vendor
+    cd .. && chown -R nginx:nginx redis
+}
+
 _run(){
     if [ ! -f "/etc/redis.conf" ]; then
         install
+        inst_redisdadmin
         clear
         printf "Cai dat Redis thanh cong.\n"
     else

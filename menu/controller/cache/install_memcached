@@ -11,6 +11,7 @@
 ######################################################################
 
 source /var/hostvn/menu/helpers/variable_php
+source /var/hostvn/menu/helpers/function
 
 set_var(){
     NGINX_PROCESSES=$(grep -c ^processor /proc/cpuinfo)
@@ -37,10 +38,19 @@ EOMEMCACHED
     semanage permissive -a memcached_t
 }
 
+inst_phpmemcachedadmin(){
+    cd_dir "${DEFAULT_DIR_TOOL}"
+    git clone https://github.com/elijaa/phpmemcachedadmin.git
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpmemcachedadmin/docker
+    mv phpmemcachedadmin memcached
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/memcached
+}
+
 _run(){
     if [ ! -f "/etc/sysconfig/memcached" ]; then
         set_var
         install
+        inst_phpmemcachedadmin
         clear
         printf "Cai dat Memcached thanh cong.\n"
     else

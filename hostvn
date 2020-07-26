@@ -3378,7 +3378,7 @@ install_admin_tool(){
     if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
         phpmemcachedadmin
     fi
-    
+
     if [[ "${prompt_redis}" =~ ^([yY])$ ]]; then
         redisdadmin
     fi
