@@ -35,6 +35,7 @@ show_info(){
 }
 
 run(){
+    ALERT=""
 	select_domain
 
 	if [[ -z "${ALERT}" ]]; then

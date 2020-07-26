@@ -23,6 +23,7 @@ delete(){
 }
 
 _run(){
+    ALERT=""
 	select_domain
 	set_var
 	input

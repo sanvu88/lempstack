@@ -61,6 +61,7 @@ change_port(){
 }
 
 _run(){
+    ALERT=""
     input
     check_port
 

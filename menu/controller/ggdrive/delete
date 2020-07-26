@@ -60,8 +60,9 @@ choose_domain(){
 
 _run(){
 	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
-    select_remote
-    select_backup
+	    ALERT=""
+        select_remote
+        select_backup
 
 		if [[ -z "${ALERT}" ]]; then
 			rclone delete "${remote}":/"${IPADDRESS}"/"${date}"/"${domain}" --rmdirs > /dev/null  2>&1

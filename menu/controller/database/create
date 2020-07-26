@@ -52,6 +52,7 @@ show_info(){
 }
 
 _run(){
+    ALERT=""
 	input "$@"
 	if [[ ${promtp_db} =~ ^([yY])$  ]]; then
 	   validate

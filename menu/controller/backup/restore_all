@@ -41,9 +41,10 @@ _run(){
 	confirm_restore
 
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+	    ALERT=""
 		list_backup
 		select_domain
-    set_var
+        set_var
 		if_is_wordpress "${username}" "${domain}"
 		check_backup_exists "${date}" "${domain}"
 

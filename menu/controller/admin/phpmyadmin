@@ -73,6 +73,7 @@ EOCONFIGINC
 }
 
 run(){
+    ALERT=""
     set_var
     check_php_version
 

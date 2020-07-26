@@ -92,6 +92,7 @@ create_cron(){
 }
 
 _run(){
+    ALERT=""
     select_remote
 	if [[ -z "${ALERT}" ]]; then
         select_time

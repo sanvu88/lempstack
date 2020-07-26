@@ -51,6 +51,7 @@ delete_db(){
 }
 
 _run(){
+    ALERT=""
 	list_db
 	input
 	validate

@@ -52,6 +52,7 @@ change_pass(){
 }
 
 _run(){
+    ALERT=""
 	input "$@"
 	validate
 

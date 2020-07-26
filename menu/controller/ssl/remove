@@ -169,6 +169,7 @@ _run(){
     fi
 }
 
+ALERT=""
 select_domain
 
 if [ -z "${ALERT}" ]; then

@@ -30,17 +30,18 @@ destroy_cronjob(){
 }
 
 _run(){
-	  select_cron
-	  if [[ -z "${ALERT}" ]]; then
-		    destroy_cronjob
-		    clear
-		    printf "${GREEN}Xoa Cronjob thanh cong.${NC}\n"
-		    echo ""
-	  else
-	      clear
-		    printf "${ALERT}\n"
-		    echo ""
-	  fi
+    ALERT=""
+    select_cron
+    if [[ -z "${ALERT}" ]]; then
+        destroy_cronjob
+        clear
+        printf "${GREEN}Xoa Cronjob thanh cong.${NC}\n"
+        echo ""
+    else
+      clear
+        printf "${ALERT}\n"
+        echo ""
+    fi
 }
 
 _run

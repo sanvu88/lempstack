@@ -24,7 +24,6 @@ AUTHOR_WEB="HOSTVN.VN"
 UPDATE_LINK="https://scripts.hostvn.net/update"
 IPADDRESS=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
 CURRENT_DATE=$(date +%Y-%m-%d)
-ALERT=""
 
 # Set directory variables
 BASH_DIR="/var/hostvn"
@@ -35,4 +34,3 @@ FILE_INFO="${BASH_DIR}/hostvn.conf"
 DEFAULT_DIR_WEB="/usr/share/nginx/html"
 DEFAULT_DIR_TOOL="/usr/share/nginx/private"
 WORDPRESS_CRON_DIR="/var/hostvn/wpcron"
-ALERT=""

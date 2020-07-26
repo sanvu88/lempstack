@@ -30,6 +30,7 @@ restore(){
 _run(){
 	confirm_restore
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+	    ALERT=""
 	    select_domain
 		list_backup
 		if_is_wordpress "${username}" "${domain}"

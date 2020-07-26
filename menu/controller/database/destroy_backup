@@ -26,6 +26,7 @@ _run(){
 	confirm_delete
 
 	if [[ "${promt_delete}" =~ ^([yY])$ ]]; then
+	    ALERT=""
 		list_backup
 		select_domain
 

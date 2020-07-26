@@ -35,6 +35,7 @@ restore(){
 _run(){
 	confirm_restore
 	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+	    ALERT=""
 		list_backup
 		select_domain
 		set_var

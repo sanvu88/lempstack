@@ -27,6 +27,7 @@ view_log(){
 }
 
 _run(){
+    ALERT=""
     select_domain
 
     if ! if_domain_exists "${domain}"; then

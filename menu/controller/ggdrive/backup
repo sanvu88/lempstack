@@ -33,6 +33,7 @@ backup(){
 }
 
 _run(){
+    ALERT=""
     select_remote
     select_domain
 

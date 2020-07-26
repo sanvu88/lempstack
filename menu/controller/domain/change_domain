@@ -96,6 +96,7 @@ change_user_config(){
 }
 
 _run(){
+    ALERT=""
     set_var
     if_is_wordpress "${username}" "${domain}"
     input

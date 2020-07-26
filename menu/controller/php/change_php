@@ -667,6 +667,7 @@ write_info(){
 }
 
 _run(){
+    ALERT=""
     set_var
     select_php_ver
     check_duplicate_php

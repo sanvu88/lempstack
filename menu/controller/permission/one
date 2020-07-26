@@ -38,6 +38,7 @@ action(){
 }
 
 _run(){
+    ALERT=""
     select_domain
 
     if [ -z "${ALERT}" ]; then

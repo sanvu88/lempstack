@@ -15,6 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 _run(){
+    ALERT=""
     select_domain
     if [[ -z "${ALERT}" ]]; then
         username=${domain//[-._]/}

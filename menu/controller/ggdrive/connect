@@ -29,6 +29,7 @@ config_rclone(){
 }
 
 _run(){
+    ALERT=""
 	input
 	validate_input
 

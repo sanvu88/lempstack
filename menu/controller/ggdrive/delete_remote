@@ -21,6 +21,7 @@ confirm_destroy(){
 _run(){
 	confirm_destroy
 	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
+	    ALERT=""
 		select_remote
 		if [[ -z "${ALERT}" ]]; then
 			rclone config delete "${remote}"

@@ -35,6 +35,7 @@ select_date(){
 }
 
 _run(){
+    ALERT=""
 	select_remote
 	select_date
 

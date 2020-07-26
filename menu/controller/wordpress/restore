@@ -75,6 +75,7 @@ _run(){
 
 confirm_restore
 if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+    ALERT=""
     select_domain
     if [ -z "${ALERT}" ]; then
         _run

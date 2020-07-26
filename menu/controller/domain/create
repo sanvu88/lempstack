@@ -395,6 +395,7 @@ show_info(){
 }
 
 _run(){
+    ALERT=""
     check_service
     input
     set_var "$@"
