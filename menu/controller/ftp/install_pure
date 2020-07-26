@@ -10,6 +10,10 @@
 #   Please don't copy under any circumstance for commercial reason!  #
 ######################################################################
 
+confirm(){
+    read -r -p "Ban muon cai dat PURE-FTPD ? (y/n) " promtp_ftp
+}
+
 install(){
     if [ -f "/etc/pure-ftpd/pure-ftpd.conf" ]; then
         printf "${RED}PURE-FTPD da duoc cai dat truoc do. Ban khong can cai dat lai.${NC}\n"
@@ -73,5 +77,11 @@ EOpure_ftpd_conf
     fi
 }
 
-install
+if [[ "${promtp_ftp}" =~ ^([yY])$ ]]; then
+    install
+else
+    clear
+    printf "${RED}Ban da huy cai dat PURE-FTPD.${NC}\n"
+fi
+
 menu_ftp
