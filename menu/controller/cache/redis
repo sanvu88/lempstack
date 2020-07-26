@@ -17,15 +17,15 @@ CHOICE=1
 redis_status="$(pgrep -f redis)"
 memcached_status="$(pgrep -f redis)"
 
-echo "-------------------"
-echo "Quan ly Redis Cache"
-echo "-------------------"
+printf "${GREEN}-------------------${NC}\n"
+printf "${GREEN}Quan ly Redis Cache${NC}\n"
+printf "${GREEN}-------------------${NC}\n"
 
 while [ "${CHOICE}" != "0" ]
 do
-    echo "1. Bat Redis Cache"
-    echo "2. Tat Redis Cache"
-    echo " -----------------"
+    printf "${GREEN}1. Bat Redis Cache${NC}\n"
+    printf "${GREEN}2. Tat Redis Cache${NC}\n"
+    printf "${GREEN} -----------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]

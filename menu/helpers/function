@@ -13,7 +13,7 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC2034
-# shellcheck disable=SC1091
+
 source /var/hostvn/menu/validate/rule
 
 cd_dir(){
