@@ -57,7 +57,8 @@ _run(){
     if [ "${php2_release}" == "yes" ]; then
         change_opcache_php2
     fi
-
+    restart_service
+    clear
     printf "${GREEN}${noti}${nc}\n"
 }
 
