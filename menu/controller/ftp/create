@@ -15,7 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd_status="$(pgrep -f pure-ftpd)"
     username=${domain//[-._]/}
 }
 
@@ -68,7 +68,7 @@ _run(){
     fi
 }
 
-if [ "${pureftpd_status}" != "active" ]; then
+if [ -z "${pureftpd_status}" ]; then
     printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
 else
     _run

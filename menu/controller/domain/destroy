@@ -19,7 +19,7 @@ printf "${GREEN}Xoa Domain${NC}\n"
 printf "${GREEN}----------${NC}\n"
 
 set_var(){
-    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd_status="$(pgrep -f pure-ftpd)"
     db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     db_user=$(grep "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -120,7 +120,7 @@ _run(){
 
         destroy_user "$username"
 
-        if [ "${pureftpd_status}" == "active" ]; then
+        if [ -n "${pureftpd_status}" ]; then
             destroy_ftp_user "$username"
         fi
 

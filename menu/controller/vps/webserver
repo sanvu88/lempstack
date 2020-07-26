@@ -11,70 +11,63 @@
 ######################################################################
 
 set_var(){
-	nginx_status=$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	php_status=$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	mysql_status=$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	ssh_status=$(systemctl status sshd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	csf_status=$(systemctl status csf.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	lfd_status=$(systemctl status lfd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	pure_status=$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	memcached_status=$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
-	redis_status=$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)
+	nginx_status=$(pgrep -f nginx)
+	php_status=$(pgrep -f php-fpm)
+	mysql_status=$(pgrep -f mariadb)
+	ssh_status=$(pgrep -f ssh)
+	lfd_status=$(pgrep -f lfd)
+	pure_status=$(pgrep -f pure-ftpd)
+	memcached_status=$(pgrep -f memcached)
+	redis_status=$(pgrep -f redis)
 }
 
 set_color(){
-	if [[ ${nginx_status} == "active" ]]; then
-		nginx_status=$(printf "${GREEN}${nginx_status}${NC}")
-	else
+	if [[ -z "${nginx_status}" ]]; then
 		nginx_status=$(printf "${RED}${nginx_status}${NC}")
+	else
+		nginx_status=$(printf "${GREEN}${nginx_status}${NC}")
 	fi
 
-	if [[ ${php_status} == "active" ]]; then
-		php_status=$(printf "${GREEN}${php_status}${NC}")
-	else
+	if [[ -z "${php_status}" ]]; then
 		php_status=$(printf "${RED}${php_status}${NC}")
+	else
+		php_status=$(printf "${GREEN}${php_status}${NC}")
 	fi
 
-	if [[ ${mysql_status} == "active" ]]; then
-		mysql_status=$(printf "${GREEN}${mysql_status}${NC}")
-	else
+	if [[  -z "${mysql_status}" ]]; then
 		mysql_status=$(printf "${RED}${mysql_status}${NC}")
+	else
+		mysql_status=$(printf "${GREEN}${mysql_status}${NC}")
 	fi
 
-	if [[ ${ssh_status} == "active" ]]; then
-		ssh_status=$(printf "${GREEN}${ssh_status}${NC}")
-	else
+	if [[  -z "${ssh_status}" ]]; then
 		ssh_status=$(printf "${RED}${ssh_status}${NC}")
+	else
+		ssh_status=$(printf "${GREEN}${ssh_status}${NC}")
 	fi
 
-	if [[ ${csf_status} == "active" ]]; then
-		csf_status=$(printf "${GREEN}${csf_status}${NC}")
-	else
-		csf_status=$(printf "${RED}${csf_status}${NC}")
-	fi
-
-	if [[ ${lfd_status} == "active" ]]; then
-		lfd_status=$(printf "${GREEN}${lfd_status}${NC}")
-	else
+	if [[  -z "${lfd_status}" ]]; then
 		lfd_status=$(printf "${RED}${lfd_status}${NC}")
+	else
+		lfd_status=$(printf "${GREEN}${lfd_status}${NC}")
 	fi
 
-	if [[ ${pure_status} == "active" ]]; then
-		pure_status=$(printf "${GREEN}${pure_status}${NC}")
-	else
+	if [[  -z "${pure_status}" ]]; then
 		pure_status=$(printf "${RED}${pure_status}${NC}")
+	else
+		pure_status=$(printf "${GREEN}${pure_status}${NC}")
 	fi
 
-	if [[ ${memcached_status} == "active" ]]; then
-		memcached_status=$(printf "${GREEN}${memcached_status}${NC}")
-	else
+	if [[ -z "${memcached_status}" ]]; then
 		memcached_status=$(printf "${RED}${memcached_status}${NC}")
+	else
+		memcached_status=$(printf "${GREEN}${memcached_status}${NC}")
 	fi
 
-	if [[ ${redis_status} == "active" ]]; then
-		redis_status=$(printf "${GREEN}${redis_status}${NC}")
-	else
+	if [[ -z "${redis_status}" ]]; then
 		redis_status=$(printf "${RED}${redis_status}${NC}")
+	else
+		redis_status=$(printf "${GREEN}${redis_status}${NC}")
 	fi
 }
 
@@ -83,7 +76,6 @@ show_info(){
 	printf "Php-FPM      : %s\n" "${php_status}"
 	printf "Mysql        : %s\n" "${mysql_status}"
 	printf "SSH          : %s\n" "${ssh_status}"
-	printf "CSF Firewall : %s\n" "${csf_status}"
 	printf "LFD 		 : %s\n" "${lfd_status}"
 	printf "Pure-ftpd    : %s\n" "${pure_status}"
 	printf "Memcached    : %s\n" "${memcached_status}"

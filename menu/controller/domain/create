@@ -28,7 +28,7 @@ input(){
 
 # Set variables
 set_var(){
-    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    pureftpd_status="$(pgrep -f pure-ftpd)"
     username=${domain//[-._]/}
     user_pass=$(gen_pass "$@")
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
@@ -411,7 +411,7 @@ _run(){
         create_phpconfig
         create_user
 
-        if [ "${pureftpd_status}" == "active" ]; then
+        if [ -n "${pureftpd_status}" ]; then
             create_ftp
         fi
 

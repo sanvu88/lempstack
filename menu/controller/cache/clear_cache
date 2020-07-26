@@ -13,16 +13,16 @@
 # shellcheck disable=SC2154
 
 set_var(){
-	redis_status="$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-	memcached_status="$(systemctl status memcached.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+	redis_status="$(pgrep -f redis)"
+	memcached_status="$(pgrep -f memcached)"
 }
 
 clear_cache(){
-    if [ "${redis_status}" == "active" ]; then
+    if [ -n "${redis_status}" ]; then
         systemctl restart redis
         printf "${GREEN}Xoa cache thanh cong.${NC}\n"
     fi
-    if [ "${memcached_status}" == "active" ]; then
+    if [ -n "${memcached_status}" ]; then
         systemctl restart memcached
         printf "${GREEN}Xoa cache thanh cong.${NC}\n"
     fi

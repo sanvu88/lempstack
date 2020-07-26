@@ -14,8 +14,8 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
-redis_status="$(systemctl status redis.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-memcached_status="$(systemctl status memcahed.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+redis_status="$(pgrep -f redis)"
+memcached_status="$(pgrep -f memcached)"
 
 printf "${GREEN}-----------------${NC}\n"
 printf "Quan ly Memcached${NC}\n"
@@ -38,12 +38,12 @@ do
             if [ ! -f "/etc/sysconfig/memcached" ]; then
                 printf "${RED}Memcached chua duoc cai dat.${NC}\n"
             else
-                if [[ "${redis_status}" == "active" && "${memcached_status}" == "inactive" ]]; then
+                if [[ -n "${redis_status}" && -z "${memcached_status}" ]]; then
                     printf "${RED}Ban dang su dung Redis Cache.${NC}\n"
-                elif [[ "${redis_status}" == "active" && "${memcached_status}" == "active" ]]; then
+                elif [[ -n "${redis_status}" && -n "${memcached_status}" ]]; then
                     printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
                     printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
-                elif [[ "${redis_status}" == "inactive" && "${memcached_status}" == "active" ]]; then
+                elif [[ -z "${redis_status}" && -n "${memcached_status}" ]]; then
                     printf "${RED}Memcached hien dang hoat dong.${NC}\n"
                 else
                     printf "${GREEN}Dang tien hanh mo Memcached...${NC}\n"
@@ -62,7 +62,7 @@ do
             menu_cache
             ;;
         2)
-            if [ "${memcached_status}" == "active" ]; then
+            if [ -n "${memcached_status}" ]; then
                 printf "${GREEN}Dang tien hanh tat Memcached...${NC}\n"
                 sleep 1
                 systemctl stop memcached
