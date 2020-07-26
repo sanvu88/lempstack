@@ -206,7 +206,7 @@ select_plugin_seo(){
     plugins_seo=""
     echo "${SELECT_PLUGINS_SEO}"
     PS3="${INPUT_SELECT}"
-    options=("Yoast Seo" "Rank Math Seo")
+    options=("Yoast Seo" "Rank Math Seo" "Other")
     select opt in "${options[@]}"
     do
         case $opt in
