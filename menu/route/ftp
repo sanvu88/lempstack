@@ -23,6 +23,7 @@ do
     printf "${GREEN}2. Doi mat khau FTP${NC}\n"
     printf "${GREEN}3. Xoa User FTP${NC}\n"
     printf "${GREEN}4. Doi Port FTP${NC}\n"
+    printf "${GREEN}5. Cai dat PURE-FTPD${NC}\n"
     printf "${GREEN} ------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -35,6 +36,7 @@ do
         2) clear; ftp_change_pwd ;;
         3) clear; ftp_destroy ;;
         4) clear; ftp_port ;;
+        5) clear; ftp_install ;;
         0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

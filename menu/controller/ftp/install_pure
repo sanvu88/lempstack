@@ -1,0 +1,74 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+install(){
+    if [ -f "/etc/pure-ftpd/pure-ftpd.conf" ]; then
+        printf "${RED}PURE-FTPD da duoc cai dat truoc do. Ban khong can cai dat lai.${NC}\n"
+    else
+        yum -y install pure-ftpd
+        PURE_CONF_PATH="/etc/pure-ftpd"
+        if [[ -f "${PURE_CONF_PATH}/pure-ftpd.conf" ]]; then
+            mv "${PURE_CONF_PATH}"/pure-ftpd.conf "${PURE_CONF_PATH}"/pure-ftpd.conf.orig
+        fi
+
+        cat >> "${PURE_CONF_PATH}/pure-ftpd.conf" << EOpure_ftpd_conf
+############################################################
+#                                                          #
+#             Configuration file for pure-ftpd             #
+#                                                          #
+############################################################
+ChrootEveryone               yes
+BrokenClientsCompatibility   no
+MaxClientsNumber             50
+Daemonize                    yes
+MaxClientsPerIP              15
+VerboseLog                   no
+DisplayDotFiles              yes
+AnonymousOnly                no
+NoAnonymous                  yes
+SyslogFacility               ftp
+DontResolve                  yes
+MaxIdleTime                  15
+PureDB                       /etc/pure-ftpd/pureftpd.pdb
+LimitRecursion               10000 8
+AnonymousCanCreateDirs       no
+MaxLoad                      4
+PassivePortRange             35000 35999
+AntiWarez                    yes
+#Bind                        ${IPADDRESS},21
+Umask                        133:022
+MinUID                       99
+AllowUserFXP                 yes
+AllowAnonymousFXP            no
+ProhibitDotFilesWrite        no
+ProhibitDotFilesRead         no
+AutoRename                   no
+AnonymousCantUpload          no
+AltLog                       stats:/var/log/pureftpd.log
+PIDFile                      /run/pure-ftpd.pid
+CallUploadScript             no
+MaxDiskUsage                 99
+CustomerProof                yes
+TLS                          1
+TLSCipherSuite               HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3
+CertFile                     /etc/pure-ftpd/ssl/pure-ftpd.pem
+ExtCert                      /var/run/pure-certd.sock
+EOpure_ftpd_conf
+
+        mkdir -p "${PURE_CONF_PATH}"/ssl
+        openssl dhparam -out "${PURE_CONF_PATH}"/ssl/pure-ftpd-dhparams.pem 2048
+        openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem -out "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem
+        chmod 600 "${PURE_CONF_PATH}"/ssl/pure-ftpd*.pem
+        clear
+        printf "${RED}Cai dat PURE-FTPD thanh cong.${NC}\n"
+    fi
+}

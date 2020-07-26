@@ -34,9 +34,8 @@ check_service(){
     nginx_status="$(systemctl status nginx.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     phpfpm_status="$(systemctl status php-fpm.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     mariadb_status="$(systemctl status mariadb.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
-    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
 
-    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' || "${pureftpd_status}" != 'active' ]]; then
+    if [[ "${nginx_status}" != 'active' ]] || [[ "${phpfpm_status}" != 'active' ]] || [[ "${mariadb_status}" != 'active' ]]; then
         ALERT=$(
             printf "${RED}${ERROR_OCCURRED}${NC}\n"
             printf "${RED}${CHECK_SERVICES}{NC}\n"

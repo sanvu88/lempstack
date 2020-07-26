@@ -10,12 +10,13 @@
 #   Please don't copy under any circumstance for commercial reason!  #
 ######################################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-    # shellcheck disable=SC2154
-	  username=${domain//[-._]/}
+    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+    username=${domain//[-._]/}
 }
 
 input(){
@@ -67,5 +68,10 @@ _run(){
     fi
 }
 
-_run
-menu_ftp
+if [ "${pureftpd_status}" != "active" ]; then
+    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+else
+    _run
+    menu_ftp
+fi
+

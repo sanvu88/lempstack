@@ -48,5 +48,11 @@ _run(){
 	fi
 }
 
-_run
-menu_ftp
+pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
+
+if [ "${pureftpd_status}" != "active" ]; then
+    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+else
+    _run
+    menu_ftp
+fi

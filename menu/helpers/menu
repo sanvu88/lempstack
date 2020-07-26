@@ -378,6 +378,10 @@ ftp_port(){
 	. /var/hostvn/menu/controller/ftp/change_port
 }
 
+ftp_install(){
+	. /var/hostvn/menu/controller/ftp/install_pure
+}
+
 domain_log(){
 	. /var/hostvn/menu/controller/log/domain_log
 }

@@ -28,6 +28,7 @@ input(){
 
 # Set variables
 set_var(){
+    pureftpd_status="$(systemctl status pure-ftpd.service | grep 'Active' | cut -f2 -d':' | xargs | cut -f1 -d' ' | xargs)"
     username=${domain//[-._]/}
     user_pass=$(gen_pass "$@")
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
@@ -44,7 +45,6 @@ set_var(){
 }
 
 validate(){
-    check_service
     if ! validate_domain "${domain}"; then
         ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
     fi
@@ -410,7 +410,10 @@ _run(){
         create_db
         create_phpconfig
         create_user
-        create_ftp
+
+        if [ "${pureftpd_status}" == "active" ]; then
+            create_ftp
+        fi
 
         if [[ "${SOURCE}" == "wordpress" ]]; then
             clear

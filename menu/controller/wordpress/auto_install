@@ -70,7 +70,6 @@ auto_install(){
     wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}_" --extra-php <<PHP
 define( 'WP_DEBUG', false );
 define( 'WP_DEBUG_LOG', false );
-define( 'FS_METHOD', 'direct');
 define( 'WP_CACHE', true);
 PHP
     # Install WordPress
