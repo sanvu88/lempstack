@@ -225,6 +225,7 @@ select_php_ver(){
             printf "${RED}%s${NC}\n" "${WRONG_PHP_OPTION}"
         fi
     done
+    sleep 1
 }
 
 select_php_multi(){
@@ -240,6 +241,7 @@ select_php_multi(){
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
+    sleep 1
 }
 
 select_php_ver_2(){
@@ -263,6 +265,7 @@ select_php_ver_2(){
             printf "${RED}%s\n${NC}" "${INVALID_PHP2_OPTION}"
         fi
     done
+    sleep 1
 }
 
 option_clamav(){
@@ -278,6 +281,7 @@ option_clamav(){
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
+    sleep 1
 }
 
 option_memcached(){
@@ -293,6 +297,7 @@ option_memcached(){
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
+    sleep 1
 }
 
 option_redis(){
@@ -308,6 +313,7 @@ option_redis(){
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
+    sleep 1
 }
 
 option_pureftp(){
@@ -323,6 +329,7 @@ option_pureftp(){
             *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
         esac
     done
+    sleep 1
 }
 
 options(){
