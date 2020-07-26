@@ -98,6 +98,10 @@ menu_ggdrive(){
 	. /var/hostvn/menu/route/gg_drive
 }
 
+menu_security(){
+    . /var/hostvn/menu/route/security
+}
+
 domain_list(){
 	. /var/hostvn/menu/controller/domain/list
 }
@@ -432,4 +436,12 @@ inst_memcached(){
 
 inst_redis(){
     . /var/hostvn/menu/controller/cache/install_redis
+}
+
+inst_clamav(){
+    . /var/hostvn/menu/controller/security/install_clamav
+}
+
+scan_malware(){
+    . /var/hostvn/menu/controller/security/scan_malware
 }

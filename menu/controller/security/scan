@@ -1,0 +1,27 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2034
+
+printf "${GREEN}Cap nhat co so du lieu Malware${NC}\n"
+sleep 2
+freshclam
+clear
+
+printf "${GREEN}Chuan bi quet Malware${NC}\n"
+sleep 2
+clamscan --infected --recursive /home
+printf "Hoan tat Scan Malware. Theo doi log tren de kiem tra cac file bị nghi ngo la ma doc."
+echo ""
+sleep 2
+CHOICE=0
+menu_security

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+CHOICE=1
+
+printf "${GREEN}===================${NC}\n"
+printf "${GREEN}Quan ly LEMP Stack ${NC}\n"
+printf "${GREEN}===================${NC}\n"
+echo ""
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Cai dat Clamav${NC}\n"
+    printf "${GREEN}2. Scan Malware${NC}\n"
+    printf "${GREEN}3. Cau hinh Naxsi Firewall${NC}\n"
+    printf "${GREEN} ------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; inst_clamav;;
+        2) clear; scan_malware;;
+        3) clear; printf "${RED}Se update sau${NC}\n"; menu_security;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2034
+
+if [ -f "/etc/clamd.d/scan.conf" ]; then
+    printf "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}\n"
+else
+    if [ "${OS_VER}" -eq 8 ]; then
+        dnf install clamav clamav-update clamd -y
+    else
+        clamav clamav-update clamav-scanner-systemd clamav-server-systemd
+    fi
+
+    setsebool -P antivirus_can_scan_system 1
+    setsebool -P clamd_use_jit 1
+    sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+    sed -i -e "s/#LocalSocket /LocalSocket /" /etc/clamd.d/scan.conf
+    sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+    {
+        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ndb"
+        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.hdb"
+        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
+        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
+    } >> /etc/freshclam.conf
+    printf "${GREEN}Cai dat ClamAV thanh cong.${NC}\n"
+    echo ""
+fi
+
+sleep 2
+CHOICE=0
+menu_security
