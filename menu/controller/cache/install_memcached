@@ -63,7 +63,7 @@ _run(){
 }
 
 confirm
-if yes_no_confirm "${prompt_memcached}";then
+if [[ "${prompt_memcached}" =~ ^([yY])$ ]];then
     _run
 else
     clear

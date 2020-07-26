@@ -48,7 +48,7 @@ _run(){
 }
 
 confirm
-if yes_no_confirm "${prompt_redis}";then
+if [[ "${prompt_redis}" =~ ^([yY])$ ]];then
     _run
 else
     clear

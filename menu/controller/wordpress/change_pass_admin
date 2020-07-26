@@ -57,8 +57,7 @@ _run(){
 	backup_confirm
 	check_wpconfig "${username}" "${domain}"
 
-	if ! yes_no_confirm "${promt_backup}"
-    then
+    if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
         ALERT=$(
             printf "${RED}Ban da chon khong backup. Dieu nay khong an toan.${NC}\n"
             printf "${RED}He thong se huy thay doi mat khau admin (wp-admin).${NC}\n"

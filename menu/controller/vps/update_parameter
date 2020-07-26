@@ -310,36 +310,38 @@ change_php_user(){
 }
 
 _run(){
-    confirm
-    if yes_no_confirm "${promtp_update}"; then
-        config_my_cnf
+    config_my_cnf
 
-        php_global_config
-        php_opcache
-        hostvn_custom_ini
+    php_global_config
+    php_opcache
+    hostvn_custom_ini
 
-        if [ "${php2_release}" == "yes" ]; then
-            PHP2_INI_PATH="/etc/opt/remi/${php2_version}/php.d"
+    if [ "${php2_release}" == "yes" ]; then
+        PHP2_INI_PATH="/etc/opt/remi/${php2_version}/php.d"
 
-            if [[ ${php2_version} == "php56" ]]; then
-                PHP2_INI_PATH="/opt/remi/${php2_version}/root/etc/php.d"
-            fi
-
-            php_global_config_2
-            hostvn_custom_ini_2
-            php_opcache_2
+        if [[ ${php2_version} == "php56" ]]; then
+            PHP2_INI_PATH="/opt/remi/${php2_version}/root/etc/php.d"
         fi
 
-        change_php_user
-
-        restart_service
-        systemctl restart mariadb
-        clear
-        printf "${GREEN}Cap nhat lai thong so thanh cong.${NC}\n"
-    else
-        printf "${GREEN}Ban da huy cap nhat lai thong so SCRIPT.${NC}\n"
+        php_global_config_2
+        hostvn_custom_ini_2
+        php_opcache_2
     fi
+
+    change_php_user
+
+    restart_service
+    systemctl restart mariadb
+    clear
+    printf "${GREEN}Cap nhat lai thong so thanh cong.${NC}\n"
 }
 
-_run
+confirm
+
+if [[ "${promtp_update}" =~ ^([yY])$ ]]; then
+    _run
+else
+    printf "${GREEN}Ban da huy cap nhat lai thong so SCRIPT.${NC}\n"
+fi
+
 menu_vps

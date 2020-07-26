@@ -20,16 +20,6 @@ cd_dir(){
     cd "$1" || exit
 }
 
-# Print space
-printf_s(){
-    if [ "$1" -le 0 ]
-    then
-        echo ""
-    else
-        printf '%0.s ' $(seq 1 "$1")
-    fi
-}
-
 bytes_for_humans(){
     #https://stackoverflow.com/a/30872711
     local -i bytes=$1;

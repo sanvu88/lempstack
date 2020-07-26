@@ -181,8 +181,7 @@ _run(){
         ALERT=$(printf "${RED}Ten mien moi cua ban giong ten mien cu. Huy thay doi ten mien.${NC}\n")
     fi
 
-    if ! yes_no_confirm "${promt_backup}"
-    then
+    if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
         ALERT=$(
             printf "${RED}Ban da chon khong backup.${NC}\n"
             printf "${RED}Dieu nay khong an toan.\n He thong se huy thay doi ten mien.${NC}\n"

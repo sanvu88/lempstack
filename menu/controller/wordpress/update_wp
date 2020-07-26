@@ -51,9 +51,8 @@ _run(){
 	check_is_wordpress "${username}" "${domain}"
 
 	backup_confirm
-	if ! yes_no_confirm "${promt_backup}"
-    then
-        ALERT=$(
+	if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
+	    ALERT=$(
             printf "${RED}Ban da chon khong backup.${NC}\n"
             printf "${RED}Dieu nay khong an toan.\n He thong se huy cap nhat WordPress.${NC}\n"
         )

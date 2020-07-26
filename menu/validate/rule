@@ -210,14 +210,6 @@ check_backup_empty(){
     fi
 }
 
-yes_no_confirm(){
-    if [[ "${1}" =~ ^([yY])$ ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 check_docroot_empty(){
     if [ "$(ls -At /home/"${1}"/"${2}"/public_html)" ]; then
         return 0
