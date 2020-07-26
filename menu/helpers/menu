@@ -254,6 +254,10 @@ wp_xmlrpc(){
 	. /var/hostvn/menu/controller/wordpress/xmlrpc
 }
 
+deactive_all_plugins(){
+    . /var/hostvn/menu/controller/wordpress/deactive_all_plugins
+}
+
 account_info(){
 	. /var/hostvn/menu/controller/vps/account_info
 }

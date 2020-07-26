@@ -1,0 +1,38 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    if [ ! -d "/home/*/${domain}/public_html/wp-content/plugins" ]; then
+        ALERT=$(printf "${RED}Website khong su dung WordPress${NC}\n")
+    fi
+    if [ -z "${ALERT}" ]; then
+        cd_dir /home/*/"${domain}"/public_html
+        wp plugin deactivate --all --allow-root
+        printf "${GREEN}Huy kich hoat toan bo plugin thanh cong.${NC}\n"
+        echo ""
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
+}
+
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
