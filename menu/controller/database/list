@@ -16,7 +16,9 @@ echo "------------------"
 echo "Danh sach Database"
 echo "------------------"
 echo ""
-mysql -e "show databases where \`database\` not in('information_schema', 'test', 'sys', 'phpmyadmin', 'mysql', 'performance_schema')"
+#https://stackoverflow.com/a/50053525
+#https://dba.stackexchange.com/a/69667
+mysql -e "SHOW DATABASES WHERE \`Database\` NOT IN('information_schema', 'phpmyadmin', 'mysql', 'performance_schema')"
 echo
 CHOICE=0
 menu_database
