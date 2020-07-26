@@ -54,8 +54,6 @@ change_pass_admin(){
 }
 
 _run(){
-	select_domain
-
 	backup_confirm
 	check_wpconfig "${username}" "${domain}"
 
@@ -80,5 +78,11 @@ _run(){
 	fi
 }
 
-_run
+select_domain
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
 menu_wp

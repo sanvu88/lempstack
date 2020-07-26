@@ -62,6 +62,7 @@ _run(){
     fi
 }
 
+confirm
 if yes_no_confirm "${prompt_memcached}";then
     _run
 else

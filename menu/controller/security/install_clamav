@@ -42,6 +42,7 @@ install(){
     fi
 }
 
+confirm
 if yes_no_confirm "${prompt_clamav}";then
     install
 else

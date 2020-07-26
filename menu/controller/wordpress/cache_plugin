@@ -77,7 +77,6 @@ action(){
 }
 
 _run(){
-    select_domain
     select_plugin_cache
     validate_plugin
     set_var
@@ -97,5 +96,11 @@ _run(){
     fi
 }
 
-_run
+select_domain
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
 menu_wp

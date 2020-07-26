@@ -47,6 +47,7 @@ _run(){
     fi
 }
 
+confirm
 if yes_no_confirm "${prompt_redis}";then
     _run
 else

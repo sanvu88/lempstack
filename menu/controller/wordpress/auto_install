@@ -199,8 +199,6 @@ END
 }
 
 _run(){
-	select_domain
-
 	set_var
 	docroot_empty
 	database_empty
@@ -238,5 +236,13 @@ _run(){
 	fi
 }
 
-_run "$@"
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run "$@"
+else
+    clear
+    printf "${ALERT}\n"
+fi
+
 menu_wp

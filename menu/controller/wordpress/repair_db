@@ -42,8 +42,6 @@ repair_db(){
 }
 
 _run(){
-	select_domain
-
 	set_var
 	check_is_wordpress "${username}" "${domain}"
 
@@ -66,7 +64,12 @@ _run(){
 	fi
 }
 
-_run
+select_domain
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    clear
+    printf "${ALERT}\n"
+fi
 echo ""
-sleep 2
 menu_wp

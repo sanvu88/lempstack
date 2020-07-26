@@ -42,44 +42,48 @@ restore_db(){
 }
 
 _run(){
-	confirm_restore
-
-	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
-		list_backup
-		select_domain
+    list_backup
     set_var
-		check_is_wordpress "${username}" "${domain}"
-		check_backup_exists "${date}" "${domain}"
+    check_is_wordpress "${username}" "${domain}"
+    check_backup_exists "${date}" "${domain}"
 
-		if ! check_backup_empty "${date}" "${domain}";
-		then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+    if ! check_backup_empty "${date}" "${domain}";
+    then
+        ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+    fi
 
-		if [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+    if [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
+        ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+    fi
 
-		if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+    if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
+        ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+    fi
 
-		if [ -z "${ALERT}" ]; then
-			restore_source
-			empty_db
-			restore_db
-            restart_service
-			clear
-			printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
-		else
-			clear
-			printf "${ALERT}\n"
-		fi
-	else
-		clear
-		printf "${RED}Ban da chon huy khoi phuc du lieu.${NC}\n"
-	fi
+    if [ -z "${ALERT}" ]; then
+        restore_source
+        empty_db
+        restore_db
+        restart_service
+        clear
+        printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
 }
 
-_run
+confirm_restore
+if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+    select_domain
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "${ALERT}\n"
+    fi
+else
+    clear
+    printf "${RED}Ban da chon huy khoi phuc du lieu.${NC}\n"
+fi
 menu_wp
