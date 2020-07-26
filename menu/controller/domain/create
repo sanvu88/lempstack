@@ -437,5 +437,4 @@ _run(){
 
 _run "$@"
 echo ""
-sleep 4
 menu_domain

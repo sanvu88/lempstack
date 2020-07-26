@@ -31,7 +31,7 @@ list_domain(){
         echo "Tong Domain: $((i-1))"
     else
         clear
-        printf "${RED}Khong co Domain nao ton toi tren he thong.${NC}\n"
+        printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
     fi
 }
 
