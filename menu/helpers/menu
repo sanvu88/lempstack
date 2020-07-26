@@ -438,6 +438,10 @@ inst_memcached(){
     . /var/hostvn/menu/controller/cache/install_memcached
 }
 
+cache_opcache(){
+    . /var/hostvn/menu/controller/cache/opcache
+}
+
 inst_redis(){
     . /var/hostvn/menu/controller/cache/install_redis
 }

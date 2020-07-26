@@ -1,0 +1,65 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+
+set_php_ini_path(){
+    PHP1_INI_PATH="/etc/php.d"
+
+    if [ "${php2_release}" == "yes" ]; then
+        PHP2_INI_PATH="/etc/opt/remi/${PHP_VERSION_2}/php.d"
+        if [[ ${php2_version} == "php56" ]]; then
+            PHP2_INI_PATH="/opt/remi/${PHP_VERSION_2}/root/etc/php.d"
+        fi
+    fi
+}
+
+set_opcache_status(){
+    opcache1_status=$(grep "opcache.enable=" "${PHP1_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
+    if [ "${php2_release}" == "yes" ]; then
+        opcache2_status=$(grep "opcache.enable=" "${PHP2_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
+    fi
+}
+
+change_opcache_php1(){
+    if [[ ${opcache1_status} -eq 1 ]]; then
+        sed -i 's|opcache.enable=1|opcache.enable=0|g' "${PHP1_INI_PATH}"/10-opcache.ini
+        noti="Tat Opcache thanh cong."
+    else
+        sed -i 's|opcache.enable=0|opcache.enable=1|g' "${PHP1_INI_PATH}"/10-opcache.ini
+        noti="Bat Opcache thanh cong."
+    fi
+}
+
+change_opcache_php2(){
+    if [[ ${opcache2_status} -eq 1 ]]; then
+        sed -i 's|opcache.enable=1|opcache.enable=0|g' "${PHP2_INI_PATH}"/10-opcache.ini
+    else
+        sed -i 's|opcache.enable=0|opcache.enable=1|g' "${PHP2_INI_PATH}"/10-opcache.ini
+    fi
+}
+
+_run(){
+    set_php_ini_path
+    set_opcache_status
+
+    change_opcache_php1
+
+    if [ "${php2_release}" == "yes" ]; then
+        change_opcache_php2
+    fi
+
+    printf "${GREEN}${noti}${nc}\n"
+}
+
+_run
+menu_cache
