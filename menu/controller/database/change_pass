@@ -25,11 +25,11 @@ input(){
 }
 
 validate(){
-	if [[ "${db_user}" = "" ]]; then
+	if [[ -z "${db_user}" ]]; then
 		ALERT=$(printf "${RED}Mysql user khong duoc de trong.${NC}\n")
 	fi
 
-	if [[ "${password}" = "" ]]; then
+	if [[ -z "${password}" ]]; then
 		ALERT=$(printf "${RED}Mat khau khong duoc de trong.${NC}\n")
 	fi
 
