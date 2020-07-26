@@ -77,7 +77,7 @@ do
             ;;
         8) update_script ;;
         9) change_all_parameter ;;
-        10) menu_security ;;
+        10) clear; menu_security ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

@@ -56,6 +56,7 @@ if [[ "${OS_VER}" -eq 8 ]]; then
 fi
 
 # Set Lang
+OPTION_CHANGE_SSH="Ban co muon they doi port SSH khong ? "
 OPTION_INST_PUREFTP="Ban co muon cai dat PURE-FTPD (Quan ly FTP) khong ? "
 OPTION_INST_AV="Ban co muon cai dat Clamav (Scan Malware) khong ? "
 OPTION_INST_MEMCACHED="Ban co muon cai dat Memcached khong ? "
@@ -139,7 +140,6 @@ config_selinux(){
     fi
 
     semanage permissive -a httpd_t
-    semanage port -a -t ssh_port_t -p tcp 9292
 }
 
 #Set timezone
@@ -332,6 +332,22 @@ option_pureftp(){
     sleep 1
 }
 
+option_change_ssh_port(){
+    clear
+    printf "%s\n" "${OPTION_CHANGE_SSH}"
+    PS3="${ENTER_OPTION}"
+    options=("Yes" "No")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Yes") prompt_ssh="y"; SSH_PORT="9292" ; break;;
+            "No") prompt_ssh="n"; SSH_PORT="22" ; break;;
+            *) printf "${RED}%s${NC}\n" "${WRONG_PHP_SELECT_2} $REPLY";;
+        esac
+    done
+    sleep 1
+}
+
 options(){
     select_php_ver
     select_php_multi
@@ -345,6 +361,7 @@ options(){
     option_memcached
     option_redis
     option_pureftp
+    option_change_ssh_port
 }
 
 ############################################
@@ -3283,7 +3300,7 @@ EOpure_ftpd_conf
 ############################################
 change_ssh_port() {
     echo ""
-    sed -i 's/#Port 22/Port 9292/g' /etc/ssh/sshd_config
+    sed -i "s/#Port 22/Port ${SSH_PORT}/g" /etc/ssh/sshd_config
 }
 
 ############################################
@@ -3416,14 +3433,17 @@ install_csf(){
     sh install.sh
     cd_dir "${DIR}"
     rm -rf csf*
-    sed -i 's/21,22/21,22,9292/g' /etc/csf/csf.conf
+    if [[ "${prompt_ssh}" =~ ^([yY])$ ]]; then
+        sed -i "s/21,22/21,22,${SSH_PORT}/g" /etc/csf/csf.conf
+        sed -i "s/PORTS_sshd = \"22\"/PORTS_sshd = \"22, ${SSH_PORT}\"/g" /etc/csf/csf.conf
+    fi
+
     sed -i "s/443,465/443,${RANDOM_ADMIN_PORT},465/g" /etc/csf/csf.conf
     sed -i "s/443,587/443,465,587,${RANDOM_ADMIN_PORT}/g" /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
     sed -i 's/RESTRICT_SYSLOG = "0"/RESTRICT_SYSLOG = "2"/g' /etc/csf/csf.conf
     sed -i 's/CT_LIMIT = "0"/CT_LIMIT = "600"/g' /etc/csf/csf.conf
     sed -i 's/ICMP_IN = "0"/ICMP_IN = "1"/; s/ICMP_IN_RATE = "1/ICMP_IN_RATE = "5/' /etc/csf/csf.conf
-    sed -i 's/PORTS_sshd = "22"/PORTS_sshd = "22, 9292"/g' /etc/csf/csf.conf
     sed -i 's/PORTFLOOD = ""/PORTFLOOD = "21;tcp;20;300"/g' /etc/csf/csf.conf
     echo '#!/bin/sh' > /usr/sbin/sendmail
     chmod +x /usr/sbin/sendmail
@@ -3574,7 +3594,7 @@ write_info(){
     touch "${FILE_INFO}"
     {
         echo "script_version=1.0"
-        echo "ssh_port=9292"
+        echo "ssh_port=${SSH_PORT}"
         echo "admin_port=${RANDOM_ADMIN_PORT}"
         echo "csf_port=${CSF_UI_PORT}"
         echo "ftp_port=21"
@@ -3637,7 +3657,10 @@ start_service
 sys_content
 write_info
 ssh_login_noti
-change_ssh_port
+
+if [[ "${prompt_ssh}" =~ ^([yY])$ ]]; then
+    change_ssh_port
+fi
 
 clear
 sleep 1
@@ -3649,7 +3672,7 @@ printf "          Neu can ho tro vui long lien he %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
 echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
 echo "-----------------------------------------------------------------------------"
-echo   "1.  SSH  Port                    : 9292"
+printf   "1.  SSH  Port                  : %s\n" "${SSH_PORT}"
 printf "2.  phpMyAdmin                   : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 printf "3.  Link Opcache Dashboard       : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"
 printf "4.  Link Server Info             : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/serverinfo"
