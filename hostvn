@@ -3374,8 +3374,15 @@ install_admin_tool(){
     gen_htpasswd
     opcache_dashboard
     php_sys_info
-    phpmemcachedadmin
-    redisdadmin
+
+    if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
+        phpmemcachedadmin
+    fi
+    
+    if [[ "${prompt_redis}" =~ ^([yY])$ ]]; then
+        redisdadmin
+    fi
+
     install_rclone
 }
 
