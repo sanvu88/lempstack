@@ -58,7 +58,7 @@ do
         8) clear; wp_change_domain ;;
         9) clear; wp_change_pass_admin ;;
         10) clear; wp_auto_install ;;
-        11) clear; wp_seo ;;
+        11) clear; wp_yoast_seo ;;
         12) clear; wp_rank_math_seo ;;
         13) clear; wp_plugin_cache ;;
         14) clear; wp_cache_key ;;

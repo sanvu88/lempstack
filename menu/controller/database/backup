@@ -11,7 +11,6 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 set_var(){
