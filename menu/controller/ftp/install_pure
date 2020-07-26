@@ -79,6 +79,7 @@ EOpure_ftpd_conf
     fi
 }
 
+confirm
 if [[ "${promtp_ftp}" =~ ^([yY])$ ]]; then
     install
 else
