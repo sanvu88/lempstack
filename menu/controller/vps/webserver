@@ -23,51 +23,51 @@ set_var(){
 
 set_color(){
 	if [[ -z "${nginx_status}" ]]; then
-		nginx_status=$(printf "${RED}${nginx_status}${NC}")
+		nginx_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		nginx_status=$(printf "${GREEN}${nginx_status}${NC}")
+		nginx_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[ -z "${php_status}" ]]; then
-		php_status=$(printf "${RED}${php_status}${NC}")
+		php_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		php_status=$(printf "${GREEN}${php_status}${NC}")
+		php_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[  -z "${mysql_status}" ]]; then
-		mysql_status=$(printf "${RED}${mysql_status}${NC}")
+		mysql_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		mysql_status=$(printf "${GREEN}${mysql_status}${NC}")
+		mysql_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[  -z "${ssh_status}" ]]; then
-		ssh_status=$(printf "${RED}${ssh_status}${NC}")
+		ssh_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		ssh_status=$(printf "${GREEN}${ssh_status}${NC}")
+		ssh_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[  -z "${lfd_status}" ]]; then
-		lfd_status=$(printf "${RED}${lfd_status}${NC}")
+		lfd_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		lfd_status=$(printf "${GREEN}${lfd_status}${NC}")
+		lfd_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[  -z "${pure_status}" ]]; then
-		pure_status=$(printf "${RED}${pure_status}${NC}")
+		pure_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		pure_status=$(printf "${GREEN}${pure_status}${NC}")
+		pure_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[ -z "${memcached_status}" ]]; then
-		memcached_status=$(printf "${RED}${memcached_status}${NC}")
+		memcached_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		memcached_status=$(printf "${GREEN}${memcached_status}${NC}")
+		memcached_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 
 	if [[ -z "${redis_status}" ]]; then
-		redis_status=$(printf "${RED}${redis_status}${NC}")
+		redis_status=$(printf "${RED}Khong hoat dong${NC}")
 	else
-		redis_status=$(printf "${GREEN}${redis_status}${NC}")
+		redis_status=$(printf "${GREEN}Hoat dong${NC}")
 	fi
 }
 

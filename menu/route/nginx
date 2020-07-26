@@ -16,9 +16,9 @@ nginx_status=$(pgrep -f nginx)
 nginx_v=$(nginx -v 2>&1 | grep -o '[0-9.]*$'; echo)
 set_cl(){
     if [[ -n ${nginx_status} ]]; then
-        nginx_status=$(printf "${GREEN}${nginx_status}${NC}")
+        nginx_status=$(printf "${GREEN}Hoat dong${NC}")
     else
-        nginx_status=$(printf "${RED}${nginx_status}${NC}")
+        nginx_status=$(printf "${RED}Khong hoat dong${NC}")
     fi
 }
 
@@ -52,7 +52,9 @@ do
             printf "${RED}Dang khoi đong lai...${NC}\n"
             sleep 1
             systemctl restart nginx
-            sleep 2
+            clear
+            printf "${GREEN}Khoi đong lai Nginx thanh cong.${NC}\n"
+            sleep 1
             echo
             menu_nginx
             ;;
@@ -60,7 +62,7 @@ do
             clear
             sleep 1
             nginx -t
-            sleep 2
+            sleep 1
             echo
             menu_nginx
             ;;
@@ -68,6 +70,8 @@ do
             printf "${RED}Chuan bi cap nhat...${NC}\n"
             sleep 1
             yum -y update nginx
+            clear
+            printf "${GREEN}Hoan tat cap nhat.${NC}\n"
             echo
             menu_nginx
             ;;
