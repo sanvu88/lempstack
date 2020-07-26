@@ -328,7 +328,12 @@ option_pureftp(){
 options(){
     select_php_ver
     select_php_multi
-    select_php_ver_2
+
+    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+        select_php_ver_2
+        check_duplicate_php
+    fi
+
     option_clamav
     option_memcached
     option_redis
@@ -496,11 +501,6 @@ check_duplicate_php(){
 
 install_lemp(){
     echo ""
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        select_php_ver_2
-        check_duplicate_php
-    fi
 
     install_nginx
 
