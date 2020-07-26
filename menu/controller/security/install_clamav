@@ -12,30 +12,42 @@
 
 # shellcheck disable=SC2034
 
-if [ -f "/etc/clamd.d/scan.conf" ]; then
-    printf "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}\n"
-else
-    if [ "${OS_VER}" -eq 8 ]; then
-        dnf install clamav clamav-update clamd -y
-    else
-        clamav clamav-update clamav-scanner-systemd clamav-server-systemd
-    fi
+confirm(){
+    read -r -p "Ban muon cai dat ClamAV ? (y/n) " prompt_clamav
+}
 
-    setsebool -P antivirus_can_scan_system 1
-    setsebool -P clamd_use_jit 1
-    sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
-    sed -i -e "s/#LocalSocket /LocalSocket /" /etc/clamd.d/scan.conf
-    sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
-    {
-        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ndb"
-        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.hdb"
-        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
-        echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
-    } >> /etc/freshclam.conf
-    printf "${GREEN}Cai dat ClamAV thanh cong.${NC}\n"
-    echo ""
+install(){
+    if [ -f "/etc/clamd.d/scan.conf" ]; then
+        printf "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}\n"
+    else
+        if [ "${OS_VER}" -eq 8 ]; then
+            dnf install clamav clamav-update clamd -y
+        else
+            clamav clamav-update clamav-scanner-systemd clamav-server-systemd
+        fi
+
+        setsebool -P antivirus_can_scan_system 1
+        setsebool -P clamd_use_jit 1
+        sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+        sed -i -e "s/#LocalSocket /LocalSocket /" /etc/clamd.d/scan.conf
+        sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+        {
+            echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ndb"
+            echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.hdb"
+            echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
+            echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
+        } >> /etc/freshclam.conf
+        printf "${GREEN}Cai dat ClamAV thanh cong.${NC}\n"
+        echo ""
+    fi
+}
+
+if yes_no_confirm "${prompt_clamav}";then
+    install
+else
+    clear
+    printf "${GREEN}Ban da huy cai dat ClamAV.${NC}\n"
 fi
 
-sleep 2
 CHOICE=0
 menu_security

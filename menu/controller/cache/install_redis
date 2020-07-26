@@ -51,7 +51,7 @@ if yes_no_confirm "${prompt_redis}";then
     _run
 else
     clear
-    printf "${GREEN}Ban da huy cai dat Memcached.${NC}\n"
+    printf "${GREEN}Ban da huy cai dat Redis.${NC}\n"
 fi
 
 menu_cache
