@@ -14,9 +14,12 @@
 source /var/hostvn/menu/helpers/function
 
 _run(){
-    if [ ! -d "/home/*/${domain}/public_html/wp-content/plugins" ]; then
+    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+
+    if [ ! -d "/home/${username}/${domain}/public_html/wp-content/plugins" ]; then
         ALERT=$(printf "${RED}Website khong su dung WordPress${NC}\n")
     fi
+
     if [ -z "${ALERT}" ]; then
         cd_dir /home/*/"${domain}"/public_html
         wp plugin deactivate --all --allow-root
@@ -37,3 +40,5 @@ else
     clear
     printf "${ALERT}\n"
 fi
+
+wp_menu_plugins

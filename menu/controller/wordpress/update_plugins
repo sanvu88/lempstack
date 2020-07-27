@@ -82,4 +82,4 @@ else
 fi
 echo ""
 sleep 1
-menu_wp
+wp_menu_plugins
