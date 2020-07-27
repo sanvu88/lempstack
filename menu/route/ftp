@@ -10,10 +10,12 @@
 #   Please don't copy under any circumstance for commercial reason!  #
 ######################################################################
 
+# shellcheck disable=SC2154
 CHOICE=1
 
 printf "${GREEN}===================${NC}\n"
-printf "${GREEN}   Quan ly Domain  ${NC}\n"
+printf "${GREEN}   Quan ly FTP     ${NC}\n"
+printf "${GREEN}   Port FTP:  %s   ${NC}\n" "${ftp_port}"
 printf "${GREEN}===================${NC}\n"
 echo ""
 

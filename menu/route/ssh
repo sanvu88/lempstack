@@ -10,10 +10,12 @@
 #   Please don't copy under any circumstance for commercial reason!  #
 ######################################################################
 
+# shellcheck disable=SC2154
 CHOICE=1
 
 printf "${GREEN}======================${NC}\n"
-printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
+printf "     ${GREEN}Quan ly SSH${NC}     \n"
+printf "     ${GREEN}Port SSH: %s${NC}    \n" "${ssh_port}"
 printf "${GREEN}======================${NC}\n"
 echo
 
