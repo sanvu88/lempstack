@@ -21,11 +21,12 @@ while [ "${CHOICE}" != "0" ]
 do
     printf "${GREEN}1. Kiem tra phien ban WordPress${NC}\n"
     printf "${GREEN}2. Cap nhat phien ban WordPress${NC}\n"
-    printf "${GREEN}3. Cap nhat plugins (Tru plugins tra phi)${NC}\n"
-    printf "${GREEN}4. Toi uu database${NC}\n"
-    printf "${GREEN}5. Repair database${NC}\n"
-    printf "${GREEN}6. Sao luu du lieu (Local)${NC}\n"
-    printf "${GREEN}7. Khoi phuc du lieu (Local)${NC}\n"
+
+    printf "${GREEN}3. Quan ly Plugins${NC}\n"
+    printf "${GREEN}4. Quan ly Database${NC}\n"
+    printf "${GREEN}5. Khoi phuc/Sao luu du lieu${NC}\n"
+
+
     printf "${GREEN}8. Thay doi ten mien${NC}\n"
     printf "${GREEN}9. Doi mat khau admin (wp-admin)${NC}\n"
     printf "${GREEN}10. Cai dat WordPress tu dong${NC}\n"
@@ -37,8 +38,7 @@ do
     printf "${GREEN}16. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
     printf "${GREEN}17. Huy kich hoat toan bo plugins${NC}\n"
     printf "${GREEN}18. Bat/Tat disable xmlrpc${NC}\n"
-    printf "${GREEN}19. Sao luu len Google Drive${NC}\n"
-    printf "${GREEN}20. Thiet lap backup tu dong${NC}\n"
+
     printf "${GREEN}21. Toi uu WordPress Cron${NC}\n"
     printf "${GREEN} ----------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE

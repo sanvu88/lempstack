@@ -22,7 +22,7 @@ CHOICE=1
 
 printf "${GREEN}==================================================${NC}\n"
 printf "${GREEN}       %s Scripts - Cong cu quan ly VPS    ${NC}\n" "${AUTHOR}"
-printf "${GREEN}                  %s                              ${NC}\n" "${AUTHOR_WEB}"
+printf "${GREEN}             %s - Version %s             ${NC}\n" "${AUTHOR_WEB}" "${script_version}"
 printf "${GREEN}==================================================${NC}\n"
 printf "${GREEN}IP VPS: %s${NC}\n" "${IPADDRESS}"
 printf "${GREEN}phpMyAdmin: %s${NC}\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
