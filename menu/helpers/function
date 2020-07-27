@@ -48,23 +48,29 @@ gen_pass(){
 select_domain(){
     domain=""
     if [ "$(ls -At "${USER_DIR}")" ]; then
-        selects=()
-        cd_dir "${USER_DIR}"
-        for entry in .*.conf; do
-            domain=${entry/.}
-            domain=${domain//.conf}
-            selects+=("${domain}")
-        done
-        PS3="${INPUT_SELECT}"
-        select select in "${selects[@]}"
+        while true
         do
-            domain=$select
-            break
+            selects=()
+            cd_dir "${USER_DIR}"
+            for entry in .*.conf; do
+                domain=${entry/.}
+                domain=${domain//.conf}
+                selects+=("${domain}")
+            done
+            PS3="${INPUT_SELECT}"
+            select opt in "${selects[@]}"
+            do
+                domain=$opt
+                break
+            done
+            if [[ " ${selects[*]} " == *" ${domain} "* ]] && validate_domain "${domain}";
+            then
+                break
+            else
+                clear
+                printf "${RED}${WRONG_DOMAIN}${NC}\n"
+            fi
         done
-
-        if ! validate_domain "${domain}"; then
-            ALERT=$(printf "${RED}${WRONG_DOMAIN}${NC}\n")
-        fi
     else
         ALERT=$(printf "${RED}${EMPTY_DOMAIN}${NC}\n")
     fi
@@ -156,17 +162,27 @@ make_backup_dir(){
 list_backup(){
     date=""
     if [ "$(ls -At /home/backup)" ]; then
-        echo "${LIST_BACKUP}"
-        selects=()
-        cd_dir /home/backup
-        for date in * ; do
-            selects+=("${date}")
-        done
-        PS3="${SELECT_OPTION}"
-        select select in "${selects[@]}"
+        while true
         do
-            date=${select}
-            break
+            echo "${LIST_BACKUP}"
+            selects=()
+            cd_dir /home/backup
+            for date in * ; do
+                selects+=("${date}")
+            done
+            PS3="${SELECT_OPTION}"
+            select select in "${selects[@]}"
+            do
+                date=${select}
+                break
+            done
+            if [[ " ${selects[*]} " == *" ${date} "* ]];
+            then
+                break
+            else
+                clear
+                printf "${RED}${WRONG_OPTION}${NC}\n"
+            fi
         done
     else
         ALERT=$(printf "${RED}${BACKUP_EMPTY}${NC}\n")
@@ -284,7 +300,7 @@ select_remote(){
 
         if [[ " ${remotes[*]} " == *" ${remote} "* ]];
         then
-            printf "${RED}${WRONG_REMOTE}${NC}\n"
+            printf "${RED}${WRONG_OPTION}${NC}\n"
         else
             break
         fi
