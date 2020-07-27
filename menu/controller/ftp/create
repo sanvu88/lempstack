@@ -23,7 +23,8 @@ set_var(){
 input(){
 	  read -r -p "Nhap vao user muon tao: " ftp_user
 	  read -r -p "Nhap vao mat khau muon tao: " ftp_pwd
-	  read -r -p "Nhap vao duong dan duoc phep truy cap: " ftp_path
+	  echo "Nhap vao duong dan duoc phep truy cap. VD: /home/example, /home/example/example.com/public_html"
+	  read -r -p "Nhap duong dan: " ftp_path
 }
 
 show_info(){
