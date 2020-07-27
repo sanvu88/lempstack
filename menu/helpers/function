@@ -52,6 +52,9 @@ select_domain(){
         do
             selects=()
             cd_dir "${USER_DIR}"
+            #https://stackoverflow.com/a/2437466
+            #https://stackoverflow.com/a/1951523
+            #https://stackoverflow.com/a/46882842
             for entry in .*.conf; do
                 domain=${entry/.}
                 domain=${domain//.conf}

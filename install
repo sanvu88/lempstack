@@ -126,7 +126,7 @@ install_repo(){
         yum -y update
         yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
         yum -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
-        yum -y install hostname libsepol boost-program-options libmemcached libmemcached-devel
+        yum -y install hostname libsepol boost-program-options libmemcached libmemcached-devel galera-4
     elif [ "${OS_VER}" -eq 7 ]; then
         yum -y update
         yum -y install epel-release ntpdate libmemcached libmemcached-devel
