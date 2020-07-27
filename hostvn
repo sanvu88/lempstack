@@ -189,10 +189,13 @@ create_log(){
 }
 
 ssh_login_noti(){
-    {
-        echo "echo \"${LOGIN_NOTI1}\""
-        echo "echo \"${LOGIN_NOTI2}\""
-    } >> ~/.bash_profile
+    string=$(grep -rnw "/root/.bash_profile" -e "${AUTHOR}")
+    if [ -z "${string}" ]; then
+        {
+            echo "echo \"${LOGIN_NOTI1}\""
+            echo "echo \"${LOGIN_NOTI2}\""
+        } >> ~/.bash_profile
+    fi
 }
 
 prepare_install(){
