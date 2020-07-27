@@ -50,6 +50,7 @@ select_domain(){
     if [ "$(ls -At "${USER_DIR}")" ]; then
         while true
         do
+            echo "${LIST_DOMAIN}"
             selects=()
             cd_dir "${USER_DIR}"
             #https://stackoverflow.com/a/2437466
