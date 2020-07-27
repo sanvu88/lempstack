@@ -18,7 +18,7 @@ input(){
 }
 
 delete(){
-	pure-pw ftp_user
+	pure-pw "${ftp_user}"
 	pure-pw mkdb
 }
 

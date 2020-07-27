@@ -20,7 +20,7 @@ input(){
 
 
 change_pass(){
-	pure-pw passwd ftp_user <<EOF
+	pure-pw passwd "${ftp_user}" <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF
