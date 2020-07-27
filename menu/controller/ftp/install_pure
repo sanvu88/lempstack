@@ -72,6 +72,7 @@ EOpure_ftpd_conf
         openssl dhparam -out "${PURE_CONF_PATH}"/ssl/pure-ftpd-dhparams.pem 2048
         openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem -out "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem
         chmod 600 "${PURE_CONF_PATH}"/ssl/pure-ftpd*.pem
+        touch /etc/pure-ftpd/pureftpd.passwd
         systemctl start pure-ftpd
         systemctl enable pure-ftpd
         clear
