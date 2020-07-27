@@ -96,6 +96,7 @@ install_php(){
         dnf module enable php:remi-"${php1_new_cent8}" -y
         dnf config-manager --set-enabled PowerTools
     else
+        yum-config-manager --disable remi-"${php1_version}"
         yum-config-manager --enable remi-"${php1_new}"
     fi
 
@@ -317,7 +318,6 @@ _run(){
     check_duplicate_php
 
     if [[ -z "${ALERT}" ]]; then
-        memory_calculation
         remove_old_php
 
         install_php

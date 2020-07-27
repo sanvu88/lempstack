@@ -321,7 +321,6 @@ _run(){
         check_duplicate_php
 
         if [[ -z "${ALERT}" ]]; then
-            memory_calculation
             remove_old_php
             install_php_2
             install_igbinary_2

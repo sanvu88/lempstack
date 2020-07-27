@@ -27,8 +27,8 @@ do
     printf "${GREEN}4. Khoi đong lai PHP              ${NC}\n"
     printf "${GREEN}5. Cau hinh thong so PHP          ${NC}\n"
     printf "${GREEN}6. Thay doi phien ban PHP mac dinh${NC}\n"
-    printf "${GREEN}7. Thay doi phien ban PHP 2       ${NC}\n"
-    printf "${GREEN}8. Cai dat phien ban PHP thu 2    ${NC}\n"
+    #printf "${GREEN}7. Thay doi phien ban PHP 2       ${NC}\n"
+    printf "${GREEN}7. Cai dat phien ban PHP thu 2    ${NC}\n"
     printf "${GREEN} ---------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -73,8 +73,8 @@ do
             ;;
         5) clear; php_setting ;;
         6) clear; php1_change ;;
-        7) clear; php2_change ;;
-        8) clear; php_inst_ver_2 ;;
+        #7) clear; php2_change ;;
+        7) clear; php_inst_ver_2 ;;
         0) clear; menu_lemp ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
