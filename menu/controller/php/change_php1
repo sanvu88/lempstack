@@ -340,6 +340,7 @@ _run(){
 }
 
 ALERT=""
+confirm
 if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
     _run
 else
