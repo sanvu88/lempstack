@@ -37,6 +37,7 @@ install(){
             echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.ldb"
             echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
         } >> /etc/freshclam.conf
+        clear
         printf "${GREEN}Cai dat ClamAV thanh cong.${NC}\n"
         echo ""
     fi
