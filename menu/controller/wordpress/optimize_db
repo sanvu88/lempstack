@@ -73,4 +73,4 @@ else
     printf "${ALERT}\n"
 fi
 echo ""
-menu_wp
+wp_menu_database

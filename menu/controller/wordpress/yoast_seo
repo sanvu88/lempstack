@@ -38,4 +38,4 @@ _run(){
 }
 
 _run
-menu_wp
+wp_menu_advanced
