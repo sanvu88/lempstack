@@ -16,6 +16,7 @@ source /var/hostvn/menu/helpers/function
 
 set_var(){
     pureftpd_status="$(pgrep -f pure-ftpd)"
+    ftp_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=');
     username=${domain//[-._]/}
 }
 
@@ -26,10 +27,13 @@ input(){
 }
 
 show_info(){
-	  printf "Port FTP: 21"
-	  printf "FTP User: %s\n" "${ftp_user}"
-	  printf "FTP Pass: %s\n" "${ftp_pwd}"
-	  sleep 3
+    clear
+    echo ""
+    printf "Port FTP: %s\n" "${ftp_port}"
+    printf "FTP User: %s\n" "${ftp_user}"
+    printf "FTP Pass: %s\n" "${ftp_pwd}"
+    sleep 3
+    echo ""
 }
 
 create(){
