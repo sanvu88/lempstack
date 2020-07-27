@@ -484,6 +484,7 @@ gpgcheck=1
 EOMARIADBREPO
     if [[ "${OS_VER}" -eq 8 ]]; then
         dnf makecache
+        dnf -y install galera-4
         dnf install -y MariaDB-server MariaDB-client --disablerepo=AppStream
     else
         yum -y install MariaDB-server MariaDB-client

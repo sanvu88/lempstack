@@ -170,8 +170,12 @@ php_inst_ver_2(){
 	. /var/hostvn/menu/controller/php/install_php2
 }
 
-php_change(){
-	. /var/hostvn/menu/controller/php/change_php
+php1_change(){
+	. /var/hostvn/menu/controller/php/change_php1
+}
+
+php2_change(){
+	. /var/hostvn/menu/controller/php/change_php2
 }
 
 info_webserver(){
