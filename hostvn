@@ -2154,6 +2154,7 @@ config_nginx(){
     default_vhost
     default_index
     default_error_page
+    wprocket_nginx
 }
 
 ############################################

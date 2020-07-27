@@ -33,7 +33,7 @@ do
         1) clear; inst_clamav;;
         2) clear; scan_malware;;
         3) clear; printf "${RED}Se update sau${NC}\n"; menu_security;;
-        0) clear; menu_security;;
+        0) clear; menu_vps;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
 done
