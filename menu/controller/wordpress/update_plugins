@@ -37,7 +37,7 @@ backup(){
 	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
 		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 	fi
-	wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+	wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 }
 
 update_plugins(){
