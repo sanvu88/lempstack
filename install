@@ -123,14 +123,14 @@ remove_old_ervice(){
 # Install requirement service
 install_repo(){
     if [[ "${OS_VER}" -eq 8 ]]; then
-        yum -y update
         yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
         yum -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
+        yum -y update
         yum -y install hostname libsepol boost-program-options libmemcached libmemcached-devel
     elif [ "${OS_VER}" -eq 7 ]; then
-        yum -y update
         yum -y install epel-release ntpdate libmemcached libmemcached-devel
         yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
+        yum -y update
     else
         printf "${RED}${OS_WRONG}${NC}\n"
         sleep 2

@@ -29,7 +29,7 @@ set_var(){
 }
 
 backup_confirm(){
-	read -r -p "Ban co muon backup du lieu truoc khi cap nhat khong? (y/n) " promt_backup
+	read -r -p "Ban co muon backup du lieu truoc khi doi mat khau admin khong? (y/n) " promt_backup
 }
 
 input(){
@@ -50,10 +50,11 @@ backup(){
 
 change_pass_admin(){
 	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp user update "${admin_username}" --user_pass="${new_admin_pwd}"
+	wp user update "${admin_username}" --user_pass="${new_admin_pwd}" --allow-root
 }
 
 _run(){
+    set_var
 	backup_confirm
 	check_wpconfig "${username}" "${domain}"
 
