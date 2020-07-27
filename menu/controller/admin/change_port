@@ -65,8 +65,6 @@ change_port(){
     echo "admin_port=${new_port}" >> "${FILE_INFO}"
     csf -x
     csf -e
-    systemctl restart csf
-    systemctl restart lfd
     clear
     printf "${GREEN}Da thay đoi Port Admin sang ${new_port} thanh cong.${NC}\n"
 }

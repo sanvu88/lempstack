@@ -61,6 +61,8 @@ change_port(){
     if [[ "${current_port}" != "21" ]]; then
         semanage port -d -p tcp "${current_port}"
     fi
+    csf -x
+    csf -e
     systemctl restart pure-ftpd
 }
 

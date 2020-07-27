@@ -72,8 +72,6 @@ change_port(){
     systemctl reload sshd.service
     csf -x
     csf -e
-    systemctl restart csf
-    systemctl restart lfd
     clear
     printf "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}\n"
 }
