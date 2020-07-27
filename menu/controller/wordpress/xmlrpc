@@ -21,8 +21,10 @@ find_string(){
 xmlrpc(){
     if [ -z "${string}" ]; then
         sed -i '/wordpress_secure.conf/a include /etc/nginx/wordpress/disable_xmlrpc.conf;' /etc/nginx/conf.d/"${domain}".conf
+        noti="${GREEN}Bat chan XMLRPC thanh cong.${NC}/n"
     else
         sed -i '/disable_xmlrpc.conf/d' /etc/nginx/conf.d/"${domain}".conf
+        noti="${GREEN}Bo chan XMLRPC thanh cong.${NC}/n"
     fi
 }
 
@@ -35,7 +37,7 @@ _run(){
         xmlrpc
         restart_service
         clear
-        printf "${GREEN}Bat/Tat XMLRPC thanh cong${NC}\n"
+        printf "$noti\n"
     else
         clear
         printf "${ALERT}\n"

@@ -2,7 +2,7 @@
 <p align="center"><strong>Author: Sanvv - HOSTVN.NET Technical</strong></p>
 <p align="center"><strong>Home Page: https://hostvn.vn/ , https://hostvn.net</strong></p>
 <p align="center"><strong>Document: https://hostvn.vn/huong-dan/</strong></p>
-<p align="center"><strong>Groupt Support: https://www.facebook.com/groups/hostvn.vn</strong></p>
+<p align="center"><strong>Groups Support: https://www.facebook.com/groups/hostvn.vn</strong></p>
 
 <p align="center"> <img src="https://blog.hostvn.net/wp-content/uploads/2020/07/logo-big-2.png" /> </p>
 
@@ -156,7 +156,7 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 ## 8. Feedback
 
 - Do chưa có nhiều kinh nghiệm nên Scripts khó tránh khỏi thiếu sót, rất mong nhận được ý kiến đóng góp của các bạn để Scripts ngày càng hoàn thiện hơn.
-- Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com, Group Facebook: https://www.facebook.com/groups/hostvn.vn hoặc tạo Github Issues.
+- Mọi ý kiến đóng góp các bạn vui lòng gửi về sanvv@hostvn.com, Groups Facebook: https://www.facebook.com/groups/hostvn.vn hoặc tạo Github Issues.
 
 ## 9. Contributors & Credits
 ### Developers / Maintainers
