@@ -121,7 +121,7 @@ cd_dir(){
 }
 
 generate_random_pwd(){
-    < /dev/urandom tr -dc A-Za-z0-9 | head -c8
+    < /dev/urandom tr -dc A-Za-z0-9 | head -c12
 }
 
 ############################################
