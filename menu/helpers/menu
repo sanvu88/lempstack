@@ -186,6 +186,22 @@ info_other(){
 	. /var/hostvn/menu/controller/vps/other
 }
 
+wp_menu_plugins(){
+	. /var/hostvn/menu/controller/wordpress/manage_plugins
+}
+
+wp_menu_database(){
+	. /var/hostvn/menu/controller/wordpress/manage_database
+}
+
+wp_menu_backup(){
+    . /var/hostvn/menu/controller/wordpress/manage_backup
+}
+
+wp_menu_advanced(){
+    . /var/hostvn/menu/controller/wordpress/advanced
+}
+
 wp_version(){
 	. /var/hostvn/menu/controller/wordpress/version
 }

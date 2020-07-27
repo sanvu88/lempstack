@@ -19,27 +19,15 @@ echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Kiem tra phien ban WordPress${NC}\n"
-    printf "${GREEN}2. Cap nhat phien ban WordPress${NC}\n"
-
-    printf "${GREEN}3. Quan ly Plugins${NC}\n"
-    printf "${GREEN}4. Quan ly Database${NC}\n"
-    printf "${GREEN}5. Khoi phuc/Sao luu du lieu${NC}\n"
-
-
+    printf "${GREEN}1. Cai dat WordPress tu dong${NC}\n"
+    printf "${GREEN}2. Kiem tra phien ban WordPress${NC}\n"
+    printf "${GREEN}3. Cap nhat phien ban WordPress${NC}\n"
+    printf "${GREEN}4. Quan ly Plugins${NC}\n"
+    printf "${GREEN}5. Quan ly Database${NC}\n"
+    printf "${GREEN}6. Khoi phuc/Sao luu du lieu${NC}\n"
+    printf "${GREEN}7. Chuc nang nang cao${NC}\n"
     printf "${GREEN}8. Thay doi ten mien${NC}\n"
     printf "${GREEN}9. Doi mat khau admin (wp-admin)${NC}\n"
-    printf "${GREEN}10. Cai dat WordPress tu dong${NC}\n"
-    printf "${GREEN}11. Bat/Tat Yoast Seo config${NC}\n"
-    printf "${GREEN}12. Bat/Tat Rank Math Seo config${NC}\n"
-    printf "${GREEN}13. Cau hinh Nginx voi plugin cache${NC}\n"
-    printf "${GREEN}14. Them cache key tranh trung lap noi dung${NC}\n"
-    printf "${GREEN}15. Bat/Tat Debug mode${NC}\n"
-    printf "${GREEN}16. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
-    printf "${GREEN}17. Huy kich hoat toan bo plugins${NC}\n"
-    printf "${GREEN}18. Bat/Tat disable xmlrpc${NC}\n"
-
-    printf "${GREEN}21. Toi uu WordPress Cron${NC}\n"
     printf "${GREEN} ----------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -48,27 +36,15 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) clear; wp_version ;;
-        2) clear; wp_update ;;
-        3) clear; wp_update_plugins ;;
-        4) clear; wp_optimize_db ;;
-        5) clear; wp_repair_db ;;
-        6) clear; wp_backup ;;
-        7) clear; wp_restore ;;
+        1) clear; wp_auto_install ;;
+        2) clear; wp_version ;;
+        3) clear; wp_update ;;
+        4) clear; wp_menu_plugins ;;
+        5) clear; wp_menu_database ;;
+        6) clear; wp_menu_backup ;;
+        7) clear; wp_menu_advanced ;;
         8) clear; wp_change_domain ;;
         9) clear; wp_change_pass_admin ;;
-        10) clear; wp_auto_install ;;
-        11) clear; wp_yoast_seo ;;
-        12) clear; wp_rank_math_seo ;;
-        13) clear; wp_plugin_cache ;;
-        14) clear; wp_cache_key ;;
-        15) clear; wp_debug ;;
-        16) clear; wp_maintenance ;;
-        17) clearl; deactive_all_plugins ;;
-        18) clear; wp_xmlrpc ;;
-        19) clear; menu_ggdrive ;;
-        20) clear; menu_cronjob ;;
-        21) clear; printf "${RED}Comming son!${NC}\n";menu_wp ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+CHOICE=1
+
+printf "${GREEN}=========================================${NC}\n"
+printf "${GREEN}             Quan ly Plugins             ${NC}\n"
+printf "${GREEN}=========================================${NC}\n"
+echo
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Cap nhat plugins (Tru plugins tra phi)${NC}\n"
+    printf "${GREEN}2. Huy kich hoat toan bo plugins${NC}\n"
+    printf "${GREEN} ----------------------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; wp_update_plugins ;;
+        2) clear; deactive_all_plugins ;;
+        0) clear; menu_wp ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done

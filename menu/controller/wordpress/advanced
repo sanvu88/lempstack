@@ -1,0 +1,49 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+CHOICE=1
+
+printf "${GREEN}=========================================${NC}\n"
+printf "${GREEN}            Chuc nang nang cao           ${NC}\n"
+printf "${GREEN}=========================================${NC}\n"
+echo
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "${GREEN}1. Bat/Tat Yoast Seo config${NC}\n"
+    printf "${GREEN}2. Bat/Tat Rank Math Seo config${NC}\n"
+    printf "${GREEN}3. Cau hinh Nginx voi plugin cache${NC}\n"
+    printf "${GREEN}4. Them cache key tranh trung lap noi dung${NC}\n"
+    printf "${GREEN}5. Bat/Tat Debug mode${NC}\n"
+    printf "${GREEN}6. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
+    printf "${GREEN}7. Bat/Tat disable xmlrpc${NC}\n"
+    printf "${GREEN}8. Toi uu WordPress Cron${NC}\n"
+    printf "${GREEN} ----------------------------------------${NC}\n"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; wp_yoast_seo ;;
+        2) clear; wp_rank_math_seo ;;
+        3) clear; wp_plugin_cache ;;
+        4) clear; wp_cache_key ;;
+        5) clear; wp_debug ;;
+        6) clear; wp_maintenance ;;
+        7) clear; wp_xmlrpc ;;
+        8) clear; printf "${RED}Comming son!${NC}\n"; menu_wp ;;
+        0) clear; menu_wp ;;
+        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+    esac
+done
