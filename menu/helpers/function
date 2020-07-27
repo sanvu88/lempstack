@@ -42,7 +42,7 @@ check_port_exists(){
 }
 
 gen_pass(){
-    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c"${1:-16}";echo;
+    < /dev/urandom tr -dc A-Za-z0-9 | head -c12
 }
 
 select_domain(){
