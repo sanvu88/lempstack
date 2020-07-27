@@ -3309,6 +3309,9 @@ EOpure_ftpd_conf
     openssl dhparam -out "${PURE_CONF_PATH}"/ssl/pure-ftpd-dhparams.pem 2048
     openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=VN/ST=Ho_Chi_Minh/L=Ho_Chi_Minh/O=Localhost/CN=${IPADDRESS}" -newkey rsa:2048 -keyout "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem -out "${PURE_CONF_PATH}"/ssl/pure-ftpd.pem
     chmod 600 "${PURE_CONF_PATH}"/ssl/pure-ftpd*.pem
+    touch /etc/pure-ftpd/pureftpd.passwd
+    systemctl start pure-ftpd
+    systemctl enable pure-ftpd
 }
 
 ############################################
@@ -3455,6 +3458,7 @@ install_csf(){
         sed -i "s/PORTS_sshd = \"22\"/PORTS_sshd = \"22,${SSH_PORT}\"/g" /etc/csf/csf.conf
     fi
 
+    sed -i "s/993,995/993,995,30000:50000/g" /etc/csf/csf.conf
     sed -i "s/443,465/443,${RANDOM_ADMIN_PORT},465/g" /etc/csf/csf.conf
     sed -i "s/443,587/443,465,587,${RANDOM_ADMIN_PORT}/g" /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
@@ -3548,11 +3552,6 @@ start_service() {
     systemctl enable mariadb
     systemctl enable php-fpm
     systemctl start php-fpm
-
-    if [[ "${prompt_pureftpd}" =~ ^([yY])$ ]]; then
-        systemctl start pure-ftpd
-        systemctl enable pure-ftpd
-    fi
 
     csf -e
     systemctl start lfd

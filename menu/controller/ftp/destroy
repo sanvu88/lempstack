@@ -18,8 +18,9 @@ input(){
 }
 
 delete(){
-	pure-pw "${ftp_user}"
+	pure-pw userdel "${ftp_user}"
 	pure-pw mkdb
+	systemctl restart pure-ftpd
 }
 
 _run(){

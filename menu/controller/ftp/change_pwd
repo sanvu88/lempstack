@@ -25,6 +25,7 @@ ${ftp_pwd}
 ${ftp_pwd}
 EOF
 	pure-pw mkdb
+	systemctl restart pure-ftpd
 }
 
 _run(){

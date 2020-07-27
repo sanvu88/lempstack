@@ -42,6 +42,7 @@ ${ftp_pwd}
 ${ftp_pwd}
 EOF
 	  pure-pw mkdb
+	  systemctl restart pure-ftpd
 }
 
 _run(){
@@ -53,6 +54,10 @@ _run(){
 
     if if_pureftpd_user_exists ftp_user; then
         ALERT=$(printf "${RED}User da ton tai.${NC}\n")
+    fi
+
+    if [ "${ftp_path}" == "/" ]; then
+        ALERT=$(printf "${RED}Duong dan truy cap khong chinh xac.${NC}\n")
     fi
 
     if [[ ! -d "${ftp_path}" ]]; then
