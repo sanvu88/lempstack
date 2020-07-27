@@ -36,7 +36,7 @@ ADMIN_TOOL_PWD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c8)
 
 # Copyright
 AUTHOR="HOSTVN.VN"
-AUTHOR_CONTACT="kythuat@hostvn.net"
+AUTHOR_CONTACT="https://www.facebook.com/groups/hostvn.vn"
 AUTHOR_WEBSITE="https://hostvn.vn"
 
 # Service Version
@@ -73,10 +73,10 @@ ENTER_OPTION_PHP_2="Nhap vao lua chon cua ban [1-2]: "
 WRONG_PHP_SELECT_2="Ban nhap sai. Vui long nhap lai."
 INVALID_PHP2_OPTION="${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}"
 SELECT_PHP_2="Lua chon phien ban PHP thu hai ban muon su dung:"
-INST_MARIADB_ERR="Cai dat MariaDB that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
-INST_NGINX_ERR="Cai dat Nginx that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
-INST_PHP_ERR="Cai dat PHP that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro."
-INST_PHP_ERR_2="Cai dat PHP 2 that bai, vui long lien he ${AUTHOR_CONTACT} de duoc ho tro"
+INST_MARIADB_ERR="Cai dat MariaDB that bai, vui long truy cap ${AUTHOR_CONTACT} de duoc ho tro."
+INST_NGINX_ERR="Cai dat Nginx that bai, vui long truy cap ${AUTHOR_CONTACT} de duoc ho tro."
+INST_PHP_ERR="Cai dat PHP that bai, vui long truy cap ${AUTHOR_CONTACT} de duoc ho tro."
+INST_PHP_ERR_2="Cai dat PHP 2 that bai, vui long truy cap ${AUTHOR_CONTACT} de duoc ho tro"
 INST_IGBINARY_ERR="Cai dat Igbinary that bai. Vui long cai dat lai: Igbinary, Php memcached ext, Phpredis."
 INST_MEMEXT_ERR="Cai dat Php memcached extension khong thanh cong. Vui long cai dat lai."
 INST_PHPREDIS_ERR="Cai dat  Phpredis khong thanh cong. Vui long cai dat lai."
@@ -90,7 +90,7 @@ PHP_NOT_WORKING="PHP-FPM khong hoat dong."
 LFD_NOT_WORKING="CSF khong hoat dong."
 LFD_NOT_WORKING="LFD khong hoat dong."
 LOGIN_NOTI1="Cam on ban da su dung dich vu cua ${AUTHOR}."
-LOGIN_NOTI2="Neu can ho tro vui long lien he ${AUTHOR_CONTACT}"
+LOGIN_NOTI2="Neu can ho tro vui long truy cap ${AUTHOR_CONTACT}"
 
 # Random Port
 RANDOM_ADMIN_PORT=$(shuf -i 49152-57343 -n 1)
@@ -3686,7 +3686,7 @@ sleep 1
 printf "=========================================================================\n"
 echo   "                        Cai dat thanh cong                                 "
 printf "                 File luu thong tin: %s\n" "${FILE_INFO}"
-printf "          Neu can ho tro vui long lien he %s\n" "${AUTHOR_CONTACT}"
+printf "          Neu can ho tro vui long truy cap %s\n" "${AUTHOR_CONTACT}"
 printf "=========================================================================\n"
 echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
 echo "-----------------------------------------------------------------------------"
