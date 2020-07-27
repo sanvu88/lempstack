@@ -31,7 +31,7 @@ _run(){
     ALERT=""
 	input
     if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
-        if ! if_pureftpd_user_exists ftp_user; then
+        if ! if_pureftpd_user_exists "${ftp_user}"; then
             ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
         fi
 
