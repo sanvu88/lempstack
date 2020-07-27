@@ -303,9 +303,9 @@ select_remote(){
 
         if [[ " ${remotes[*]} " == *" ${remote} "* ]];
         then
-            printf "${RED}${WRONG_OPTION}${NC}\n"
-        else
             break
+        else
+            printf "${RED}${WRONG_OPTION}${NC}\n"
         fi
     done
 }

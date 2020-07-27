@@ -10,6 +10,7 @@
 #   Please don't copy under any circumstance for commercial reason!  #
 ######################################################################
 
+# shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
@@ -115,15 +116,15 @@ check_duplicate_php(){
         ALERT=$(printf "${RED}Phien ban PHP mac dinh ban muon thay giong phien ban hien tai. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_new}" ]]; then
-    	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
+    if [[ "${prompt_php1}" =~ ^([yY])$ && "${php2_release}" == "yes" && "${php_version}" == "${php2_version}" ]]; then
+    	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2. Huy cai dat.${NC}\n")
     fi
 
     if [[ "${prompt_php2}" =~ ^([yY])$ && "${php_version}" == "${php2_new}" ]]; then
     	ALERT=$(printf "${RED}Hai phien ban PHP ban chon trung nhau. Huy cai dat.${NC}\n")
     fi
 
-    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php2_new}" == "${php2_new}" ]]; then
+    if [[ "${prompt_php2}" =~ ^([yY])$ && "${php2_new}" == "${php2_version}" ]]; then
     	ALERT=$(printf "${RED}Phien ban PHP thu 2 ban chon giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
     fi
 }

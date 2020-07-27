@@ -30,7 +30,6 @@ input(){
 set_var(){
     pureftpd_status="$(pgrep -f pure-ftpd)"
     username=${domain//[-._]/}
-    user_pass=$(gen_pass "$@")
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
@@ -179,6 +178,7 @@ create_user(){
 }
 
 create_ftp(){
+    user_pass=$(gen_pass "$@")
     if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
         if if_pureftpd_user_exists "${username}";
         then
@@ -389,10 +389,12 @@ show_info(){
     printf "2.  DB_Name                    : %s\n" "${db_name}"
     printf "3.  DB_User                    : %s\n" "${db_user}"
     printf "4.  DB_Password                : %s\n" "${db_pass}"
+    if [ -n "${pureftpd_status}" ]; then
     printf "5.  Username (FTP)             : %s\n" "${username}"
-    printf "6.  Password (FTP)             : %s\n" "$user_pass"
+    printf "6.  Password (FTP)             : %s\n" "${user_pass}"
     printf "7.  FTP Host                   : %s\n" "${IPADDRESS}"
     printf "8.  FTP Port                   : 21\n"
+    fi
     printf "9.  Public_html                : %s\n" "/home/${username}/${domain}/public_html"
     if [ "${promtp_inst_wp}" = "y" ]; then
     printf "10. User dang nhap wp-admin    : %s\n" "${admin_user}"
@@ -420,7 +422,7 @@ _run(){
         create_user
 
         if [ -n "${pureftpd_status}" ]; then
-            create_ftp
+            create_ftp "$@"
         fi
 
         if [[ "${SOURCE}" == "wordpress" ]]; then
