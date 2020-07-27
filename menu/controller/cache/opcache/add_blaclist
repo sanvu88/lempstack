@@ -1,0 +1,46 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+
+_run(){
+    string1=$(grep -rnw "/etc/php.d/opcache-default.blacklist" -e "${domain}")
+    username=${domain//[-._]/}
+    if [ -z "${string1}" ]; then
+        echo "/home/${username}/${domain}/public_html" >> /etc/php.d/opcache-default.blacklist
+        systemctl restart php-fpm
+    fi
+
+    if [ "${php2_release}" == "yes" ]; then
+        PHP2_INI_PATH="/etc/opt/remi/${PHP_VERSION_2}/php.d"
+        if [[ ${PHP_VERSION_2} == "php56" ]]; then
+            PHP2_INI_PATH="/opt/remi/${PHP_VERSION_2}/root/etc/php.d"
+        fi
+        string2=$(grep -rnw "${PHP2_INI_PATH}/opcache-default.blacklist" -e "${domain}")
+        if [ -z "${string2}" ]; then
+            echo "/home/${username}/${domain}/public_html" >> "${PHP2_INI_PATH}"/opcache-default.blacklist
+            systemctl restart "${php2_version}"-php-fpm
+        fi
+    fi
+    printf "${GREEN}Them website vao blacklist thanh cong.${NC}\n"
+}
+
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run
+else
+    printf "${ALERT}\n"
+fi
+
+clear
+manage_opcache

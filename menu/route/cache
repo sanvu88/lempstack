@@ -21,7 +21,7 @@ while [ "${CHOICE}" != "0" ]
 do
     printf "${GREEN}1. Memcached${NC}\n"
     printf "${GREEN}2. Redis${NC}\n"
-    printf "${GREEN}3. Bat/Tat Opcache${NC}\n"
+    printf "${GREEN}3. Quan ly Opcache${NC}\n"
     printf "${GREEN}4. Xoa Cache${NC}\n"
     printf "${GREEN}5. Cai dat Memcached${NC}\n"
     printf "${GREEN}6. Cai dat Redis${NC}\n"
@@ -35,7 +35,7 @@ do
     case ${CHOICE} in
         1) clear; memcached_c ;;
         2) clear; redis_c ;;
-        3) clear; cache_opcache ;;
+        3) clear; manage_opcache ;;
         4) clear; clear_cache ;;
         5) clear; inst_memcached ;;
         6) clear; inst_redis ;;

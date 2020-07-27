@@ -1,0 +1,18 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please don't remove copyright. Thank!                 #
+#   Please don't copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+restart_service
+printf "${GREEN}Xoa cache Opcache thanh cong.${NC}\n"
+
+clear
+manage_opcache
