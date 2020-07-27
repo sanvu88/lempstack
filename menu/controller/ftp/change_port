@@ -42,6 +42,10 @@ check_port(){
         ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
     fi
 
+    if [[ "${ftp_port}" == "22" || "${ftp_port}" == "11211" || "${ftp_port}" == "6379" ]]; then
+        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    fi
+
     if ! check_port_exists "${ftp_port}"; then
 	      ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
     fi

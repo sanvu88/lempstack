@@ -43,6 +43,10 @@ check_port(){
 	    ALERT=$(printf "${RED}Port ban nhap trung voi Port Admin tool.${NC}\n")
 	fi
 
+    if [[ "${port_new}" == "11211" || "${port_new}" == "6379" ]]; then
+        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    fi
+
 	if ! check_port_exists "${port_new}"; then
 	    ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
   fi
