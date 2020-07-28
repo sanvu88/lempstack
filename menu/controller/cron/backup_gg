@@ -33,7 +33,7 @@ input_backup_num(){
     echo "Nhap so ban backup ban muon luu tru: "
     echo "VD: Backup hang ngay va nhap 14 - Se luu backup 14 ngay gan nhat - Cac ban cu hon se bi xoa"
     echo "VD: Backup hang tuan va nhap 14 - Se luu backup 14*7=98 ngay gan nhat - Cac ban cu hon se bi xoa"
-    input -r -p "Nhap vao lua chon cua ban:" backup_num
+    read -r -p "Nhap vao lua chon cua ban:" backup_num
 
     if ! valid_number "${backup_num}" ; then
         backup_num="14"

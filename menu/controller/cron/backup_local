@@ -32,7 +32,7 @@ select_time(){
 input_backup_num(){
     echo "Nhap so ban backup ban muon luu tru: "
     echo "VD: 14 - Se luu 14 ban backup gan nhap - Cac ban cu hon se bi xoa"
-    input -r -p "Nhap vao lua chon cua ban:" backup_num
+    read -r -p "Nhap vao lua chon cua ban:" backup_num
 
     if ! valid_number "${backup_num}" ; then
         backup_num="14"
