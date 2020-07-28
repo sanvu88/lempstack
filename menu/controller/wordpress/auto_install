@@ -92,38 +92,6 @@ END
     chown -R "${username}":"${username}" ./*
 }
 
-set_cache(){
-    if [[ "${plugins_cache}" == "w3c" ]]; then
-        plugin_cache="w3c"
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-    elif [[ "${plugins_cache}" == "wpfc" ]]; then
-        plugin_cache="wpfc"
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wprocket" ]]; then
-        plugin_cache="wprocket"
-        cache="include /etc/nginx/rocket-nginx/default.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "wpsc" ]]; then
-        plugin_cache="wpsc"
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "enabler" ]]; then
-        plugin_cache="enabler"
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-        rewrite=""
-    elif [[ "${plugins_cache}" == "swift1" ]]; then
-        plugin_cache="swift1"
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-    elif [[ "${plugins_cache}" == "swift2" ]]; then
-        plugin_cache="swift2"
-        cache="include /etc/nginx/wordpress/swift2.conf;"
-    else
-    	plugin_cache="other"
-    	cache="include /etc/nginx/extra/staticfiles.conf;"
-    fi
-}
-
 update_user_info(){
 	sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
 	sed -i '/username=/d' "${USER_DIR}"/."${domain}".conf
@@ -142,20 +110,6 @@ create_vhost(){
 
     mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
     fastcgi
-    set_cache
-
-    if [[ "${plugins_seo}" == "yoast_seo" ]]; then
-        include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-        echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
-    elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
-        include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
-        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-        echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
-    else
-        sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-        echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
-    fi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
 server {
@@ -170,7 +124,6 @@ server {
     index index.php index.html index.htm;
 
     ${rewrite}
-    ${cache}
 
     location ~ \.php\$ {
         try_files \$uri =404;
@@ -191,10 +144,10 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         ${fastcgi_pass}
     }
+    include /etc/nginx/extra/staticfiles.conf;
     include /etc/nginx/wordpress/wordpress_secure.conf;
     include /etc/nginx/wordpress/disable_xmlrpc.conf;
     include /etc/nginx/extra/security.conf;
-    ${include_seo}
 }
 END
 
@@ -229,21 +182,7 @@ _run(){
 			empty_db
 			auto_install "$@"
 			clear
-			select_plugin_cache
 
-			if [[ "${plugins_cache}" == "wprocket" && ! -d "/etc/nginx/rocket-nginx" ]]; then
-                cd_dir /etc/nginx
-                git clone https://github.com/satellitewp/rocket-nginx.git
-                cd_dir /etc/nginx/rocket-nginx
-                cp rocket-nginx.ini.disabled rocket-nginx.ini
-                php rocket-parser.php
-            fi
-            if [[ "${plugins_cache}" == "wprocket" && ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
-                cd_dir /etc/nginx/rocket-nginx
-                php rocket-parser.php
-            fi
-
-            select_plugin_seo
             create_vhost
             restart_service
             clear
