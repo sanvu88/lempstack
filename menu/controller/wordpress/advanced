@@ -26,7 +26,7 @@ do
     printf "${GREEN}5. Bat/Tat Debug mode${NC}\n"
     printf "${GREEN}6. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
     printf "${GREEN}7. Bat/Tat disable xmlrpc${NC}\n"
-    printf "${GREEN}8. Toi uu WordPress Cron${NC}\n"
+    printf "${GREEN}8. Bat/Tat WP-Cron${NC}\n"
     printf "${GREEN} ----------------------------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
