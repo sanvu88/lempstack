@@ -15,11 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-  # shellcheck disable=SC2154
 	username=${domain//[-._]/}
-	#https://www.howtoforge.com/tutorial/linux-grep-command/
-    #https://stackoverflow.com/a/6284370
-	cache=$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 browser_cache(){
@@ -36,13 +32,6 @@ browser_cache(){
         plugin_cache="wprocket"
         set_cache="include /etc/nginx/rocket-nginx/default.conf;"
         rewrite=""
-        if [ ! -d "/etc/nginx/rocket-nginx" ]; then
-            cd_dir /etc/nginx
-            git clone https://github.com/satellitewp/rocket-nginx.git
-            cd_dir /etc/nginx/rocket-nginx
-            cp rocket-nginx.ini.disabled rocket-nginx.ini
-            php rocket-parser.php
-        fi
     elif [[ "${plugins_cache}" == "wpsc" ]]; then
         plugin_cache="wpsc"
         set_cache="include /etc/nginx/wordpress/wpsc.conf;"
@@ -66,20 +55,11 @@ browser_cache(){
     echo  plugin_cache=${plugin_cache} >> "${USER_DIR}"/."${domain}".conf
 }
 
-validate_plugin(){
-    if [[ -z "${plugins_cache}" ]]; then
-        ALERT=$(printf "${RED}Ban nhap sai, huy tu dong config Nginx cho plugins cache.${NC}\n")
-    fi
-}
-
 action(){
     browser_cache
-    if [[ "${cache}" == "other" ]]; then
+    if [[ "${plugin_cache}" != "other" ]]; then
         sed -i "s|include /etc/nginx/extra/staticfiles.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
-    else
-        sed -i "s|include /etc/nginx/extra/${cache}.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
     fi
-
     if [[ -z "${rewrite}" ]]; then
         sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
     fi
@@ -87,8 +67,17 @@ action(){
 
 _run(){
     select_plugin_cache
-    validate_plugin
     set_var
+    cache_array=("w3c" "wpfc" "wprocket" "wpsc" "enabler" "swift1" "swift2")
+
+    for entry in "${cache_array[@]}"; do
+        cache=${entry}
+        check_exists=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "${cache}")
+        if [[ -n "${check_exists}" ]]; then
+            ALERT=$(printf "${RED}Ban hien dang cau hinh plugins cach ${cache}. Vui long xoa cau hinh cu truoc.")
+            break
+        fi
+    done
 
     if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
         ALERT=$(printf "${RED}Website khong su dung WordPress.${NC}\n")
@@ -96,6 +85,19 @@ _run(){
 
     if [[ -z "${ALERT}" ]]; then
         action
+        if [[ "${plugins_cache}" == "wprocket" && ! -d "/etc/nginx/rocket-nginx" ]]; then
+            cd_dir /etc/nginx
+            git clone https://github.com/satellitewp/rocket-nginx.git
+            cd_dir /etc/nginx/rocket-nginx
+            cp rocket-nginx.ini.disabled rocket-nginx.ini
+            php rocket-parser.php
+        fi
+
+        if [[ "${plugins_cache}" == "wprocket" && ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
+            cd_dir /etc/nginx/rocket-nginx
+            php rocket-parser.php
+        fi
+
         restart_service
         clear
         printf "${GREEN}Cau hinh Nginx voi plugin cache thanh cong.${NC}\n"

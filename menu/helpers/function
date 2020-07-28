@@ -104,7 +104,7 @@ select_source(){
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
         esac
     done
 }
@@ -219,7 +219,7 @@ select_plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
         esac
     done
 }
@@ -235,7 +235,7 @@ select_plugin_seo(){
             "Yoast Seo") plugins_seo="yoast_seo"; break;;
             "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
             "Other") plugins_seo=""; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n"; break;;
+            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
         esac
     done
 }
