@@ -1611,6 +1611,8 @@ location ~* \.(eot|svg|ttf|woff|woff2)\$ {
 EOSTATICFILES
 
     cat >> "/etc/nginx/extra/security.conf" << EOsecurity
+location ^~ /GponForm/ { deny all; access_log off; log_not_found off; }
+location ^~ /GponForm/diag_Form { deny all; access_log off; log_not_found off; }
 # Return 403 forbidden for readme.(txt|html) or license.(txt|html) or example.(txt|html) or other common git repository files
 location ~*  "/(^\$|readme|license|example|LICENSE|README|LEGALNOTICE|INSTALLATION|CHANGELOG)\.(txt|html|md)" {
     deny all;

@@ -22,10 +22,10 @@ set_var(){
     PECL_PHP_LINK="https://pecl.php.net/get"
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "igbinary_version=" | cut -f2 -d'=')
-    PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_memcached_version=" | cut -f2 -d'=')
-    PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep "php_redis_version=" | cut -f2 -d'=')
-    PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep "php_list=" | cut -f2 -d'=') )
+    IGBINARY_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep -w "igbinary_version" | cut -f2 -d'=')
+    PHP_MEMCACHED_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep -w "php_memcached_version" | cut -f2 -d'=')
+    PHP_REDIS_VERSION=$(curl -s "${UPDATE_LINK}"/version | grep -w "php_redis_version" | cut -f2 -d'=')
+    PHP_LIST=( $(curl -s "${UPDATE_LINK}"/version | grep -w "php_list" | cut -f2 -d'=') )
     if [[ "${OS_VER}" -eq 8 ]]; then
         index=0
         for keyword in "${PHP_LIST[@]}"; do
