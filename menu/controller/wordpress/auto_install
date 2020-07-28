@@ -207,6 +207,13 @@ END
 
 }
 
+show_info(){
+    echo ""
+    printf "1. User dang nhap wp-admin    : %s\n" "${admin_user}"
+    printf "2. Mat khau dang nhap wp-admin: %s\n" "${admin_pwd}"
+    echo   "---------------------------------------------------------------"
+}
+
 _run(){
 	set_var
 	docroot_empty
@@ -230,11 +237,12 @@ _run(){
 			auto_install "$@"
 			clear
 			select_plugin_cache
-      select_plugin_seo
-      create_vhost
-      restart_service
-      clear
-      printf "${GREEN}Cai dat WordPress thanh cong.${NC}\n"
+            select_plugin_seo
+            create_vhost
+            restart_service
+            clear
+            printf "${GREEN}Cai dat WordPress thanh cong.${NC}\n"
+            show_info
 		else
 			clear
 			printf "${ALERT}\n"
