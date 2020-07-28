@@ -53,9 +53,16 @@ browser_cache(){
 
 action(){
     browser_cache
-    if [[ "${plugin_cache}" != "other" ]]; then
+    other=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+
+    if [[ "${plugin_cache}" != "other" && -n "${other}" ]]; then
         sed -i "s|include /etc/nginx/extra/staticfiles.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
+    elif [[ "${plugin_cache}" == "other" && -z "${other}" ]]; then
+        sed -i '/index.html/a include /etc/nginx/extra/staticfiles.conf;' "${VHOST_DIR}"/"${domain}".conf
+    else
+        sed -i "/index.html/a ${set_cache}" "${VHOST_DIR}"/"${domain}".conf
     fi
+
     if [[ "${plugin_cache}" == "wprocket" && ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]]; then
         touch "${WORDPRESS_CRON_DIR}"/"${domain}"
         string=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
@@ -70,9 +77,11 @@ action(){
             fi
         fi
     fi
+
     if [[ -z "${rewrite}" ]]; then
         sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
     fi
+
     sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
     echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
 }
