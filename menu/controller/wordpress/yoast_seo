@@ -17,19 +17,35 @@ source /var/hostvn/menu/helpers/function
 _run(){
     ALERT=""
 	select_domain
-	#https://www.howtoforge.com/tutorial/linux-grep-command/
-    #https://stackoverflow.com/a/6284370
-    plugins_seo_current=$(grep -w "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	check_mathseo=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "rank_math_seo")
+
+    if [ -n "${check_mathseo}" ]; then
+        while true
+        do
+            read -r -p "Phat hien cau hinh Rank Math Seo. Ban co muon xoa cau hinh Rank Math Seo khong ? (y/n) " del_rankmath
+            echo
+            if [[ "${del_rankmath}" =~ ^([yY])$ ]]; then
+                sed -i '/rank_math_seo/d' "${VHOST_DIR}"/"${domain}".conf
+                break
+            elif [[ "${del_yoast}" =~ ^([nN])$ ]]; then
+                ALERT=$(printf "${RED}Ban da chon khong xoa config Yoast Seo. Huy cau hinh Rank Math Seo.${NC}\n")
+                break
+            else
+                printf "${RED}Gia tri ban nhap khong chinh xac vui long nhap lai.${NC}\n"
+            fi
+        done
+    fi
+
     if [[ -z "${ALERT}" ]]; then
+        check_yoastseo=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "yoast_seo")
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-        if [[ ${plugins_seo_current} == "yoast_seo" ]]; then
-            sed -i '|etc/nginx/wordpress/yoast_seo.conf;|d' "${VHOST_DIR}"/"${domain}".conf
+        if [[  -n "${check_yoastseo}" ]]; then
+            sed -i 'yoast_seo/d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
             restart_service
             printf "${GREEN}Tat cau hinh Yoast Seo thanh cong.${NC}\n"
-        elif [[ ${plugins_seo_current} == "rank_math_seo" ]]; then
-            printf "${RED}Ban dang su dung Rank Math Seo.${NC}\n"
-        elif [[ -z "${plugins_seo_current}" ]]; then
+        else
+            echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
             sed -i '/index.php/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
             restart_service
             printf "${GREEN}Bat cau hinh Yoast Seo thanh cong.${NC}\n"

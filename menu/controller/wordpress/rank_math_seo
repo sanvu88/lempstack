@@ -26,7 +26,7 @@ _run(){
             read -r -p "Phat hien cau hinh Yoast Seo. Ban co muon xoa cau hinh Yoast Seo khong ? (y/n) " del_yoast
             echo
             if [[ "${del_yoast}" =~ ^([yY])$ ]]; then
-                sed -i '/yoast_seo/d' "${USER_DIR}"/."${domain}".conf
+                sed -i '/yoast_seo/d' "${VHOST_DIR}"/"${domain}".conf
                 break
             elif [[ "${del_yoast}" =~ ^([nN])$ ]]; then
                 ALERT=$(printf "${RED}Ban da chon khong xoa config Yoast Seo. Huy cau hinh Rank Math Seo.${NC}\n")
@@ -38,12 +38,10 @@ _run(){
     fi
 
     if [[ -z "${ALERT}" ]]; then
-        #https://www.howtoforge.com/tutorial/linux-grep-command/
-        #https://stackoverflow.com/a/6284370
         check_mathseo=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "rank_math_seo")
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[ -n "${check_mathseo}" ]]; then
-            sed -i '/etc/nginx/wordpress/rank_math_seo.conf;/d' "${VHOST_DIR}"/"${domain}".conf
+            sed -i '/rank_math_seo/d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
             restart_service
             printf "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}\n"
