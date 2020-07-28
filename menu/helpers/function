@@ -48,7 +48,7 @@ gen_pass(){
 select_domain(){
     domain=""
     #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
-    if [ "$(ls -A "${USER_DIR}")" ]; then
+    if [[ "$(ls -A "${USER_DIR}")" ]]; then
         while true
         do
             echo "${LIST_DOMAIN}"
@@ -164,7 +164,7 @@ make_backup_dir(){
 list_backup(){
     date=""
     #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
-    if [ "$(ls -A /home/backup)" ]; then
+    if [[ "$(ls -A /home/backup)" ]]; then
         while true
         do
             echo "${LIST_BACKUP}"
