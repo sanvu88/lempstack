@@ -113,7 +113,7 @@ _run(){
 
         restart_service
         clear
-        printf "${GREEN}Cau hinh Nginx voi plugin cache thanh cong.${NC}\n"
+        printf "${GREEN}Cau hinh Nginx voi plugin cache ${plugin_cache} thanh cong.${NC}\n"
     else
         clear
         printf "${ALERT}\n"
