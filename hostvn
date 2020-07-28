@@ -1677,7 +1677,7 @@ location ~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|u
     fastcgi_param modHeadersAvailable true;
     # Enable pretty urls
     fastcgi_param front_controller_active true;
-    fastcgi_pass {{upstream}};
+    fastcgi_pass php-handler;
     fastcgi_intercept_errors on;
     fastcgi_request_buffering off;
 }
@@ -1926,7 +1926,7 @@ location ^~ /phpmyadmin {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
+            fastcgi_pass php-handler;
         }
     }
     location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1959,7 +1959,7 @@ location ^~ /opcache {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
+            fastcgi_pass php-handler;
         }
     }
     location ~* ^/opcache/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1982,7 +1982,7 @@ location ^~ /serverinfo {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
+            fastcgi_pass php-handler;
         }
     }
     location ~* ^/serverinfo/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -2008,7 +2008,7 @@ location ^~ /memcached {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
+            fastcgi_pass php-handler;
         }
     }
     location ~* ^/memcached/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -2031,7 +2031,7 @@ location ^~ /redis {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
+            fastcgi_pass php-handler;
         }
     }
     location ~* ^/redis/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -2041,6 +2041,10 @@ location ^~ /redis {
 EOredis_vhost
 
 cat >> "/etc/nginx/web_apps.conf" << EOdefault_vhost
+upstream php-handler {
+    server unix:/var/run/php-fpm.sock;
+}
+
 server {
     listen 80 default_server;
     root /usr/share/nginx/html/;
@@ -2538,7 +2542,7 @@ config_php(){
 ############################################
 # MariaDB calculation
 mariadb_calculation(){
-    if [[ ${RAM_TOTAL} -gt 524288 && ${RAM_TOTAL} -le 2099152 ]]; then #1GB Ram
+    if [[ ${RAM_TOTAL} -gt 470000 && ${RAM_TOTAL} -le 2099152 ]]; then #1GB Ram
         max_allowed_packet="32M"
         back_log="100"
         max_connections="150"

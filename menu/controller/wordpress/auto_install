@@ -38,10 +38,6 @@ set_var(){
 	if [[ -z "${db_user}" ]]; then
 		read -r -p "Nhap vao Mysql user: " db_user
 	fi
-
-	cache="include /etc/nginx/extra/staticfiles.conf;"
-	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
-  include_seo=""
 }
 
 docroot_empty(){
@@ -112,6 +108,10 @@ create_vhost(){
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
+upstream php-handler {
+    server ${fastcgi_pass}
+}
+
 server {
     listen 80;
     server_name ${domain} www.${domain};
@@ -134,7 +134,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            ${fastcgi_pass}
+            fastcgi_pass php-handler;
         }
     }
 

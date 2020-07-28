@@ -143,10 +143,10 @@ set_rewrite(){
 }
 
 fastcgi(){
-    fastcgi_pass="fastcgi_pass unix:/var/run/php-fpm/${username}.sock;"
+    fastcgi_pass="unix:/var/run/php-fpm/${username}.sock;"
 
     if [[ "${php_mode}" == "2" ]]; then
-        fastcgi_pass="fastcgi_pass unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
+        fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
 }
 
