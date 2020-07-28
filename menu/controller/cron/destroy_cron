@@ -38,7 +38,7 @@ _run(){
         printf "${GREEN}Xoa Cronjob thanh cong.${NC}\n"
         echo ""
     else
-      clear
+        clear
         printf "${ALERT}\n"
         echo ""
     fi

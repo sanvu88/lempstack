@@ -75,5 +75,12 @@ _run(){
     create_cron
 }
 
-_run
+cron_exists=$(crontab -l | grep -w 'backup_local')
+
+if [ -z "${cron_exists}" ]; then
+    _run
+else
+    clear
+    printf "${RED}Cronjob da ton tai.${NC}\n"
+fi
 menu_cronjob

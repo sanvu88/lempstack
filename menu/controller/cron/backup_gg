@@ -67,7 +67,6 @@ create_cron(){
     echo "${time} /var/hostvn/menu/cronjob/backup_ggdrive.sh >/dev/null 2>&1" >> backupgg
     crontab backupgg
     rm -rf backupgg
-    printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
 }
 
 _run(){
@@ -78,7 +77,7 @@ _run(){
         set_backup_num
         create_cron
         clear
-        printf "${GREEN}Backup thanh cong.${NC}\n"
+        printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
         echo ""
     else
         clear
@@ -86,5 +85,14 @@ _run(){
     fi
 }
 
-_run
+cron_exists=$(crontab -l | grep -w 'backup_ggdrive')
+
+if [ -z "${cron_exists}" ]; then
+    _run
+else
+    clear
+    printf "${RED}Cronjob da ton tai.${NC}\n"
+fi
+
+
 menu_cronjob
