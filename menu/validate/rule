@@ -50,7 +50,7 @@ check_service(){
 }
 
 validate_domain(){
-    if [[ ${1} =~ [A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,}) ]]; then
+    if [[ ${1} =~ [A-Za-z0-9-_]+(\.[A-Za-z0-9-_]+)*(\.[A-Za-z]{2,}) ]]; then
         return 0
     else
         return 1
