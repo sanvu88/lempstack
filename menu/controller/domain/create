@@ -141,13 +141,6 @@ browser_cache(){
         plugin_cache="wprocket"
         cache="include /etc/nginx/rocket-nginx/default.conf;"
         rewrite=""
-        if [ ! -d "/etc/nginx/rocket-nginx" ]; then
-            cd_dir /etc/nginx
-            git clone https://github.com/satellitewp/rocket-nginx.git
-            cd_dir /etc/nginx/rocket-nginx
-            cp rocket-nginx.ini.disabled rocket-nginx.ini
-            php rocket-parser.php
-        fi
     elif [[ "${plugins_cache}" == "wpsc" ]]; then
         plugin_cache="wpsc"
         cache="include /etc/nginx/wordpress/wpsc.conf;"
@@ -431,6 +424,18 @@ _run(){
             wp_auto_install "$@"
             select_plugin_cache
             select_plugin_seo
+
+            if [[ "${plugins_cache}" == "wprocket" && ! -d "/etc/nginx/rocket-nginx" ]]; then
+                cd_dir /etc/nginx
+                git clone https://github.com/satellitewp/rocket-nginx.git
+                cd_dir /etc/nginx/rocket-nginx
+                cp rocket-nginx.ini.disabled rocket-nginx.ini
+                php rocket-parser.php
+            fi
+            if [[ "${plugins_cache}" == "wprocket" && ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
+                cd_dir /etc/nginx/rocket-nginx
+                php rocket-parser.php
+            fi
         fi
 
         create_vhost

@@ -299,9 +299,10 @@ select_remote(){
         done
 
         PS3="${SELECT_OPTION}"
-        select remote in "${remotes[@]}"
+        select opt in "${remotes[@]}"
         do
-            remote=${remote}
+            remote=${opt}
+            break
         done
 
         if [[ " ${remotes[*]} " == *" ${remote} "* ]];

@@ -2164,7 +2164,7 @@ EOdefault_index
 wprocket_nginx(){
     cd_dir /etc/nginx
     git clone https://github.com/satellitewp/rocket-nginx.git
-    cd_dir rocket-nginx
+    cd_dir /etc/nginx/rocket-nginx
     cp rocket-nginx.ini.disabled rocket-nginx.ini
 }
 
@@ -3572,7 +3572,8 @@ start_service() {
         systemctl start "${PHP_VERSION_2}"-php-fpm
     fi
 
-    php /etc/nginx/rocket-nginx/rocket-parser.php
+    cd_dir /etc/nginx/rocket-nginx
+    php rocket-parser.php
     check_service_status
 }
 
