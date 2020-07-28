@@ -10,10 +10,19 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
+# shellcheck disable=SC2154
 CHOICE=1
 
+opcache_status=$(grep -w "opcache.enable=" "/etc/php.d/10-opcache.ini" | cut -f2 -d'=');
+if [[ ${opcache_status} -eq 1 ]]; then
+    status="Bat"
+else
+    status="Tat"
+fi
+
 printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}              Quan ly Opcache            ${NC}\n"
+printf "${GREEN}           Quan ly Opcache               ${NC}\n"
+printf "${GREEN}        Trang thai Opcache: %s           ${NC}\n" "${status}"
 printf "${GREEN}=========================================${NC}\n"
 echo
 

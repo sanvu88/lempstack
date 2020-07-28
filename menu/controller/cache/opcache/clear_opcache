@@ -11,8 +11,9 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
+
 restart_service
 printf "${GREEN}Xoa cache Opcache thanh cong.${NC}\n"
 
-clear
 manage_opcache

@@ -66,4 +66,4 @@ _run(){
 }
 
 _run
-menu_cache
+manage_opcache
