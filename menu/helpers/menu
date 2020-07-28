@@ -6,8 +6,8 @@
 #                Author: Sanvv - HOSTVN Technical                    #
 #                  Website: https://hostvn.vn                        #
 #                                                                    #
-#              Please don't remove copyright. Thank!                 #
-#   Please don't copy under any circumstance for commercial reason!  #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
 menu_primary(){
@@ -272,6 +272,10 @@ wp_plugin_cache(){
 
 wp_xmlrpc(){
 	. /var/hostvn/menu/controller/wordpress/xmlrpc
+}
+
+wp_cron(){
+	. /var/hostvn/menu/controller/wordpress/wp_cron
 }
 
 deactive_all_plugins(){

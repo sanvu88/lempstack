@@ -1,0 +1,60 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2034
+# shellcheck disable=SC2154
+
+set_var(){
+    user=${domain//[-._]/}
+}
+
+_run(){
+    set_var
+    if [ -f "/home/${user}/${domain}/public_html/wp-config.php" ]; then
+        string=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+
+        if [ -z "${string}" ]; then
+            sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${user}"/"${domain}"/public_html/wp-config.php
+            noti="Vo hieu hoa WP_CRON va chuyen sang Cronjob thanh cong."
+            if [ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+                touch "${WORDPRESS_CRON_DIR}"/"${domain}"
+            fi
+
+            cron_exists=$(crontab -l | grep -w 'wpcron.sh')
+            if [ -z "${cron_exists}" ]; then
+                crontab -l > wpcron
+                echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
+                crontab wpcron
+                rm -rf wpcron
+            fi
+        else
+            sed -i '/DISABLE_WP_CRON/d' /home/"${user}"/"${domain}"/public_html/wp-config.php
+            noti="Bat WP_CRON va tat Cronjob thanh cong."
+            # shellcheck disable=SC2115
+            if [ -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+                rm -rf "${WORDPRESS_CRON_DIR}"/"${domain}"
+            fi
+        fi
+        printf "${GREEN}${noti}${NC}\n"
+    else
+        clear
+        printf "${RED}File wp-config.php khong ton tai.${NC}\n"
+    fi
+}
+
+ALERT=""
+select_domain
+
+if [ -z "${ALERT}" ]; then
+    _run
+fi
+wp_menu_advanced
