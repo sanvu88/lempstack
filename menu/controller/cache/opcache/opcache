@@ -27,9 +27,9 @@ set_php_ini_path(){
 set_opcache_status(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    opcache1_status=$(grep -w "opcache.enable=" "${PHP1_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
+    opcache1_status=$(grep -w "opcache.enable" "${PHP1_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
     if [ "${php2_release}" == "yes" ]; then
-        opcache2_status=$(grep -w "opcache.enable=" "${PHP2_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
+        opcache2_status=$(grep -w "opcache.enable" "${PHP2_INI_PATH}/10-opcache.ini" | cut -f2 -d'=');
     fi
 }
 

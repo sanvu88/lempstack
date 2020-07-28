@@ -13,7 +13,7 @@
 # shellcheck disable=SC2154
 CHOICE=1
 
-opcache_status=$(grep -w "opcache.enable=" "/etc/php.d/10-opcache.ini" | cut -f2 -d'=');
+opcache_status=$(grep -w "opcache.enable" "/etc/php.d/10-opcache.ini" | cut -f2 -d'=');
 if [[ ${opcache_status} -eq 1 ]]; then
     status="Bat"
 else
