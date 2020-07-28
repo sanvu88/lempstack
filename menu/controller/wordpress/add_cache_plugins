@@ -73,6 +73,8 @@ action(){
     if [[ -z "${rewrite}" ]]; then
         sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
     fi
+    sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+    echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
 }
 
 _run(){
