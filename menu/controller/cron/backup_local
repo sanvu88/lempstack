@@ -10,7 +10,6 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 select_time(){

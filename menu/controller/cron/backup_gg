@@ -10,28 +10,7 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-select_remote(){
-    echo "Chon Remote: "
-    selects=$(rclone listremotes)
-    for entry in ${selects}; do
-        select=${entry//:}
-        remotes+=("${select}")
-    done
-
-    PS3="Nhap lua chon cua ban [0 = Thoat]: "
-    select remote in "${remotes[@]}"
-    do
-        remote=${remote}
-        break
-    done
-
-    if [[ -z "${remote}" || ${remote} != ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}Remote ban chon khong chinh xac.${NC}\n")
-    else
-        sed -i '/remote=/d' "${FILE_INFO}"
-        echo "remote=${remote}" >> "${FILE_INFO}"
-    fi
-}
+source /var/hostvn/menu/helpers/function
 
 select_time(){
     echo "Lua chon thoi gian ?"

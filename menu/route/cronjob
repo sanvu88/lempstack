@@ -40,10 +40,21 @@ do
             echo ""
             ;;
         2)
-            crontab -l | grep -q 'certbot-auto renew' || cat <(crontab -l) <(echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1") | crontab -
-            clear
-            printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
-            echo ""
+            cron_exists=$(crontab -l | grep -w 'certbot-auto')
+            if [ -z "${cron_exists}" ]; then
+                crontab -l > le
+                echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> le
+                crontab le
+                rm -rf le
+                clear
+                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+                echo ""
+            else
+                clear
+                printf "${RED}Cronjob da ton tai.${NC}\n"
+                echo ""
+            fi
+
             menu_cronjob
             ;;
         3) clear; cron_backup_local ;;
@@ -79,10 +90,21 @@ do
                 weekday="*"
             fi
 
-            crontab -l | grep -q "${command}" || cat <(crontab -l) <(echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1") | crontab -
-            clear
-            printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
-            echo ""
+            cron_exists=$(crontab -l | grep -w "${command}")
+            if [ -z "${cron_exists}" ]; then
+                crontab -l > cu_cron
+                echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1" >> cu_cron
+                crontab cu_cron
+                rm -rf cu_cron
+                clear
+                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+                echo ""
+            else
+                clear
+                printf "${RED}Cronjob da ton tai.${NC}\n"
+                echo ""
+            fi
+
             menu_cronjob
             ;;
         6) clear; cron_destroy ;;
