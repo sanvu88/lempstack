@@ -43,5 +43,4 @@ else
     printf "${ALERT}\n"
 fi
 
-clear
 manage_opcache
