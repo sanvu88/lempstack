@@ -91,6 +91,7 @@ LFD_NOT_WORKING="CSF khong hoat dong."
 LFD_NOT_WORKING="LFD khong hoat dong."
 LOGIN_NOTI1="Cam on ban da su dung dich vu cua ${AUTHOR}."
 LOGIN_NOTI2="Neu can ho tro vui long truy cap ${AUTHOR_CONTACT}"
+LOGIN_NOTI3="De mo menu ban go lenh sau:  hostvn"
 
 # Random Port
 RANDOM_ADMIN_PORT=$(shuf -i 49152-57343 -n 1)
@@ -210,6 +211,7 @@ ssh_login_noti(){
         {
             echo "echo \"${LOGIN_NOTI1}\""
             echo "echo \"${LOGIN_NOTI2}\""
+            echo "echo \"${LOGIN_NOTI3}\""
         } >> ~/.bash_profile
     fi
 }
