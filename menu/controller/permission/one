@@ -30,6 +30,8 @@ action(){
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
+        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -0 chmod 0755
+        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -0 chmod 0644
         chown -R "${username}":"${username}" /home/"${username}"
         clear
         printf "${GREEN}Da phan quyen cho website: ${domain}.${NC}\n"

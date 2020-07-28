@@ -35,6 +35,8 @@ if [ "$(ls -A "${USER_DIR}")" ]; then
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
+        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -0 chmod 0755
+        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -0 chmod 0644
         chown -R "${username}":"${username}" /home/"${username}"
     done
     printf "${GREEN}Phan quyen hoan tat.${NC}\n"
