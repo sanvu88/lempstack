@@ -74,7 +74,7 @@ _run(){
         cache=${entry}
         check_exists=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "${cache}")
         if [[ -n "${check_exists}" ]]; then
-            ALERT=$(printf "${RED}Ban hien dang cau hinh plugins cache ${cache}. Vui long xoa cau hinh cu truoc.")
+            ALERT=$(printf "${RED}Ban hien dang cau hinh plugins cache ${cache}. Vui long xoa cau hinh cu truoc.${NC}\n")
             break
         fi
     done

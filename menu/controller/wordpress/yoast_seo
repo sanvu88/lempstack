@@ -46,7 +46,7 @@ _run(){
             printf "${GREEN}Tat cau hinh Yoast Seo thanh cong.${NC}\n"
         else
             echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
-            sed -i '/index.php/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
+            sed -i '/index.html/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
             restart_service
             printf "${GREEN}Bat cau hinh Yoast Seo thanh cong.${NC}\n"
         fi

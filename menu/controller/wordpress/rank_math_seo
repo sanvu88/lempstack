@@ -47,7 +47,7 @@ _run(){
             printf "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}\n"
         else
             echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
-            sed -i '/index.php/a include /etc/nginx/wordpress/rank_math_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
+            sed -i '/index.html/a include /etc/nginx/wordpress/rank_math_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
             restart_service
             printf "${GREEN}Bat cau hinh Rank Math Seo thanh cong.${NC}\n"
         fi
