@@ -199,7 +199,6 @@ ssh_login_noti(){
 }
 
 prepare_install(){
-    echo ""
     create_bash_dir
     config_selinux
     set_timezone
@@ -539,8 +538,6 @@ check_duplicate_php(){
 }
 
 install_lemp(){
-    echo ""
-
     install_nginx
 
     if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
@@ -593,7 +590,6 @@ install_lemp(){
 # Install Composer
 ############################################
 install_composer(){
-    echo ""
     curl -sS https://getcomposer.org/installer | php
     mv composer.phar /usr/local/bin/composer
 }
@@ -602,7 +598,6 @@ install_composer(){
 # Install WP-CLI
 ############################################
 install_wpcli(){
-    echo ""
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     chmod +x wp-cli.phar
     mv wp-cli.phar /usr/local/bin/wp
@@ -856,7 +851,6 @@ EOF
 }
 
 install_cache(){
-    echo ""
     if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
         install_memcached
     fi
@@ -2149,7 +2143,6 @@ wprocket_nginx(){
 }
 
 config_nginx(){
-    echo ""
     self_signed_ssl
     create_nginx_conf
     create_extra_conf
@@ -2501,7 +2494,6 @@ EOopcache_blacklist
 }
 
 config_php(){
-    echo ""
     php_global_config
     hostvn_custom_ini
     php_opcache
@@ -2980,7 +2972,6 @@ EOquery_temp
 }
 
 config_mariadb(){
-    echo ""
     config_my_cnf
     mysql_limit_nofile
     set_mariadb_root_pwd
@@ -3111,7 +3102,6 @@ EOsysctl_config
 }
 
 other_config(){
-    echo ""
     limits_config
     sysctl_config
 }
@@ -3120,7 +3110,6 @@ other_config(){
 # Log Rotation
 ############################################
 log_rotation(){
-    echo ""
     cat > "/etc/logrotate.d/nginx" << EOnginx_log
 /home/*/logs/access.log /home/*/logs/error.log /home/*/logs/nginx_error.log {
     create 640 nginx nginx
@@ -3254,7 +3243,6 @@ install_phpmyadmin(){
 # Install PureFTP
 ############################################
 install_pure_ftpd(){
-    echo ""
     yum -y install pure-ftpd
     PURE_CONF_PATH="/etc/pure-ftpd"
     if [[ -f "${PURE_CONF_PATH}/pure-ftpd.conf" ]]; then
@@ -3318,7 +3306,6 @@ EOpure_ftpd_conf
 # Change SSH Port
 ############################################
 change_ssh_port() {
-    echo ""
     sed -i "s/#Port 22/Port ${SSH_PORT}/g" /etc/ssh/sshd_config
     semanage port -a -t ssh_port_t -p tcp "${SSH_PORT}"
 }
@@ -3354,7 +3341,6 @@ gen_htpasswd(){
 # Opcache Dashboard
 ############################################
 opcache_dashboard(){
-    echo ""
     mkdir -p "${DEFAULT_DIR_TOOL}"/opcache
     wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
     chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
@@ -3365,7 +3351,6 @@ opcache_dashboard(){
 # phpSysInfo
 ############################################
 php_sys_info(){
-    echo ""
     cd_dir "${DEFAULT_DIR_TOOL}"
     wget -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
     unzip -q v"${PHP_SYS_INFO_VERSION}".zip && rm -f v"${PHP_SYS_INFO_VERSION}".zip
@@ -3437,7 +3422,6 @@ csf_gui(){
 }
 
 install_csf(){
-    echo ""
     if [[ "${OS_VER}" -eq 8 ]]; then
         yum -y install iptables-services
         touch /etc/sysconfig/iptables
@@ -3519,7 +3503,6 @@ install_av(){
 # Finished
 ############################################
 check_service_status(){
-    echo ""
     NGINX_STATUS="$(pgrep -f nginx)"
     if [[ -z "${NGINX_STATUS}" ]]; then
         echo "${NGINX_NOT_WORKING}" >> "${LOG}"
@@ -3547,7 +3530,6 @@ check_service_status(){
 }
 
 start_service() {
-    echo ""
     systemctl enable nginx
     systemctl enable mariadb
     systemctl enable php-fpm
@@ -3592,7 +3574,6 @@ sys_content(){
 # Create menu
 ############################################
 add_menu(){
-    echo ""
     cd_dir "${BASH_DIR}"
     wget "${EXT_LINK}"/menu.zip  > /dev/null
     unzip menu.zip && rm -rf menu.zip  > /dev/null
