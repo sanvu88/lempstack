@@ -51,6 +51,20 @@ check_plugins_cache(){
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
         cache="include /etc/nginx/rocket-nginx/default.conf;"
         plugin_cache="wprocket"
+        if [[ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]]; then
+            touch "${WORDPRESS_CRON_DIR}"/"${domain}"
+            string=$(grep -rnw "/home/${username}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+            if [ -z "${string}" ]; then
+                sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${username}"/"${domain}"/public_html/wp-config.php
+                cron_exists=$(crontab -l | grep -w 'wpcron.sh')
+                if [ -z "${cron_exists}" ]; then
+                    crontab -l > wpcron
+                    echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
+                    crontab wpcron
+                    rm -rf wpcron
+                fi
+            fi
+        fi
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"

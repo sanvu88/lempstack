@@ -267,7 +267,15 @@ wp_maintenance(){
 }
 
 wp_plugin_cache(){
-	. /var/hostvn/menu/controller/wordpress/cache_plugin
+	. /var/hostvn/menu/controller/wordpress/manage_plugins_cache
+}
+
+add_plugins_cache(){
+    . /var/hostvn/menu/controller/wordpress/add_cache_plugins
+}
+
+remove_plugins_cache(){
+    . /var/hostvn/menu/controller/wordpress/remove_cache_plugins
 }
 
 wp_xmlrpc(){

@@ -15,7 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	username=${domain//[-._]/}
+	user=${domain//[-._]/}
 }
 
 browser_cache(){
@@ -56,6 +56,20 @@ action(){
     if [[ "${plugin_cache}" != "other" ]]; then
         sed -i "s|include /etc/nginx/extra/staticfiles.conf;|${set_cache}|g" "${VHOST_DIR}"/"${domain}".conf
     fi
+    if [[ "${plugin_cache}" == "wprocket" && ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]]; then
+        touch "${WORDPRESS_CRON_DIR}"/"${domain}"
+        string=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+        if [ -z "${string}" ]; then
+            sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${user}"/"${domain}"/public_html/wp-config.php
+            cron_exists=$(crontab -l | grep -w 'wpcron.sh')
+            if [ -z "${cron_exists}" ]; then
+                crontab -l > wpcron
+                echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
+                crontab wpcron
+                rm -rf wpcron
+            fi
+        fi
+    fi
     if [[ -z "${rewrite}" ]]; then
         sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
     fi
@@ -78,7 +92,7 @@ _run(){
         fi
     done
 
-    if [[ ! -d "/home/${username}/${domain}/public_html/wp-content" ]]; then
+    if [[ ! -d "/home/${user}/${domain}/public_html/wp-content" ]]; then
         ALERT=$(printf "${RED}Website khong su dung WordPress.${NC}\n")
     fi
 
@@ -114,4 +128,4 @@ else
     clear
     printf "${ALERT}\n"
 fi
-wp_menu_advanced
+wp_plugin_cache
