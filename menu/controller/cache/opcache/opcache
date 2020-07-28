@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
 
 set_php_ini_path(){
     PHP1_INI_PATH="/etc/php.d"

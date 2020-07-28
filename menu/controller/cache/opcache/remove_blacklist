@@ -11,6 +11,8 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
+
 _run(){
     sed -i "/${domain}/d" /etc/php.d/opcache-default.blacklist
     systemctl restart php-fpm

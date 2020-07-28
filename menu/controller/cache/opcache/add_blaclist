@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
 
 _run(){
     string1=$(grep -rnw "/etc/php.d/opcache-default.blacklist" -e "${domain}")

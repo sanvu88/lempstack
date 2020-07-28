@@ -124,6 +124,22 @@ generate_random_pwd(){
     < /dev/urandom tr -dc A-Za-z0-9 | head -c12
 }
 
+valid_ip()
+{
+    local  ip=$1
+    local  stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=("$ip")
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
 ############################################
 # Prepare install
 ############################################
@@ -210,6 +226,15 @@ prepare_install(){
 ############################################
 # Option Install
 ############################################
+input_ip(){
+    echo "Nhap vao dia chi IP cua VPS. Bam Enter de script tu detect IP Public."
+    read -r -p "Nhap vao dia chi IP cua VPS: " IPADDRESS
+    if valid_ip "${IPADDRESS}"; then
+        IPADDRESS=$(curl -s http://myip.directadmin.com)
+        printf "IP ban nhap khong chinh xac. Script se tu dong detect IP Public cua VPS."
+    fi
+}
+
 select_php_ver(){
     clear
     while true
@@ -362,6 +387,7 @@ option_change_ssh_port(){
 }
 
 options(){
+    input_ip
     select_php_ver
     select_php_multi
 
