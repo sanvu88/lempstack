@@ -15,8 +15,10 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
     pureftpd_status="$(pgrep -f pure-ftpd)"
-    ftp_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=');
+    ftp_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=');
     username=${domain//[-._]/}
 }
 

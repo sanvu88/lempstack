@@ -14,10 +14,12 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	current_port=$(grep "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
-	csf_port=$(grep "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
-	admin_port=$(grep "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
-	ssh_port=$(grep "Port " /etc/ssh/sshd_config | cut -f2 -d" ")
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+	current_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
+	csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+	admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+	ssh_port=$(grep -w "Port " /etc/ssh/sshd_config | cut -f2 -d" ")
 }
 
 input(){

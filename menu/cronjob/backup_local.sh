@@ -16,7 +16,9 @@ source /var/hostvn/hostvn.conf
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_common
 
-backup_num=$(grep "backup_num" "${FILE_INFO}" | cut -f2 -d'=')
+#https://www.howtoforge.com/tutorial/linux-grep-command/
+#https://stackoverflow.com/a/6284370
+backup_num=$(grep -w "backup_num" "${FILE_INFO}" | cut -f2 -d'=')
 
 for users in /home/*; do
 	if [[ -d "${users}" ]]; then
@@ -27,7 +29,9 @@ for users in /home/*; do
 				for publics in /home/${user}/${domain}/public_html; do
 					if [[ -d "${publics}" ]]; then
 						public=${publics##*/}
-						db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+						#https://www.howtoforge.com/tutorial/linux-grep-command/
+                        #https://stackoverflow.com/a/6284370
+						db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 						if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
 							mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
 						fi

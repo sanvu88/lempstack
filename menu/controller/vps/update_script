@@ -14,8 +14,10 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
 	script_v=$(curl -s "${UPDATE_LINK}"/version | grep "script_version=" | cut -f2 -d'=')
-	current_v=$(grep "script_version" "${FILE_INFO}" | cut -f2 -d'=');
+	current_v=$(grep -w "script_version" "${FILE_INFO}" | cut -f2 -d'=');
 }
 
 check_update(){

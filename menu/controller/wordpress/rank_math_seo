@@ -19,7 +19,9 @@ _run(){
     select_domain
 
     if [[ -z "${ALERT}" ]]; then
-        plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+        #https://www.howtoforge.com/tutorial/linux-grep-command/
+        #https://stackoverflow.com/a/6284370
+        plugins_seo_current=$(grep -w "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[ ${plugins_seo_current} == "rank_math_seo" ]]; then
             sed -i '|etc/nginx/wordpress/rank_math_seo.conf;|d' "${VHOST_DIR}"/"${domain}".conf

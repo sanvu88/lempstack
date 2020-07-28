@@ -17,7 +17,9 @@ source /var/hostvn/menu/helpers/function
 _run(){
     ALERT=""
 	select_domain
-    plugins_seo_current=$(grep "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+	#https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+    plugins_seo_current=$(grep -w "plugins_seo" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     if [[ -z "${ALERT}" ]]; then
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[ ${plugins_seo_current} == "yoast_seo" ]]; then

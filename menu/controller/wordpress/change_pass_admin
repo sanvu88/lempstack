@@ -15,13 +15,15 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-	username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
 	if [[ -z "${username}" ]]; then
 		read -r -p "Nhap vao FTP user: " username
 	fi
 
-	db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
 	if [[ -z "${db_name}" ]]; then
 		read -r -p "Nhap vao database name: " db_name

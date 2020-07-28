@@ -27,7 +27,9 @@ if [ "$(ls -A "${USER_DIR}")" ]; then
     for entry in .*.conf; do
         domain=${entry/.}
         domain=${domain//.conf}
-        username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        #https://www.howtoforge.com/tutorial/linux-grep-command/
+        #https://stackoverflow.com/a/6284370
+        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         chmod 711 /home
         chmod 711 /home/"${username}"
         chmod 711 /home/"${username}"/"${domain}"

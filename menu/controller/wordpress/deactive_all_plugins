@@ -14,7 +14,9 @@
 source /var/hostvn/menu/helpers/function
 
 _run(){
-    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 
     if [ ! -d "/home/${username}/${domain}/public_html/wp-content/plugins" ]; then
         ALERT=$(printf "${RED}Website khong su dung WordPress${NC}\n")

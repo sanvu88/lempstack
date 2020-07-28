@@ -284,7 +284,9 @@ change_php_user(){
     for entry in .*.conf; do
         domain=${entry/.}
         domain=${domain//.conf}
-        php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        #https://www.howtoforge.com/tutorial/linux-grep-command/
+        #https://stackoverflow.com/a/6284370
+        php_mode=$(grep -w "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         php_conf_path="/etc/php-fpm.d"
         if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
             php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"

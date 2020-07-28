@@ -20,8 +20,10 @@ printf "${GREEN}-----------------${NC}\n"
 echo
 
 set_variable(){
-    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-    plugin_cache="$(grep "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    plugin_cache="$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""

@@ -19,11 +19,13 @@ printf "${GREEN}Xoa Domain${NC}\n"
 printf "${GREEN}----------${NC}\n"
 
 set_var(){
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
     pureftpd_status="$(pgrep -f pure-ftpd)"
-    db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-    db_user=$(grep "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-    username=$(grep "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-    php_mode=$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    php_mode=$(grep -w "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     vhost_config="${VHOST_DIR}/${domain}.conf"
     php_config_file="/etc/php-fpm.d/${domain}.conf"
 }

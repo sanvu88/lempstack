@@ -43,7 +43,9 @@ do
                 clear
                 printf "${RED}Ban chua cai dat phien ban PHP thu 2.${NC}\n"
             else
-                php2_ver=$(grep "php2_version" "${FILE_INFO}" | cut -f2 -d'=')
+                #https://www.howtoforge.com/tutorial/linux-grep-command/
+                #https://stackoverflow.com/a/6284370
+                php2_ver=$(grep -w "php2_version" "${FILE_INFO}" | cut -f2 -d'=')
                 echo ""
                 echo "phien ban PHP thu 2 dang su dung la: ${php2_ver}"
                 echo ""

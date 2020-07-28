@@ -25,7 +25,9 @@ for users in /home/*; do
 				for publics in /home/${user}/${domain}/public_html; do
 					if [[ -d "${publics}" ]]; then
 						public=${publics##*/}
-						db_name=$(grep "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+						#https://www.howtoforge.com/tutorial/linux-grep-command/
+                        #https://stackoverflow.com/a/6284370
+						db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 						if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
 							mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
 						fi
