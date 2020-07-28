@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2034
 # shellcheck disable=SC2154
+source /var/hostvn/menu/helpers/function
 
 set_var(){
     user=${domain//[-._]/}
