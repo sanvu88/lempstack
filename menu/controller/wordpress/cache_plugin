@@ -31,7 +31,6 @@ browser_cache(){
     elif [[ "${plugins_cache}" == "wprocket" ]]; then
         plugin_cache="wprocket"
         set_cache="include /etc/nginx/rocket-nginx/default.conf;"
-        rewrite=""
     elif [[ "${plugins_cache}" == "wpsc" ]]; then
         plugin_cache="wpsc"
         set_cache="include /etc/nginx/wordpress/wpsc.conf;"
@@ -50,9 +49,6 @@ browser_cache(){
         plugin_cache="other"
         set_cache="include /etc/nginx/extra/staticfiles.conf;"
     fi
-
-    sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
-    echo  plugin_cache=${plugin_cache} >> "${USER_DIR}"/."${domain}".conf
 }
 
 action(){
@@ -71,10 +67,13 @@ _run(){
     cache_array=("w3c" "wpfc" "wprocket" "wpsc" "enabler" "swift1" "swift2")
 
     for entry in "${cache_array[@]}"; do
-        cache=${entry}
-        check_exists=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "${cache}")
+        check_exists=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "${entry}")
         if [[ -n "${check_exists}" ]]; then
-            ALERT=$(printf "${RED}Ban hien dang cau hinh plugins cache ${cache}. Vui long xoa cau hinh cu truoc.${NC}\n")
+            if [ "${entry}" == "${plugin_cache}" ]; then
+                ALERT=$(printf "${RED}Ban da cau hinh plugins cache ${entry} roi.${NC}\n")
+            else
+                ALERT=$(printf "${RED}Ban hien dang cau hinh plugins cache ${entry}. Vui long xoa cau hinh cu truoc.${NC}\n")
+            fi
             break
         fi
     done
