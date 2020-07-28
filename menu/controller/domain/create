@@ -290,10 +290,9 @@ server {
             fastcgi_pass php-${username};
         }
     }
-
+    ${brute}
     include /etc/nginx/extra/staticfiles.conf;
     include /etc/nginx/extra/security.conf;
-    ${brute}
     ${wp_secure}
     ${xmlrpc}
 }
