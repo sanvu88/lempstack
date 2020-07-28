@@ -203,7 +203,8 @@ check_backup_exists(){
 }
 
 check_backup_empty(){
-    if [ "$(ls -At /home/backup/"${1}"/"${2}")" ]; then
+    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    if [ "$(ls -A /home/backup/"${1}"/"${2}")" ]; then
         return 0
     else
         return 1
@@ -211,7 +212,8 @@ check_backup_empty(){
 }
 
 check_docroot_empty(){
-    if [ "$(ls -At /home/"${1}"/"${2}"/public_html)" ]; then
+    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    if [ "$(ls -A /home/"${1}"/"${2}"/public_html)" ]; then
         return 0
     else
         return 1

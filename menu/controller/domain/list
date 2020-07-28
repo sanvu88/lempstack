@@ -14,7 +14,7 @@
 source /var/hostvn/menu/helpers/function
 
 list_domain(){
-    if [ "$(ls -At ${USER_DIR})" ]; then
+    if [[ $(ls -A "${USER_DIR}") ]]; then
         clear
         echo "Danh sach Domain tren VPS:"
         echo

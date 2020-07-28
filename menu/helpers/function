@@ -47,11 +47,12 @@ gen_pass(){
 
 select_domain(){
     domain=""
-    if [ "$(ls -At "${USER_DIR}")" ]; then
+    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    if [ "$(ls -A "${USER_DIR}")" ]; then
         while true
         do
             echo "${LIST_DOMAIN}"
-            selects=()
+            domains=()
             cd_dir "${USER_DIR}"
             #https://stackoverflow.com/a/2437466
             #https://stackoverflow.com/a/1951523
@@ -59,15 +60,15 @@ select_domain(){
             for entry in .*.conf; do
                 domain=${entry/.}
                 domain=${domain//.conf}
-                selects+=("${domain}")
+                domains+=("${domain}")
             done
             PS3="${INPUT_SELECT}"
-            select opt in "${selects[@]}"
+            select opt in "${domains[@]}"
             do
                 domain=$opt
                 break
             done
-            if [[ " ${selects[*]} " == *" ${domain} "* ]] && validate_domain "${domain}";
+            if [[ " ${domains[*]} " == *" ${domain} "* ]] && validate_domain "${domain}";
             then
                 break
             else
@@ -165,22 +166,23 @@ make_backup_dir(){
 
 list_backup(){
     date=""
-    if [ "$(ls -At /home/backup)" ]; then
+    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    if [ "$(ls -A /home/backup)" ]; then
         while true
         do
             echo "${LIST_BACKUP}"
             selects=()
             cd_dir /home/backup
             for date in * ; do
-                selects+=("${date}")
+                dates+=("${date}")
             done
             PS3="${SELECT_OPTION}"
-            select select in "${selects[@]}"
+            select opt in "${selects[@]}"
             do
-                date=${select}
+                date=${opt}
                 break
             done
-            if [[ " ${selects[*]} " == *" ${date} "* ]];
+            if [[ " ${dates[*]} " == *" ${date} "* ]];
             then
                 break
             else
@@ -290,10 +292,10 @@ select_remote(){
     do
         echo "${SELECT_REMOTE}"
         remotes=()
-        selects=( $(rclone listremotes) )
-        for entry in "${selects[@]}"; do
-            select=${entry//:}
-            remotes+=("${select}")
+        list_remote=( $(rclone listremotes) )
+        for entry in "${list_remote[@]}"; do
+            rt=${entry//:}
+            remotes+=("${rt}")
         done
 
         PS3="${SELECT_OPTION}"

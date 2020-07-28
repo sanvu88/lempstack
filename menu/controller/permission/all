@@ -18,7 +18,8 @@ printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
 printf "${GREEN}======================${NC}\n"
 echo
 
-if [ "$(ls -At "${USER_DIR}")" ]; then
+#https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+if [ "$(ls -A "${USER_DIR}")" ]; then
     clear
     echo "Dang phan quyen cho cac domain:"
     sleep 1
