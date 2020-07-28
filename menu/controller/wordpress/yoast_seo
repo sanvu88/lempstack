@@ -40,7 +40,7 @@ _run(){
         check_yoastseo=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "yoast_seo")
         sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
         if [[  -n "${check_yoastseo}" ]]; then
-            sed -i 'yoast_seo/d' "${VHOST_DIR}"/"${domain}".conf
+            sed -i '/yoast_seo/d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
             restart_service
             printf "${GREEN}Tat cau hinh Yoast Seo thanh cong.${NC}\n"
