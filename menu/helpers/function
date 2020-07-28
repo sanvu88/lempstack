@@ -86,7 +86,7 @@ select_source(){
     SOURCE="Other"
     echo "${SELECT_SOURCE}"
     PS3="${INPUT_SELECT}"
-    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "NextCloud" "Discuz" "Ecshop" "Other")
+    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "Discuz" "Ecshop" "Other")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -100,7 +100,6 @@ select_source(){
             "WHMCS") SOURCE="whmcs"; break;;
             "PrestaShop") SOURCE="prestashop"; break;;
             "Yii") SOURCE="yii"; break;;
-            "NextCloud") SOURCE="nextcloud"; break;;
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
@@ -131,8 +130,6 @@ set_rewrite(){
         rewrite="include /etc/nginx/rewrite/prestashop.conf;"
     elif [ "${SOURCE}" == "yii" ]; then
         rewrite="include /etc/nginx/rewrite/yii.conf;"
-    elif [ "${SOURCE}" == "nextcloud" ]; then
-        rewrite="include /etc/nginx/rewrite/nextcloud.conf;"
     elif [ "${SOURCE}" == "discuz" ]; then
         rewrite="include /etc/nginx/rewrite/discuz.conf;"
     elif [ "${SOURCE}" == "ecshop" ]; then

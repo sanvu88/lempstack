@@ -261,7 +261,7 @@ create_vhost(){
     set_docroot
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-handler {
+upstream php-${username} {
     server ${fastcgi_pass}
 }
 
@@ -287,7 +287,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-${username};
         }
     }
 
