@@ -2378,8 +2378,8 @@ hostvn_custom_ini(){
     memory_limit_calculation
     cat > "/etc/php.d/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
-max_execution_time = 90
-max_input_time = 90
+max_execution_time = 120
+max_input_time = 120
 short_open_tag = On
 realpath_cache_size = ${PHP_REAL_PATH_LIMIT}
 realpath_cache_ttl = ${PHP_REAL_PATH_TTL}
@@ -2401,8 +2401,8 @@ EOhostvn_custom_ini
 hostvn_custom_ini_2(){
     cat > "${PHP2_INI_PATH}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
-max_execution_time = 90
-max_input_time = 90
+max_execution_time = 120
+max_input_time = 120
 short_open_tag = On
 realpath_cache_size = ${PHP_REAL_PATH_LIMIT}
 realpath_cache_ttl = ${PHP_REAL_PATH_TTL}
