@@ -20,36 +20,35 @@ set_var(){
 }
 
 check_php_version(){
-	  php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
+    php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
 
-	  if [ "${php_v}" -lt 7 ]; then
-		    ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
-	  fi
+    if [ "${php_v}" -lt 7 ]; then
+        ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
+    fi
 }
 
 check_dir(){
-	  if [ -d "/usr/share/phpmyadmin" ]; then
-		    rm -rf /usr/share/phpmyadmin
-		    rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin
-	  fi
+    if [ -d "${DEFAULT_DIR_TOOL}/phpmyadmin" ]; then
+        rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin
+        rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin
+    fi
 }
 
 update(){
     cd_dir "${DEFAULT_DIR_TOOL}"
     rm -rf phpmyadmin
-	  wget -O "${DEFAULT_DIR_TOOL}"/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
-	  unzip phpmyadmin.zip
-	  rm -rf phpmyadmin.zip
+    wget -O "${DEFAULT_DIR_TOOL}"/phpmyadmin.zip  https://files.phpmyadmin.net/phpMyAdmin/"${phpmyadmin_v}"/phpMyAdmin-"${phpmyadmin_v}"-english.zip
+    unzip phpmyadmin.zip
+    rm -rf phpmyadmin.zip
     mv phpMyAdmin-"${phpmyadmin_v}"-english phpmyadmin
 }
 
 config_phpmyadmin(){
     blowfish_secret=$(date +%s%N | sha256sum | base64 | head -c 64)
-    mv "${USR_DIR}"/phpmyadmin/config.sample.inc.php "${USR_DIR}"/phpmyadmin/config.inc.php
-    rm -rf /usr/share/phpmyadmin/setup
-    mkdir -p /usr/share/phpmyadmin/tmp
+    rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin/setup
+    mkdir -p "${DEFAULT_DIR_TOOL}"/phpmyadmin/tmp
 
-    cat > "/usr/share/phpmyadmin/config.inc.php" <<EOCONFIGINC
+    cat > "${DEFAULT_DIR_TOOL}/phpmyadmin/config.inc.php" <<EOCONFIGINC
 <?php
 declare(strict_types=1);
 \$cfg['blowfish_secret'] = '${blowfish_secret}';
@@ -64,14 +63,14 @@ declare(strict_types=1);
 \$cfg['SaveDir'] = '';
 \$cfg['PmaNoRelation_DisableWarning'] = true;
 \$cfg['VersionCheck'] = false;
-\$cfg['TempDir'] = '/usr/share/phpmyadmin/tmp';
+\$cfg['TempDir'] = '${DEFAULT_DIR_TOOL}/phpmyadmin/tmp';
 \$cfg['CaptchaLoginPublicKey'] = '';
 \$cfg['CaptchaLoginPrivateKey'] = '';
 \$cfg['ExecTimeLimit'] = 600;
 EOCONFIGINC
 
-    chown -R nginx:nginx /usr/share/phpmyadmin
-    chown -R nginx:nginx "${DEFAULT_DIR_WEB}"/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/phpmyadmin
+    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/phpmyadmin
 }
 
 run(){
