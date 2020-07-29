@@ -1,0 +1,106 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: mbrother - HOSTVN Technical                 #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# Check name: only accept [a-z] [A-Z] [0-9] - _
+if [ "$1" == name ]
+then
+    if [ -z "$2" ]
+    then
+        exit 1
+    else
+        TRAP=$(echo "${2}" | tr -d "_-" | tr -d "[:alnum:]")
+        if [ -z "${TRAP}" ]
+        then
+            exit 0
+        else
+            exit 1
+        fi
+    fi
+fi
+
+# Check domain name: only accept [a-z] [A-Z] [0-9] - [.]
+if [ "$1" == domain ]
+then
+    if [ -z "$2" ]
+    then
+        exit 1
+    else
+        CHECK1=${2:0:1}
+        CHECK2=$(echo "${2}" | grep -c "\.\.")
+        if [[ "${CHECK1}" == "-" ]] || [[ ${CHECK2} -eq 1 ]]
+        then
+            exit 1
+        fi
+        CHECK3=$(echo "${2}" | cut -d"." -f2- | grep -c "-")
+        if [[ ${CHECK3} -eq 1 ]]
+        then
+            exit 1
+        fi
+        CHECK4=$(echo "${2}" | tr -d '[:space:]')
+        if [[ "${CHECK4}" != "${2}" ]] || [[ -z "${CHECK4}" ]]
+        then
+            exit 1
+        fi
+        CHECK5=$(echo "${2}" | cut -d"." -f1)
+        CHECK6=$(echo "${2}" | cut -d"." -f2)
+        if [[ -z ${CHECK5} ]] || [[ -z ${CHECK6} ]]
+        then
+            exit 1
+        fi
+
+        TRAP=$(echo "${2}" | tr -d ".-" | tr -d "[:alnum:]")
+        if [ -z "${TRAP}" ]
+        then
+            exit 0
+        else
+            exit 1
+        fi
+    fi
+fi
+
+# Check option is number: only accept [0-9]
+if [ "$1" == number ]
+then
+    if [ -z "$2" ]
+    then
+        exit 1
+    else
+        TRAP=$(echo "$2" | tr -d "[:digit:]")
+        if [ -z "${TRAP}" ]
+        then
+            if [[ $2 -lt 1 ]] || [[ $2 -gt $3 ]]
+            then
+                exit 1
+            else
+                exit 0
+            fi
+        else
+            exit 1
+        fi
+    fi
+fi
+
+# Check option in a list
+if [ "$1" == list ]
+then
+    if [ -z "$3" ]
+    then
+        exit 1
+    else
+        VALUE=$2
+        List=("$3")
+        for i in ${List[*]}
+        do
+            [[ "${i}" == "${VALUE}" ]] && exit 0
+        done
+    fi
+fi
