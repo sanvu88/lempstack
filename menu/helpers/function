@@ -73,11 +73,11 @@ select_domain(){
                 break
             else
                 clear
-                printf "${RED}${WRONG_DOMAIN}${NC}\n"
+                printf "%s%s%s\n" "${RED}" "${WRONG_DOMAIN}" "${NC}"
             fi
         done
     else
-        ALERT=$(printf "${RED}${EMPTY_DOMAIN}${NC}\n")
+        ALERT=$(printf "%s%s%s\n" "${RED}" "${EMPTY_DOMAIN}" "${NC}")
     fi
 }
 
@@ -103,7 +103,7 @@ select_source(){
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
+            *) printf "%s%s%S\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
         esac
     done
 }
@@ -141,7 +141,7 @@ set_rewrite(){
 
 fastcgi(){
     fastcgi_pass="unix:/var/run/php-fpm/${username}.sock;"
-
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     if [[ "${php_mode}" == "2" ]]; then
         fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
@@ -187,11 +187,11 @@ list_backup(){
                 menu_primary
             else
                 clear
-                printf "${RED}${WRONG_OPTION}${NC}\n"
+                printf "%s%s%s\n" "${RED}" "${WRONG_OPTION}" "${NC}"
             fi
         done
     else
-        ALERT=$(printf "${RED}${BACKUP_EMPTY}${NC}\n")
+        ALERT=$(printf "%s%s%s\n" "${RED}" "${BACKUP_EMPTY}" "${NC}")
     fi
 }
 
@@ -219,7 +219,7 @@ select_plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
+            *) printf "%s%s%s\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
         esac
     done
 }
@@ -235,7 +235,7 @@ select_plugin_seo(){
             "Yoast Seo") plugins_seo="yoast_seo"; break;;
             "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
             "Other") plugins_seo=""; break;;
-            *) printf "${RED}${WRONG_SELECT}${NC}\n";;
+            *) printf "%s%s%s\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
         esac
     done
 }
@@ -249,7 +249,7 @@ wp_auto_install_info(){
         then
             break
         else
-            echo "${WRONG_USERNAME}"
+            printf "%s%s%s" "${RED}" "${WRONG_USERNAME}" "${NC}"
         fi
     done
 
@@ -263,7 +263,7 @@ wp_auto_install_info(){
         then
             break
         else
-            echo "${WRONG_EMAIL}"
+            printf "%s%s%s"  "${RED}" "${WRONG_EMAIL}" "${NC}"
         fi
     done
 
@@ -312,7 +312,15 @@ select_remote(){
         then
             menu_primary
         else
-            printf "${RED}${WRONG_OPTION}${NC}\n"
+            printf "%s%s%s\n" "${RED}" "${WRONG_OPTION}" "${NC}"
         fi
     done
+}
+
+doc_root(){
+    if [[ "${1}" == "laravel" ]]; then
+        root="root /home/${2}/${3}/public_html/public;"
+    else
+        root="root /home/${2}/${3}/public_html;"
+    fi
 }
