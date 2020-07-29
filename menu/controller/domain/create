@@ -262,7 +262,7 @@ create_vhost(){
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
 upstream php-${username} {
-    server ${fastcgi_pass}
+    server ${fastcgi_pass};
 }
 
 server {

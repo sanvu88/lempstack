@@ -214,7 +214,7 @@ check_backup_exists(){
 }
 
 check_backup_empty(){
-    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [ "$(ls -A /home/backup/"${1}"/"${2}")" ]; then
         return 0
     else
@@ -223,7 +223,7 @@ check_backup_empty(){
 }
 
 check_docroot_empty(){
-    #https://www.codexpedia.com/shell/check-if-a-directory-is-empty-or-not-in-shell-script/
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [ "$(ls -A /home/"${1}"/"${2}"/public_html)" ]; then
         return 0
     else
