@@ -182,6 +182,9 @@ list_backup(){
             if [[ " ${dates[*]} " == *" ${date} "* ]];
             then
                 break
+            elif [[ ${remote} -eq 0 ]];
+            then
+                menu_primary
             else
                 clear
                 printf "${RED}${WRONG_OPTION}${NC}\n"
