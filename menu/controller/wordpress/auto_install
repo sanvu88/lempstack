@@ -108,7 +108,7 @@ create_vhost(){
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-handler {
+upstream php-${username} {
     server ${fastcgi_pass}
 }
 
@@ -134,7 +134,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-${username};
         }
     }
 
@@ -142,7 +142,7 @@ server {
         limit_req zone=two burst=1 nodelay;
         include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        ${fastcgi_pass}
+        fastcgi_pass php-${username};
     }
     include /etc/nginx/extra/staticfiles.conf;
     include /etc/nginx/wordpress/wordpress_secure.conf;
