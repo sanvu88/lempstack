@@ -230,9 +230,10 @@ prepare_install(){
 ############################################
 input_ip(){
     echo "Nhap vao dia chi IP cua VPS. Bam Enter de script tu detect IP Public."
-    read -r -p "Nhap vao dia chi IP cua VPS: " IPADDRESS
-    if valid_ip "${IPADDRESS}"; then
-        IPADDRESS=$(curl -s http://myip.directadmin.com)
+    read -r -p "Nhap vao dia chi IP cua VPS: " IPADDRESS_NEW
+    if [ -n "${IPADDRESS_NEW}" ] && valid_ip "${IPADDRESS_NEW}" ; then
+        IPADDRESS=IPADDRESS_NEW
+    else
         printf "IP ban nhap khong chinh xac. Script se tu dong detect IP Public cua VPS."
     fi
 }
