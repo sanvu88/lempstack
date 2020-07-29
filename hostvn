@@ -1080,14 +1080,6 @@ EOwebp_image
 include /etc/nginx/wordpress/disable_user_api.conf;
 rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 
-# Reduce Comment Spam
-location = /wp-comments-post.php {
-    limit_except POST { deny all; access_log off; }
-    if (\$http_user_agent ~ "^\$") { return 403; }
-    valid_referers server_names jetpack.wordpress.com/jetpack-comment/;
-    if (\$invalid_referer) { return 403; }
-}
-
 # Protect System Files
 #location = /wp-admin/install.php { deny all; access_log off; log_not_found off; }
 location ~ ^/wp-admin/includes/ { deny all; access_log off; log_not_found off; }
