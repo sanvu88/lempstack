@@ -31,19 +31,30 @@ valid_date(){
 }
 
 check_service(){
-    nginx_status="$(pgrep -f nginx)"
-    phpfpm_status="$(pgrep -f php-fpm)"
-    mariadb_status="$(pgrep -f mariadb)"
+    nginx="$(pgrep -f nginx)"
+    phpfpm="$(pgrep -f php-fpm)"
+    mariadb="$(pgrep -f mariadb)"
 
-    if [[  -z "${nginx_status}" || -z "${phpfpm_status}" || -z "${mariadb_status}" ]]; then
+    if [ -z "${nginx}" ]; then
+        nginx_status="${RED}Khong hoat dong${NC}"
+    fi
+
+    if [ -z "${phpfpm}" ]; then
+        phpfpm_status="${RED}Khong hoat dong${NC}"
+    fi
+
+    if [ -z "${mariadb}" ]; then
+        mariadb_status="${RED}Khong hoat dong${NC}"
+    fi
+
+    if [[  -z "${nginx}" || -z "${phpfpm}" || -z "${mariadb}" ]]; then
         ALERT=$(
             printf "${RED}${ERROR_OCCURRED}${NC}\n"
-            printf "${RED}${CHECK_SERVICES}{NC}\n"
+            printf "${RED}${CHECK_SERVICES}${NC}\n"
             echo "-------------------------------------------------"
             printf "Nginx: %s\n" "${nginx_status}";
             printf "PHP-FPM: %s\n" "${phpfpm_status}";
             printf "MariaDB: %s\n" "${mariadb_status}";
-            printf "Pure-ftp: %s\n" "${pureftpd_status}";
             echo "-------------------------------------------------"
         )
     fi

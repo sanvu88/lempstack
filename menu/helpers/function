@@ -280,7 +280,7 @@ brute_force_wp(){
         limit_req zone=two burst=1 nodelay;
         include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        ${fastcgi_pass}
+        fastcgi_pass php-${username};
     }"
 }
 
@@ -305,6 +305,9 @@ select_remote(){
         if [[ " ${remotes[*]} " == *" ${remote} "* ]];
         then
             break
+        elif [[ ${remote} -eq 0 ]];
+        then
+            menu_primary
         else
             printf "${RED}${WRONG_OPTION}${NC}\n"
         fi
