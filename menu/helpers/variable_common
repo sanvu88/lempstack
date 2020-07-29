@@ -22,7 +22,7 @@ MENU_NAME="hostvn"
 AUTHOR="HOSTVN.VN"
 AUTHOR_WEB="HOSTVN.VN"
 UPDATE_LINK="https://scripts.hostvn.net/update"
-IPADDRESS=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
+IPADDRESS=$(dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
 CURRENT_DATE=$(date +%Y-%m-%d)
 
 # Set directory variables
