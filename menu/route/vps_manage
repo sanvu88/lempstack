@@ -25,10 +25,10 @@ do
     printf "${GREEN}4. Xem cac tien trinh tren VPS${NC}\n"
     printf "${GREEN}5. Kiem tra dung luong VPS${NC}\n"
     printf "${GREEN}6. Thay doi thong tin SSH${NC}\n"
-    printf "${GREEN}7. Cap nhat VPS${NC}\n"
-    printf "${GREEN}8. Cap nhat HOSTVN Script${NC}\n"
-    printf "${GREEN}9. Cap nhat lai cau hinh (Sau khi nang cap VPS)${NC}\n"
-    printf "${GREEN}10. Bao mat VPS (Scan Malware, Naxsi Firewall)${NC}\n"
+    #printf "${GREEN}7. Cap nhat VPS${NC}\n"
+    printf "${GREEN}7. Cap nhat HOSTVN Script${NC}\n"
+    printf "${GREEN}8. Cap nhat lai cau hinh (Sau khi nang cap VPS)${NC}\n"
+    printf "${GREEN}9. Bao mat VPS (Scan Malware, Naxsi Firewall)${NC}\n"
     printf "${GREEN} ----------------------${NC}\n"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
@@ -59,25 +59,25 @@ do
             menu_vps
             ;;
         6) clear; menu_ssh ;;
-        7)
-            printf "${RED}}Lưu y: Viec cap nhat he thong co the se gay ra ca loi khong mong muon.${NC}\n"
-            read -r -p "Ban chac chan muon cap nhat ? (y/N)" confirm_update
-            if [[ ${confirm_update} =~ ^([yY])$ ]]; then
-                echo "Chuan bi cap nhat VPS..."
-                sleep 2
-                yum -y update
-                clear
-                printf "${GREEN}Qua trinh cap nhat da hoan tat.${NC}\n"
-            else
-                clear
-                printf "${GREEN}Ban da chon huy cap nhat.${NC}\n"
-            fi
+        #7)
+            # printf "${RED}}Lưu y: Viec cap nhat he thong co the se gay ra ca loi khong mong muon.${NC}\n"
+            # read -r -p "Ban chac chan muon cap nhat ? (y/N)" confirm_update
+            # if [[ ${confirm_update} =~ ^([yY])$ ]]; then
+            #     echo "Chuan bi cap nhat VPS..."
+            #     sleep 2
+            #     yum -y update
+            #     clear
+            #     printf "${GREEN}Qua trinh cap nhat da hoan tat.${NC}\n"
+            # else
+            #     clear
+            #     printf "${GREEN}Ban da chon huy cap nhat.${NC}\n"
+            # fi
 
-            menu_vps
-            ;;
-        8) update_script ;;
-        9) change_all_parameter ;;
-        10) clear; menu_security ;;
+            # menu_vps
+            # ;;
+        7) update_script ;;
+        8) change_all_parameter ;;
+        9) clear; menu_security ;;
         0) clear; menu_primary ;;
         *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
     esac
