@@ -141,7 +141,9 @@ set_rewrite(){
 
 fastcgi(){
     fastcgi_pass="unix:/var/run/php-fpm/${username}.sock;"
-    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    if [[ -z "${php_mode}" ]]; then
+        php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    fi
     if [[ "${php_mode}" == "2" ]]; then
         fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi

@@ -3154,7 +3154,7 @@ EOmysql_log
 ############################################
 #Config phpMyAdmin
 config_phpmyadmin(){
-    BLOWFISH_SECRET=$(generate_random_pwd)
+    BLOWFISH_SECRET=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c100)
     rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin/setup
     mkdir -p "${DEFAULT_DIR_TOOL}"/phpmyadmin/tmp
 
