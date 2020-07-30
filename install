@@ -123,14 +123,12 @@ remove_old_ervice(){
 # Install requirement service
 install_repo(){
     if [[ "${OS_VER}" -eq 8 ]]; then
-        yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
-        yum -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
-        yum -y update
-        yum -y install hostname libsepol boost-program-options libmemcached libmemcached-devel
+        dnf -y install epel-release -y
+        dnf -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
+        dnf -y install hostname libsepol boost-program-options libmemcached libmemcached-devel
     elif [ "${OS_VER}" -eq 7 ]; then
         yum -y install epel-release ntpdate libmemcached libmemcached-devel
         yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y
-        yum -y update
     else
         printf "${RED}${OS_WRONG}${NC}\n"
         sleep 2
@@ -139,11 +137,10 @@ install_repo(){
 }
 
 install_requirement(){
-    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils yum-utils dos2unix openssl openssl-devel perl quota libaio \
+    yum -y install gawk bc wget tar gcc gcc-c++ flex bison make bind bind-libs bind-utils dos2unix openssl openssl-devel perl quota libaio \
           libcom_err-devel libcurl-devel gd jpegoptim zlib-devel zip unzip libcap-devel cronie bzip2 cyrus-sasl-devel perl-ExtUtils-Embed logrotate \
           autoconf automake libtool which patch mailx bzip2-devel lsof glibc-headers kernel-devel expat-devel nano htop git syslog-ng syslog-ng-libdbi \
-          psmisc net-tools systemd-devel libdb-devel perl-DBI perl-Perl4-CoreLibs perl-libwww-perl pngquant xfsprogs rsyslog crontabs file kernel-headers \
-          perl-LWP-Protocol-https perl-GDGraph perl-IO-Socket-SSL.noarch perl-Net-SSLeay perl-Net-LibIDN perl-IO-Socket-INET6 perl-Socket6 libpng-devel
+          psmisc net-tools systemd-devel libdb-devel perl-DBI pngquant libpng-devel xfsprogs rsyslog crontabs file kernel-headers
 }
 
 create_swap(){
@@ -155,6 +152,11 @@ create_swap(){
         swapon /swapfile
         echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab
     fi
+}
+
+disable_firewalld(){
+    systemctl stop firewalld
+    systemctl disable firewalld
 }
 
 #########################
@@ -170,4 +172,5 @@ remove_old_ervice
 install_repo
 install_requirement
 create_swap
+disable_firewalld
 dowload_script
