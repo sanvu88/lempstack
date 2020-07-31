@@ -437,8 +437,8 @@ EONGINXREPO
 nginx_brotli(){
     NGINXV=$(nginx -v 2>&1 | grep -o '[0-9.]*$'; echo)
     MODULES_PATH="/etc/nginx/modules"
-    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_filter_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_filter_module.so
-    wget -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_static_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_static_module.so
+    wget --no-check-certificate -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_filter_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_filter_module.so
+    wget --no-check-certificate -q "${EXT_LINK}"/ngx_brotli/"${NGINXV}"/ngx_http_brotli_static_module.so -O  "${MODULES_PATH}"/ngx_http_brotli_static_module.so
 
     if [[ -f "${MODULES_PATH}/ngx_http_brotli_filter_module.so" && -f "${MODULES_PATH}/ngx_http_brotli_static_module.so" ]]; then
         LOAD_BROTLI_FILTER="load_module modules/ngx_http_brotli_filter_module.so;"
@@ -451,11 +451,11 @@ nginx_brotli(){
 # Config naxsi
 nginx_naxsi(){
     mkdir -p /etc/nginx/naxsi
-    wget -q "${EXT_LINK}"/naxsi/"${NGINXV}"/ngx_http_naxsi_module.so -O  "${MODULES_PATH}"/ngx_http_naxsi_module.so
-    wget -q "${EXT_LINK}"/naxsi/rule/naxsi_core.rules -O  /etc/nginx/naxsi/naxsi_core.rules
-    wget -q "${EXT_LINK}"/naxsi/rule/wordpress.rules -O  /etc/nginx/naxsi/wordpress.rules
-    wget -q "${EXT_LINK}"/naxsi/rule/drupal.rules -O  /etc/nginx/naxsi/drupal.rules
-    wget -q "${EXT_LINK}"/naxsi/rule/naxsi_relax.rules -O  /etc/nginx/naxsi/naxsi_relax.rules
+    wget --no-check-certificate -q "${EXT_LINK}"/naxsi/"${NGINXV}"/ngx_http_naxsi_module.so -O  "${MODULES_PATH}"/ngx_http_naxsi_module.so
+    wget --no-check-certificate -q "${EXT_LINK}"/naxsi/rule/naxsi_core.rules -O  /etc/nginx/naxsi/naxsi_core.rules
+    wget --no-check-certificate -q "${EXT_LINK}"/naxsi/rule/wordpress.rules -O  /etc/nginx/naxsi/wordpress.rules
+    wget --no-check-certificate -q "${EXT_LINK}"/naxsi/rule/drupal.rules -O  /etc/nginx/naxsi/drupal.rules
+    wget --no-check-certificate -q "${EXT_LINK}"/naxsi/rule/naxsi_relax.rules -O  /etc/nginx/naxsi/naxsi_relax.rules
 
     if [[ -f "${MODULES_PATH}/ngx_http_naxsi_module.so" ]]; then
         LOAD_NAXSI="load_module modules/ngx_http_naxsi_module.so;"
@@ -760,7 +760,7 @@ install_igbinary(){
         IGBINARY_VERSION="2.0.8"
     fi
 
-    cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
+    cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
     /usr/bin/phpize && ./configure --with-php-config=/usr/bin/php-config
@@ -781,7 +781,7 @@ install_igbinary_2(){
         IGBINARY_VERSION="2.0.8"
     fi
 
-    cd "${DIR}" && wget "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
+    cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/igbinary-"${IGBINARY_VERSION}".tgz
     tar -xvf igbinary-"${IGBINARY_VERSION}".tgz
     cd_dir "${DIR}/igbinary-${IGBINARY_VERSION}"
     /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
@@ -803,7 +803,7 @@ install_php_memcached(){
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
-        cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
+        cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
         /usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/usr/bin/php-config
@@ -824,7 +824,7 @@ install_php_memcached_2(){
         PHP_MEMCACHED_VERSION="2.2.0"
     fi
 
-    cd "${DIR}" && wget "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
+    cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/memcached-"${PHP_MEMCACHED_VERSION}".tgz
         tar -xvf memcached-"${PHP_MEMCACHED_VERSION}".tgz
         cd_dir "${DIR}/memcached-${PHP_MEMCACHED_VERSION}"
         /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --enable-memcached-igbinary --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
@@ -846,7 +846,7 @@ install_php_redis(){
         PHP_REDIS_VERSION="4.3.0"
     fi
 
-    cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
+    cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
     /usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/usr/bin/php-config
@@ -868,7 +868,7 @@ install_php_redis_2(){
         PHP_REDIS_VERSION="4.3.0"
     fi
 
-    cd "${DIR}" && wget "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
+    cd "${DIR}" && wget --no-check-certificate "${PECL_PHP_LINK}"/redis-"${PHP_REDIS_VERSION}".tgz
     tar -xvf redis-"${PHP_REDIS_VERSION}".tgz
     cd_dir "${DIR}/redis-${PHP_REDIS_VERSION}"
     /opt/remi/"${PHP_VERSION_2}"/root/usr/bin/phpize && ./configure --enable-redis-igbinary --with-php-config=/opt/remi/"${PHP_VERSION_2}"/root/usr/bin/php-config
@@ -1883,7 +1883,7 @@ location ^~ /phpmyadmin {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-app;
         }
     }
     location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1916,7 +1916,7 @@ location ^~ /opcache {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-app;
         }
     }
     location ~* ^/opcache/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1939,7 +1939,7 @@ location ^~ /serverinfo {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-app;
         }
     }
     location ~* ^/serverinfo/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1965,7 +1965,7 @@ location ^~ /memcached {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-app;
         }
     }
     location ~* ^/memcached/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1988,7 +1988,7 @@ location ^~ /redis {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-handler;
+            fastcgi_pass php-app;
         }
     }
     location ~* ^/redis/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|webp|xml|txt))\$ {
@@ -1998,7 +1998,7 @@ location ^~ /redis {
 EOredis_vhost
 
 cat >> "/etc/nginx/web_apps.conf" << EOdefault_vhost
-upstream php-handler {
+upstream php-app {
     server unix:/var/run/php-fpm.sock;
 }
 
@@ -3336,14 +3336,14 @@ EOphpmyadmin_temp
 
 install_phpmyadmin(){
     # Singapore Local
-    echo "89.187.162.49 files.phpmyadmin.net" >> /etc/hosts
+    #echo "89.187.162.49 files.phpmyadmin.net" >> /etc/hosts
 
     if [[ "${PHP_VERSION}" == "php56" ]]; then
         PHPMYADMIN_VERSION="4.9.5"
     fi
 
     cd_dir "${DEFAULT_DIR_TOOL}"
-    wget "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
+    wget --no-check-certificate "${PMA_LINK}"/"${PHPMYADMIN_VERSION}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     unzip phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     rm -rf "${DEFAULT_DIR_TOOL}"/phpMyAdmin-"${PHPMYADMIN_VERSION}"-english.zip
     mv phpMyAdmin-"${PHPMYADMIN_VERSION}"-english phpmyadmin
@@ -3430,7 +3430,7 @@ change_ssh_port() {
 # Install certbot-auto
 ############################################
 install_certbot_auto() {
-    wget https://dl.eff.org/certbot-auto
+    wget --no-check-certificate https://dl.eff.org/certbot-auto
     mv certbot-auto /usr/local/bin/certbot-auto
     chown root /usr/local/bin/certbot-auto
     chmod +x /usr/local/bin/certbot-auto
@@ -3458,9 +3458,9 @@ gen_htpasswd(){
 ############################################
 opcache_dashboard(){
     mkdir -p "${DEFAULT_DIR_TOOL}"/opcache
-    wget -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
-    chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
-    chown -R nginx:nginx "${USR_DIR}"/nginx/auth
+    wget --no-check-certificate -q "${GITHUB_RAW_LINK}"/amnuts/opcache-gui/master/index.php -O  "${DEFAULT_DIR_TOOL}"/opcache/index.php
+    chown --no-check-certificate -R nginx:nginx "${DEFAULT_DIR_TOOL}"/opcache
+    chown --no-check-certificate -R nginx:nginx "${USR_DIR}"/nginx/auth
 }
 
 ############################################
@@ -3468,7 +3468,7 @@ opcache_dashboard(){
 ############################################
 php_sys_info(){
     cd_dir "${DEFAULT_DIR_TOOL}"
-    wget -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
+    wget --no-check-certificate -q "${GITHUB_URL}"/phpsysinfo/phpsysinfo/archive/v"${PHP_SYS_INFO_VERSION}".zip
     unzip -q v"${PHP_SYS_INFO_VERSION}".zip && rm -f v"${PHP_SYS_INFO_VERSION}".zip
     mv phpsysinfo-"${PHP_SYS_INFO_VERSION}" serverinfo
     cd serverinfo && mv phpsysinfo.ini.new phpsysinfo.ini
@@ -3691,7 +3691,7 @@ sys_content(){
 ############################################
 add_menu(){
     cd_dir "${BASH_DIR}"
-    wget "${EXT_LINK}"/menu.zip  > /dev/null
+    wget --no-check-certificate "${EXT_LINK}"/menu.zip  > /dev/null
     unzip menu.zip && rm -rf menu.zip  > /dev/null
     mkdir -p "${BASH_DIR}"/users
     mkdir -p /var/log/hostvn
