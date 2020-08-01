@@ -122,7 +122,7 @@ cd_dir(){
 }
 
 generate_random_pwd(){
-    < /dev/urandom tr -dc A-Za-z0-9 | head -c12
+    < /dev/urandom tr -dc A-Za-z0-9 | head -c24
 }
 
 valid_ip()

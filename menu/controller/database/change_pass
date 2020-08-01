@@ -45,6 +45,7 @@ change_pass(){
 	    mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
 	    clear
 	    printf "${GREEN}Thay doi mat khau thanh cong.${NC}\n"
+	    printf "${RED}Mat khau moi la: ${password}${NC}\n"
     else
     	clear
     	printf "${GREEN}Ban da huy thay doi mat khau.${NC}\n"
