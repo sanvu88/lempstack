@@ -43,6 +43,9 @@ change_pass(){
 		printf "${GREEN}Dang thay đoi mat khau...${NC}\n"
 		sleep 1
 	    mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
+	    string=$(grep -rnw "${USER_DIR}" -e "${db_user}" | cut -f1 -d':')
+	    sed -i '/db_password/d' ${string}
+	    echo "db_password=${password}" >> ${string}
 	    clear
 	    printf "${GREEN}Thay doi mat khau thanh cong.${NC}\n"
 	    printf "${RED}Mat khau moi la: ${password}${NC}\n"
