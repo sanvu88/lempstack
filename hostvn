@@ -949,8 +949,8 @@ self_signed_ssl(){
     openssl genrsa -out "${self_signed_dir}/server.key" 4096
     openssl req -new -days 3650 -key "${self_signed_dir}/server.key" -out "${self_signed_dir}/server.csr" <<EOF
 VN
+Cau Giay
 Ha Noi
-Ba Dinh
 ${AUTHOR}
 IT
 ${IPADDRESS}
@@ -3529,10 +3529,6 @@ csf_gui(){
     sed -i "s/UI_PORT = \"6666\"/UI_PORT = \"${CSF_UI_PORT}\"/g" /etc/csf/csf.conf
     sed -i 's/UI_USER = "username"/UI_USER = "admin"/g' /etc/csf/csf.conf
     sed -i "s/UI_PASS = \"password\"/UI_PASS = \"${ADMIN_TOOL_PWD}\"/g" /etc/csf/csf.conf
-    mv /etc/csf/ui/server.key /etc/csf/ui/server.key.old
-    mv /etc/csf/ui/server.crt /etc/csf/ui/server.crt.old
-    cp /etc/nginx/ssl/server/server.crt /etc/csf/ui/server.crt
-    cp /etc/nginx/ssl/server/server.key /etc/csf/ui/server.key
 }
 
 install_csf(){
