@@ -3580,7 +3580,7 @@ EOCSF
         echo "209.85.128.0/17 # Googlebot"
         echo "66.102.0.0/20 # Googlebot"
         echo "74.125.0.0/16 # Googlebot"
-        echo "66.249.64.0/19 #Googlebotallow"
+        echo "66.249.64.0/19 #Googlebot"
     } >> /etc/csf/csf.allow
 
     {
@@ -3694,15 +3694,6 @@ install_wpcli_packages(){
 }
 
 ############################################
-# Allow Nginx directory
-############################################
-
-sys_content(){
-    chcon -Rt httpd_sys_content_t "${DEFAULT_DIR_WEB}"
-    chcon -Rt httpd_sys_content_t "${DEFAULT_DIR_TOOL}"
-}
-
-############################################
 # Create menu
 ############################################
 add_menu(){
@@ -3788,7 +3779,6 @@ fi
 # End install
 add_menu
 start_service
-sys_content
 write_info
 ssh_login_noti
 
