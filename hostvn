@@ -217,15 +217,6 @@ ssh_login_noti(){
     fi
 }
 
-prepare_install(){
-    create_bash_dir
-    config_selinux
-    set_timezone
-    set_os_arch
-    create_log
-    set_email
-}
-
 ############################################
 # Option Install
 ############################################
@@ -388,23 +379,6 @@ option_change_ssh_port(){
         esac
     done
     sleep 1
-}
-
-options(){
-    input_ip
-    select_php_ver
-    select_php_multi
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        select_php_ver_2
-        check_duplicate_php
-    fi
-
-    option_clamav
-    option_memcached
-    option_redis
-    option_pureftp
-    option_change_ssh_port
 }
 
 ############################################
@@ -572,54 +546,6 @@ check_duplicate_php(){
     fi
 }
 
-install_lemp(){
-    install_nginx
-
-    if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
-        clear
-        printf "%s\n" "${INST_NGINX_ERR}"
-        sleep 3
-        exit
-    fi
-
-    nginx_brotli
-    install_naxsi
-    install_mariadb
-
-    if [[ ! -f "/usr/lib/systemd/system/mariadb.service" ]]; then
-        clear
-        printf "%s\n" "${INST_MARIADB_ERR}"
-        sleep 3
-        exit
-    fi
-
-    install_php
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        install_php_2
-
-        if [[ ! -f "/usr/lib/systemd/system/${PHP_VERSION_2}-php-fpm.service" ]]; then
-            clear
-            PHP2_RELEASE="no"
-            printf "%s\n" "${INST_PHP_ERR_2}"
-            sleep 3
-        fi
-    fi
-
-    if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
-        clear
-        printf "%s\n" "${INST_PHP_ERR}"
-        sleep 3
-        exit
-    fi
-
-    if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
-        clear
-        printf "%s\n" "${INST_PHP_ERR}"
-        sleep 3
-        exit
-    fi
-}
 
 ############################################
 # Install Composer
@@ -885,32 +811,6 @@ EOF
 
 }
 
-install_cache(){
-    if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
-        install_memcached
-    fi
-
-    if [[ "${prompt_redis}" =~ ^([yY])$ ]]; then
-        install_redis
-    fi
-
-    install_igbinary
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        install_igbinary_2
-    fi
-
-    if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
-        install_php_memcached
-        install_php_redis
-    fi
-
-    if [[ -f "${PHP_MODULES_DIR_2}/igbinary.so" ]]; then
-        install_php_memcached_2
-        install_php_redis_2
-    fi
-}
-
 ############################################
 # Config Nginx
 ############################################
@@ -941,7 +841,6 @@ cal_ssl_cache_size(){
 
 self_signed_ssl(){
     #Create dhparams
-    cal_ssl_cache_size
     challenge_password=$(generate_random_pwd)
     self_signed_dir="/etc/nginx/ssl/server"
     mkdir -p "${self_signed_dir}"
@@ -2129,17 +2028,6 @@ wprocket_nginx(){
     cp rocket-nginx.ini.disabled rocket-nginx.ini
 }
 
-config_nginx(){
-    self_signed_ssl
-    create_nginx_conf
-    create_extra_conf
-    create_wp_cache_conf
-    vhost_custom
-    default_vhost
-    default_index
-    default_error_page
-    wprocket_nginx
-}
 
 ############################################
 # Config PHP-FPM
@@ -2476,18 +2364,6 @@ EOphp_opcache
 /home/*/*/public_html/wp-content/plugins/duplicator/*
 /home/*/*/public_html/wp-content/plugins/updraftplus/*
 EOopcache_blacklist
-}
-
-config_php(){
-    php_global_config
-    hostvn_custom_ini
-    php_opcache
-
-    if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
-        php_global_config_2
-        hostvn_custom_ini_2
-        php_opcache_2
-    fi
 }
 
 ############################################
@@ -2945,12 +2821,6 @@ EOquery_temp
     rm -f /tmp/mysql_query.temp
 }
 
-config_mariadb(){
-    config_my_cnf
-    set_mariadb_root_pwd
-    create_mysql_user
-}
-
 ############################################
 # Other Config
 ############################################
@@ -3213,11 +3083,6 @@ EOsysctl_config
     sysctl -p
     sed -i 's/vm.swappiness/#vm.swappiness/g' /usr/lib/tuned/virtual-guest/tuned.conf
     echo "vm.swappiness = 10" >> /usr/lib/tuned/virtual-guest/tuned.conf
-}
-
-other_config(){
-    limits_config
-    sysctl_config
 }
 
 ############################################
@@ -3737,23 +3602,128 @@ write_info(){
 # Run Script
 ############################################
 # Prepare before install
-prepare_install
+create_bash_dir
+config_selinux
+set_timezone
+set_os_arch
+create_log
+set_email
 
 # Select options
-options
+input_ip
+select_php_ver
+select_php_multi
+
+if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+    select_php_ver_2
+    check_duplicate_php
+fi
+
+option_clamav
+option_memcached
+option_redis
+option_pureftp
+option_change_ssh_port
 
 # Install
-install_lemp
+install_nginx
+
+if [[ ! -f "/usr/lib/systemd/system/nginx.service" ]]; then
+    clear
+    printf "%s\n" "${INST_NGINX_ERR}"
+    sleep 3
+    exit
+fi
+
+nginx_brotli
+install_naxsi
+install_mariadb
+
+if [[ ! -f "/usr/lib/systemd/system/mariadb.service" ]]; then
+    clear
+    printf "%s\n" "${INST_MARIADB_ERR}"
+    sleep 3
+    exit
+fi
+
+install_php
+
+if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+    install_php_2
+
+    if [[ ! -f "/usr/lib/systemd/system/${PHP_VERSION_2}-php-fpm.service" ]]; then
+        clear
+        PHP2_RELEASE="no"
+        printf "%s\n" "${INST_PHP_ERR_2}"
+        sleep 3
+    fi
+fi
+
+if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
+    clear
+    printf "%s\n" "${INST_PHP_ERR}"
+    sleep 3
+    exit
+fi
+
+if [[ ! -f "/usr/lib/systemd/system/php-fpm.service" ]]; then
+    clear
+    printf "%s\n" "${INST_PHP_ERR}"
+    sleep 3
+    exit
+fi
 install_composer
 install_wpcli
 memory_calculation
-install_cache
+if [[ "${prompt_memcached}" =~ ^([yY])$ ]]; then
+    install_memcached
+fi
+
+if [[ "${prompt_redis}" =~ ^([yY])$ ]]; then
+    install_redis
+fi
+
+install_igbinary
+
+if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+    install_igbinary_2
+fi
+
+if [[ -f "${PHP_MODULES_DIR}/igbinary.so" ]]; then
+    install_php_memcached
+    install_php_redis
+fi
+
+if [[ -f "${PHP_MODULES_DIR_2}/igbinary.so" ]]; then
+    install_php_memcached_2
+    install_php_redis_2
+fi
 
 # Config
-config_nginx
-config_php
-config_mariadb
-other_config
+self_signed_ssl
+cal_ssl_cache_size
+create_nginx_conf
+create_extra_conf
+create_wp_cache_conf
+vhost_custom
+default_vhost
+default_index
+default_error_page
+wprocket_nginx
+php_global_config
+hostvn_custom_ini
+php_opcache
+
+if [[ "${MULTI_PHP}" =~ ^(Y|y)$ ]]; then
+    php_global_config_2
+    hostvn_custom_ini_2
+    php_opcache_2
+fi
+config_my_cnf
+set_mariadb_root_pwd
+create_mysql_user
+limits_config
+sysctl_config
 log_rotation
 
 # Install other tool
