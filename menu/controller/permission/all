@@ -19,7 +19,7 @@ printf "${GREEN}======================${NC}\n"
 echo
 
 #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
-if [ "$(ls "${USER_DIR}")" ]; then
+if [ "$(ls -A "${USER_DIR}")" ]; then
     clear
     echo "Dang phan quyen cho cac domain:"
     sleep 1
