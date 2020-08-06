@@ -15,12 +15,12 @@
 source /var/hostvn/menu/helpers/function
 
 select_date(){
-	echo "Chon ngay: "
+    echo "Chon ngay: "
     selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     dates=()
     for entry in ${selects}; do
-    	select=${entry///}
-      dates+=("${select}")
+        select=${entry///}
+        dates+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
     select date in "${dates[@]}"
@@ -28,27 +28,35 @@ select_date(){
         date=${date}
         break
     done
-
-    if ! [[ ${date} =~ ^[0-9]{2}-[0-9]{2}-[0-9]{4}$ ]]; then
-    	ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
-    fi
 }
 
 _run(){
-    ALERT=""
-	select_remote
-	select_date
+    select_date
 
-	if [[ -z "${ALERT}" ]]; then
-		echo ""
-		echo "Dang load danh sach. Vui long doi..."
-		echo ""
-		rclone lsf "${remote}":/"${IPADDRESS}"/"${date}"
-		echo ""
-	else
-		printf "${ALERT}\n"
-	fi
+    if [ -z "${date}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+    else
+        echo ""
+        echo "Dang load danh sach. Vui long doi..."
+        echo ""
+        rclone lsf "${remote}":/"${IPADDRESS}"/"${date}"
+        echo ""
+    fi
 }
 
-_run
+if [ -f "/root/.config/rclone/rclone.conf" ]; then
+    remote=""
+    date=""
+
+    select_remote
+    if [ -z "${remote}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+    else
+        _run
+    fi
+else
+    printf "%s\n" "${RED}Ban chua cau hinh ket noi voi Google Drive.${NC}"
+fi
 menu_ggdrive

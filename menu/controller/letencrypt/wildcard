@@ -11,21 +11,46 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+# shellcheck disable=SC2002
 source /var/hostvn/menu/helpers/function
 
 printf "%s========================%s\n" "${GREEN}" "${NC}"
-printf "%s Cau hinh Let's Encrypt %s\n" "${GREEN}" "${NC}"
+printf "%s Let's Encrypt Wildcard %s\n" "${GREEN}" "${NC}"
 printf "%s========================%s\n" "${GREEN}" "${NC}"
-echo
 
 validate(){
     check_nginx_status
     check_a_record "${domain}"
 }
 
+remove_old_ssl(){
+    while true
+    do
+        read -r -p "Ban co muon go bo chung chi SSL Let's Encrypt cu khong (y/n) ? " promt_remove_oldssl
+        echo
+        if [[ "${promt_remove_oldssl}" =~ ^([yY])$ || "${promt_remove_oldssl}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+    
+    if [[ ${promt_remove_oldssl} =~ ^([yY])$ ]]; then
+        certbot-auto revoke --cert-path /etc/letsencrypt/live/"${domain}"/cert.pem
+        certbot-auto delete --cert-name "${domain}"
+    fi
+}
+
 sign_ssl(){
-    /usr/local/bin/certbot-auto --nginx --no-bootstrap -d "${domain}" -d www."${domain}"
+    admin_email=$(grep -w "admin_email" "${FILE_INFO}" | cut -f2 -d'=');
+    if [ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]; then
+        remove_old_ssl
+        certbot certonly --preferred-challenges=dns --email "${admin_email}" --agree-tos \
+                --no-bootstrap --manual-public-ip-logging-ok -d "${domain}" -d "*.${domain}"
+    else
+        certbot certonly --nginx --preferred-challenges=dns --email "${admin_email}" --agree-tos \
+                --no-bootstrap --manual-public-ip-logging-ok -d "${domain}" -d "*.${domain}"
+    fi
 }
 
 auto_renew(){
@@ -38,20 +63,15 @@ auto_renew(){
     fi
 }
 
-restart_nginx(){
-    systemctl restart nginx.service
-}
-
 _run(){
     validate
 
     if [ -z "${ALERT}" ]; then
         sign_ssl
-        sed -i "s/listen 443 ssl;/listen 443 ssl http2;/g" "${VHOST_DIR}"/"${domain}".conf
+        auto_renew
+        #sed -i "s/listen 443 ssl;/listen 443 ssl http2;/g" "${VHOST_DIR}"/"${domain}".conf
         sleep 2
-        restart_nginx
-        clear
-        printf "%s\n" "${GREEN}Cau hinh SSL thanh cong.${NC}"
+        systemctl restart nginx.service
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -59,15 +79,16 @@ _run(){
 }
 
 ALERT=""
+promt_remove_oldssl=""
 domain=""
 
 select_domain
 if [ -n "${domain}" ]; then
     _run
-    menu_letencrypt
 else
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
-    menu_letencrypt
 fi
+
+menu_letencrypt
 

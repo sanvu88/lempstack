@@ -15,27 +15,27 @@
 source /var/hostvn/menu/helpers/function
 
 check_expired(){
-	if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
-		clear
-	    openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
-	else
-		clear
-		printf "${RED}Ten mien nay chua đuoc cai dat Let's Encrypt.${NC}\n"
-	fi
+    if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
+        clear
+        openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
+    else
+        clear
+        printf "%s\n" "${RED}Ten mien nay chua đuoc cai dat Let's Encrypt.${NC}"
+    fi
 }
 
 _run(){
-    ALERT=""
-	select_domain
+    domain=""
+    select_domain
 
-	if [ -z "${ALERT}" ]; then
-		check_expired
-	else
-		clear
-    printf "${ALERT}\n"
-  fi
+    if [ -z "${domain}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    else
+        clear
+        check_expired
+    fi
 }
 
 _run
-echo ""
 menu_letencrypt

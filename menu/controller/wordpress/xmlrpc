@@ -18,7 +18,7 @@ find_string(){
     string=$(grep -rnw "/etc/nginx/conf.d/${domain}.conf" -e 'disable_xmlrpc.conf')
 }
 
-xmlrpc(){
+_xmlrpc(){
     if [ -z "${string}" ]; then
         sed -i '/index.html/a include /etc/nginx/wordpress/disable_xmlrpc.conf;' /etc/nginx/conf.d/"${domain}".conf
         noti="${GREEN}Bat chan XMLRPC thanh cong.${NC}/n"
@@ -29,18 +29,18 @@ xmlrpc(){
 }
 
 _run(){
-    ALERT=""
+    domain=""
     select_domain
 
-    if [ -z "${ALERT}" ]; then
+    if [ -n "${domain}" ]; then
         find_string
-        xmlrpc
+        _xmlrpc
         restart_service
         clear
-        printf "$noti\n"
+        printf "%s\n" "${noti}"
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
     fi
 }
 

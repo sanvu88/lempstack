@@ -1,0 +1,74 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+set_var(){
+    #https://www.howtoforge.com/tutorial/linux-grep-command/
+    #https://stackoverflow.com/a/6284370
+    ftp_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
+    csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+    admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+    ssh_port=$(grep -w "Port" /etc/ssh/sshd_config | cut -f2 -d" ")
+}
+
+input(){
+    while true
+    do
+        read -r -p "Nhap vao port ban muon mo [0 = Thoat]: " new_port
+        echo
+        if [[ "${new_port}" =~ ^[0-9]+$ ]]; then
+            break
+        else
+            clear
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+}
+
+validate_port(){
+    if [[ "${new_port}" == "${ssh_port}" || "${new_port}" == "${ftp_port}" || "${new_port}" == "${csf_port}" || "${new_port}" == "${admin_port}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc mo.${NC}")
+    fi
+
+    check_se=$(semanage port -l | grep "${new_port}")
+    if [[ "${new_port}" == "22" || -n  "${check_se}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc mo.${NC}")
+    fi
+
+    string=$(grep -rnw "/etc/csf/csf.conf" -e "${new_port}")
+    if [[ -n "${string}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc mo.${NC}")
+    fi
+}
+
+_run(){
+    set_var
+    input
+    if [ "${new_port}" = "0" ]; then
+        printf "%s\n" "${RED}Huy mo Port.${NC}"
+    else
+        validate_port
+        if [ -z "${ALERT}" ]; then
+            sed -i "s/30000:50000/${new_port},30000:50000/g" /etc/csf/csf.conf
+            csf -x
+            csf -e
+            clear
+            printf "%s\n" "${GREEN}Mo port thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    fi
+}
+
+new_port=""
+_run
+menu_csf

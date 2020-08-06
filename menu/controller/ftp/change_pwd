@@ -14,48 +14,74 @@
 source /var/hostvn/menu/helpers/function
 
 input(){
-	read -r -p "Nhap vao user muon doi mat khau: " ftp_user
-	read -r -p "Nhap vao mat khau moi: " ftp_pwd
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "Nhap vao user muon doi mat khau [0 = Thoat]: " ftp_user
+        echo
+        if validate_user "${ftp_user}"; then
+            break
+        else
+            clear
+            printf "%s\n" "${RED}User khong dung dinh dang, vui long nhap lai.${NC}"
+        fi
+    done
+
+    ftp_pwd=$(gen_pass "$@")
 }
 
-
-change_pass(){
-	pure-pw passwd "${ftp_user}" <<EOF
+_change_pass(){
+    pure-pw passwd "${ftp_user}" <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF
-	pure-pw mkdb
-	systemctl restart pure-ftpd
-}
-
-_run(){
-    ALERT=""
-	input
-    if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
-        if ! if_pureftpd_user_exists "${ftp_user}"; then
-            ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
-        fi
-
-        validate_user "${ftp_user}"
-
-        if [[ -z "${ALERT}" ]]; then
-            change_pass
-            clear
-            printf "${GREEN}Doi password FTP thanh cong.${NC}\n"
-        else
-          clear
-            printf "${ALERT}\n"
-        fi
-    else
-        printf "${RED}Khong co user FTP nao ton tai tren VPS.${NC}\n"
+    pure-pw mkdb
+    systemctl restart pure-ftpd
+    string=$(grep -rnw "${USER_DIR}" -e "${ftp_user}" | cut -f1 -d':')
+    if [ -n "${string}" ]; then
+        for i in ${string} ; do
+            sed -i '/user_pass/d' "${i}"
+            echo "user_pass=${ftp_pwd}" >> "${i}"
+        done
     fi
 }
 
+_run(){
+    if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
+        if ! if_pureftpd_user_exists "${ftp_user}"; then
+            ALERT=$(printf "%s\n" "${RED}FTP User khong ton tai.${NC}")
+        fi
+
+        if [[ -z "${ALERT}" ]]; then
+            _change_pass
+            clear
+            printf "%s\n" "${GREEN}Doi password FTP thanh cong.${NC}"
+            printf "%s\n" "${GREEN}Mat khau moi la:${NC} ${RED}${ftp_pwd}${NC} "
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Khong co user FTP nao ton tai tren VPS.${NC}"
+    fi
+}
+
+ALERT=""
+ftp_user=""
 pureftpd_status="$(pgrep -f pure-ftpd)"
 
 if [ -z "${pureftpd_status}" ]; then
-    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 else
-    _run
-    menu_ftp
+    input "$@"
+    if [ "${ftp_user}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da huy hanh dong.${NC}"
+    else
+        _run
+    fi
 fi
+
+menu_ftp

@@ -12,20 +12,19 @@
 
 CHOICE=1
 
-printf "${GREEN}=================================${NC}\n"
-printf "${GREEN}           Google Drive          ${NC}\n"
-printf "${GREEN}=================================${NC}\n"
-echo ""
+printf "%s=================================%s\n" "${GREEN}" "${NC}"
+printf "%s           Google Drive          %s\n" "${GREEN}" "${NC}"
+printf "%s=================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Thiet lap Google Drive${NC}\n"
-    printf "${GREEN}2. Backup len GG Drive${NC}\n"
-    printf "${GREEN}3. Khoi phuc du lieu tu GG Drive${NC}\n"
-    printf "${GREEN}4. Xoa du lieu tren GG Drive${NC}\n"
-    printf "${GREEN}5. Danh sach backup tren GG Drive${NC}\n"
-    printf "${GREEN}6. Xoa Google Drive remote${NC}\n"
-    printf "${GREEN} --------------------------------${NC}\n"
+    printf "%s1. Thiet lap Google Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Backup len GG Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Khoi phuc du lieu tu GG Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Xoa du lieu tren GG Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Danh sach backup tren GG Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Xoa Google Drive remote%s\n" "${GREEN}" "${NC}"
+    printf "%s ================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -40,6 +39,6 @@ do
         5) clear; ggdrive_list_backup ;;
 		    6) clear; ggdrive_del_remote ;;
         0) clear; menu_backup ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

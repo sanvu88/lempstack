@@ -13,65 +13,93 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-echo "------------------"
-echo "Doi Password Mysql"
-echo "------------------"
-echo ""
+printf "%s==================%s\n" "${GREEN}" "${NC}"
+printf "%sDoi Password Mysql%s\n" "${GREEN}" "${NC}"
+printf "%s==================%s\n" "${GREEN}" "${NC}"
+
 
 input(){
-	read -r -p "Nhap Mysql user: " db_user
-	read -r -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
-	password=$(gen_pass "$@")
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "Nhap Mysql user [0 = Thoat]: " db_user
+        echo
+        if validate_user "${db_user}"; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    if [ "${db_user}" != "0" ]; then
+        while true
+        do
+            read -r -p "Xac nhan thay doi mat khau cho user ${db_user}? (y/n): " confirm
+            echo
+            if [[ "${confirm}" =~ ^([yY])$ || "${confirm}" =~ ^([nN])$ ]]; then
+                break
+            else
+                printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+        password=$(gen_pass "$@")
+    fi
 }
 
 validate(){
-	if [[ -z "${db_user}" ]]; then
-		ALERT=$(printf "${RED}Mysql user khong duoc de trong.${NC}\n")
-	fi
-
-	if [[ -z "${password}" ]]; then
-		ALERT=$(printf "${RED}Mat khau khong duoc de trong.${NC}\n")
-	fi
-
-	if [ "${db_user}" = "admin" ]; then
-	    ALERT=$(printf "${RED}Ban khong duoc phep thay doi mat khau tai khoan admin.${NC}\n")
-	fi
+    if [ "${db_user}" = "admin" ]; then
+        ALERT=$(printf "%s\n" "${RED}Ban khong duoc phep thay doi mat khau tai khoan admin.${NC}")
+    fi
 }
 
-change_pass(){
-	if [[ "${confirm}" =~ ^([yY])$ ]]; then
-		printf "${GREEN}Dang thay đoi mat khau...${NC}\n"
-		sleep 1
-	    mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
-	    string=$(grep -rnw "${USER_DIR}" -e "${db_user}" | cut -f1 -d':')
-	    sed -i '/db_password/d' ${string}
-	    echo "db_password=${password}" >> ${string}
-	    clear
-	    printf "${GREEN}Thay doi mat khau thanh cong.${NC}\n"
-	    printf "${RED}Mat khau moi la: ${password}${NC}\n"
+_change_pass(){
+    if [[ "${confirm}" =~ ^([yY])$ ]]; then
+        printf "%s\n" "${GREEN}Dang thay đoi mat khau...${NC}"
+        sleep 1
+        mysql -e "SET PASSWORD FOR '${db_user}'@'localhost' = PASSWORD('${password}')"
+
+        string=$(grep -rnw "${USER_DIR}" -e "${db_user}" | cut -f1 -d':')
+        if [ -n "${string}" ]; then
+            for i in ${string} ; do
+                sed -i '/db_password/d' "${i}"
+                echo "db_password=${password}" >> "${i}"
+            done
+        fi
+
+        clear
+        printf "%s\n" "${GREEN}Thay doi mat khau thanh cong.${NC}"
+        printf "%s\n" "${GREEN}Mat khau moi la:${NC} ${RED}${password}${NC}"
     else
-    	clear
-    	printf "${GREEN}Ban da huy thay doi mat khau.${NC}\n"
-	fi
+        clear
+        printf "%s\n" "${GREEN}Ban da huy thay doi mat khau.${NC}"
+    fi
 }
 
 _run(){
-    ALERT=""
-	input "$@"
-	validate
+    input "$@"
 
-	if ! if_mysql_user_exists "${db_user}";
-	then
-		ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
-	fi
+    if [ "${db_user}" == "0" ]; then
+        clear
+        printf "%s\n" "${GREEN}Ban da huy thay doi mat khau.${NC}"
+    else
+        validate
 
-	if [ -z "${ALERT}" ]; then
-		change_pass
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+        if ! if_mysql_user_exists "${db_user}";
+        then
+            ALERT=$(printf "%s\n" "${RED}Mysql User khong ton tai.${NC}")
+        fi
+
+        if [ -z "${ALERT}" ]; then
+            _change_pass
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    fi
 }
 
+ALERT=""
+db_user=""
+confirm=""
 _run "$@"
 menu_database

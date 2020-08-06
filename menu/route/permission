@@ -12,16 +12,15 @@
 
 CHOICE=1
 
-printf "${GREEN}======================${NC}\n"
-printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
-printf "${GREEN}======================${NC}\n"
-echo
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
+printf "    %sPhan quyen Chown/Chmod%s\n   " "${GREEN}" "${NC}"
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Phan quyen website${NC}\n"
-    printf "${GREEN}2. Phan quyen toan bo website${NC}\n"
-    printf "${GREEN} ----------------------------${NC}\n"
+    printf "%s1. Phan quyen website%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Phan quyen toan bo website%s\n" "${GREEN}" "${NC}"
+    printf "%s ============================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
@@ -33,6 +32,6 @@ do
         1) permission_one ;;
         2) permission_all ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

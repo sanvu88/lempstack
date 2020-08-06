@@ -15,19 +15,19 @@ menu_primary(){
 }
 
 menu_admin(){
-	. /var/hostvn/menu/route/admin_tool
+    . /var/hostvn/menu/route/admin_tool
 }
 
 menu_account(){
-	. /var/hostvn/menu/route/account
+    . /var/hostvn/menu/route/account
 }
 
 menu_backup(){
-	. /var/hostvn/menu/route/backup
+    . /var/hostvn/menu/route/backup
 }
 
 menu_cronjob(){
-	. /var/hostvn/menu/route/cronjob
+    . /var/hostvn/menu/route/cronjob
 }
 
 menu_domain(){
@@ -83,19 +83,19 @@ menu_wp(){
 }
 
 menu_lemp(){
-	. /var/hostvn/menu/route/lemp
+    . /var/hostvn/menu/route/lemp
 }
 
 menu_ftp(){
-	. /var/hostvn/menu/route/ftp
+    . /var/hostvn/menu/route/ftp
 }
 
 menu_log(){
-	. /var/hostvn/menu/route/log
+    . /var/hostvn/menu/route/log
 }
 
 menu_ggdrive(){
-	. /var/hostvn/menu/route/gg_drive
+    . /var/hostvn/menu/route/gg_drive
 }
 
 menu_security(){
@@ -103,99 +103,107 @@ menu_security(){
 }
 
 domain_list(){
-	. /var/hostvn/menu/controller/domain/list
+    . /var/hostvn/menu/controller/domain/list
 }
 
 domain_create(){
-	. /var/hostvn/menu/controller/domain/create
+    . /var/hostvn/menu/controller/domain/create
 }
 
 domain_destroy(){
-	. /var/hostvn/menu/controller/domain/destroy
+    . /var/hostvn/menu/controller/domain/destroy
 }
 
 domain_change(){
-	. /var/hostvn/menu/controller/domain/change_domain
+    . /var/hostvn/menu/controller/domain/change_domain
+}
+
+rewrite_config(){
+    . /var/hostvn/menu/controller/domain/rewrite_config
 }
 
 memcached_c(){
-	. /var/hostvn/menu/controller/cache/memcached
+    . /var/hostvn/menu/controller/cache/memcached
 }
 
 redis_c(){
-	. /var/hostvn/menu/controller/cache/redis
+    . /var/hostvn/menu/controller/cache/redis
 }
 
 clear_cache(){
-	. /var/hostvn/menu/controller/cache/clear_cache
+    . /var/hostvn/menu/controller/cache/clear_cache
 }
 
 le_create(){
-	. /var/hostvn/menu/controller/letencrypt/create
+    . /var/hostvn/menu/controller/letencrypt/create
+}
+
+le_wildcard(){
+    . /var/hostvn/menu/controller/letencrypt/wildcard
 }
 
 le_remove(){
-	. /var/hostvn/menu/controller/letencrypt/remove
+    . /var/hostvn/menu/controller/letencrypt/remove
 }
 
 le_check_expired(){
-	. /var/hostvn/menu/controller/letencrypt/check_expired
+    . /var/hostvn/menu/controller/letencrypt/check_expired
 }
 
 permission_one(){
-	. /var/hostvn/menu/controller/permission/one
+    . /var/hostvn/menu/controller/permission/one
 }
 
 permission_all(){
-	. /var/hostvn/menu/controller/permission/all
+    . /var/hostvn/menu/controller/permission/all
 }
 
 ssh_change_port(){
-	. /var/hostvn/menu/controller/ssh/change_port
+    . /var/hostvn/menu/controller/ssh/change_port
 }
 
 ssl_create(){
-	. /var/hostvn/menu/controller/ssl/create
+    . /var/hostvn/menu/controller/ssl/create
 }
 
 ssl_remove(){
-	. /var/hostvn/menu/controller/ssl/remove
+    . /var/hostvn/menu/controller/ssl/remove
 }
 
 php_setting(){
-	. /var/hostvn/menu/controller/php/php_setting
+    . /var/hostvn/menu/controller/php/php_setting
 }
 
 php_inst_ver_2(){
-	. /var/hostvn/menu/controller/php/install_php2
+    . /var/hostvn/menu/controller/php/install_php2
 }
 
 php1_change(){
-	. /var/hostvn/menu/controller/php/change_php1
+    . /var/hostvn/menu/controller/php/change_php1
 }
 
 php2_change(){
-	. /var/hostvn/menu/controller/php/change_php2
+    . /var/hostvn/menu/controller/php/change_php2
 }
 
 info_webserver(){
-	. /var/hostvn/menu/controller/vps/webserver
+    . /var/hostvn/menu/controller/vps/webserver
 }
 
 info_vps(){
-	. /var/hostvn/menu/controller/vps/vps_info
+    . /var/hostvn/menu/controller/vps/vps_info
 }
 
 info_other(){
-	. /var/hostvn/menu/controller/vps/other
+    . /var/hostvn/menu/controller/vps/other
 }
 
 wp_menu_plugins(){
-	. /var/hostvn/menu/controller/wordpress/manage_plugins
+    . /var/hostvn/menu/controller/wordpress/manage_plugins
 }
 
 wp_menu_database(){
-	. /var/hostvn/menu/controller/wordpress/manage_database
+    . /var/hostvn/menu/controller/wordpress/manage_database
 }
 
 wp_menu_backup(){
@@ -207,67 +215,71 @@ wp_menu_advanced(){
 }
 
 wp_version(){
-	. /var/hostvn/menu/controller/wordpress/version
+    . /var/hostvn/menu/controller/wordpress/version
 }
 
 wp_update(){
-	. /var/hostvn/menu/controller/wordpress/update_wp
+    . /var/hostvn/menu/controller/wordpress/update_wp
 }
 
 wp_update_plugins(){
-	. /var/hostvn/menu/controller/wordpress/update_plugins
+    . /var/hostvn/menu/controller/wordpress/update_plugins
 }
 
 wp_repair_db(){
-	. /var/hostvn/menu/controller/wordpress/repair_db
+    . /var/hostvn/menu/controller/wordpress/repair_db
 }
 
 wp_optimize_db(){
-	. /var/hostvn/menu/controller/wordpress/optimize_db
+    . /var/hostvn/menu/controller/wordpress/optimize_db
 }
 
 wp_backup(){
-	. /var/hostvn/menu/controller/wordpress/wp_backup
+    . /var/hostvn/menu/controller/wordpress/wp_backup
 }
 
 wp_change_domain(){
-	. /var/hostvn/menu/controller/wordpress/change_domain
+    . /var/hostvn/menu/controller/wordpress/change_domain
 }
 
 wp_change_pass_admin(){
-	. /var/hostvn/menu/controller/wordpress/change_pass_admin
+    . /var/hostvn/menu/controller/wordpress/change_pass_admin
 }
 
 wp_restore(){
-	. /var/hostvn/menu/controller/wordpress/restore
+    . /var/hostvn/menu/controller/wordpress/restore
 }
 
 wp_auto_install(){
-	. /var/hostvn/menu/controller/wordpress/auto_install
+    . /var/hostvn/menu/controller/wordpress/auto_install
 }
 
 wp_yoast_seo(){
-	. /var/hostvn/menu/controller/wordpress/yoast_seo
+    . /var/hostvn/menu/controller/wordpress/yoast_seo
 }
 
 wp_rank_math_seo(){
-	. /var/hostvn/menu/controller/wordpress/rank_math_seo
+    . /var/hostvn/menu/controller/wordpress/rank_math_seo
 }
 
 wp_cache_key(){
-	. /var/hostvn/menu/controller/wordpress/cache_key
+    . /var/hostvn/menu/controller/wordpress/cache_key
 }
 
 wp_debug(){
-	. /var/hostvn/menu/controller/wordpress/debug
+    . /var/hostvn/menu/controller/wordpress/debug
 }
 
 wp_maintenance(){
-	. /var/hostvn/menu/controller/wordpress/maintenance
+    . /var/hostvn/menu/controller/wordpress/maintenance
 }
 
 wp_plugin_cache(){
-	. /var/hostvn/menu/controller/wordpress/manage_plugins_cache
+    . /var/hostvn/menu/controller/wordpress/manage_plugins_cache
+}
+
+wp_optimize_img(){
+    . /var/hostvn/menu/controller/wordpress/optimize_image
 }
 
 add_plugins_cache(){
@@ -279,11 +291,11 @@ remove_plugins_cache(){
 }
 
 wp_xmlrpc(){
-	. /var/hostvn/menu/controller/wordpress/xmlrpc
+    . /var/hostvn/menu/controller/wordpress/xmlrpc
 }
 
 wp_cron(){
-	. /var/hostvn/menu/controller/wordpress/wp_cron
+    . /var/hostvn/menu/controller/wordpress/wp_cron
 }
 
 deactive_all_plugins(){
@@ -291,175 +303,175 @@ deactive_all_plugins(){
 }
 
 account_info(){
-	. /var/hostvn/menu/controller/vps/account_info
+    . /var/hostvn/menu/controller/vps/account_info
 }
 
 db_list(){
-	. /var/hostvn/menu/controller/database/list
+    . /var/hostvn/menu/controller/database/list
 }
 
 db_create(){
-	. /var/hostvn/menu/controller/database/create
+    . /var/hostvn/menu/controller/database/create
 }
 
 db_change_pass(){
-	. /var/hostvn/menu/controller/database/change_pass
+    . /var/hostvn/menu/controller/database/change_pass
 }
 
 db_destroy(){
-	. /var/hostvn/menu/controller/database/destroy_db
+    . /var/hostvn/menu/controller/database/destroy_db
 }
 
 db_backup(){
-	. /var/hostvn/menu/controller/database/backup
+    . /var/hostvn/menu/controller/database/backup
 }
 
 db_destroy_backup(){
-	. /var/hostvn/menu/controller/database/destroy_backup
+    . /var/hostvn/menu/controller/database/destroy_backup
 }
 
 db_restore(){
-	. /var/hostvn/menu/controller/database/restore
+    . /var/hostvn/menu/controller/database/restore
 }
 
 update_phpmyadmin(){
-	. /var/hostvn/menu/controller/admin/phpmyadmin
+    . /var/hostvn/menu/controller/admin/phpmyadmin
 }
 
 update_phpsysinfo(){
-	. /var/hostvn/menu/controller/admin/phpsysinfo
+    . /var/hostvn/menu/controller/admin/phpsysinfo
 }
 
 update_opcache_panel(){
-	. /var/hostvn/menu/controller/admin/opcache
+    . /var/hostvn/menu/controller/admin/opcache
 }
 
 update_memcached_panel(){
-	. /var/hostvn/menu/controller/admin/memcached
+    . /var/hostvn/menu/controller/admin/memcached
 }
 
 update_redis_panel(){
-	. /var/hostvn/menu/controller/admin/redis
+    . /var/hostvn/menu/controller/admin/redis
 }
 
 change_port_admin(){
-	. /var/hostvn/menu/controller/admin/change_port
+    . /var/hostvn/menu/controller/admin/change_port
 }
 
 update_script(){
-	. /var/hostvn/menu/controller/vps/update_script
+    . /var/hostvn/menu/controller/vps/update_script
 }
 
 c_tool(){
-	. /var/hostvn/menu/controller/account/tool
+    . /var/hostvn/menu/controller/account/tool
 }
 
 pma_info(){
-	. /var/hostvn/menu/controller/account/phpmyadmin
+    . /var/hostvn/menu/controller/account/phpmyadmin
 }
 
 ssh_info(){
-	. /var/hostvn/menu/controller/account/ssh
+    . /var/hostvn/menu/controller/account/ssh
 }
 
 user_info(){
-	. /var/hostvn/menu/controller/account/user
+    . /var/hostvn/menu/controller/account/user
 }
 
 select_backup(){
-	. /var/hostvn/menu/controller/backup/select_backup
+    . /var/hostvn/menu/controller/backup/select_backup
 }
 
 backup_source(){
-	. /var/hostvn/menu/controller/backup/backup_source
+    . /var/hostvn/menu/controller/backup/backup_source
 }
 
 backup_db(){
-	. /var/hostvn/menu/controller/backup/backup_db
+    . /var/hostvn/menu/controller/backup/backup_db
 }
 
 backup_full(){
-	. /var/hostvn/menu/controller/backup/backup_all
+    . /var/hostvn/menu/controller/backup/backup_all
 }
 
 select_restore(){
-	. /var/hostvn/menu/controller/backup/select_restore
+    . /var/hostvn/menu/controller/backup/select_restore
 }
 
 restore_source(){
-	. /var/hostvn/menu/controller/backup/restore_source
+    . /var/hostvn/menu/controller/backup/restore_source
 }
 
 restore_db(){
-	. /var/hostvn/menu/controller/backup/restore_db
+    . /var/hostvn/menu/controller/backup/restore_db
 }
 
 restore_full(){
-	. /var/hostvn/menu/controller/backup/restore_all
+    . /var/hostvn/menu/controller/backup/restore_all
 }
 
 delete_backup(){
-	. /var/hostvn/menu/controller/backup/delete_backup
+    . /var/hostvn/menu/controller/backup/delete_backup
 }
 
 ftp_create_user(){
-	. /var/hostvn/menu/controller/ftp/create
+    . /var/hostvn/menu/controller/ftp/create
 }
 
 ftp_change_pwd(){
-	. /var/hostvn/menu/controller/ftp/change_pwd
+    . /var/hostvn/menu/controller/ftp/change_pwd
 }
 
 ftp_destroy(){
-	. /var/hostvn/menu/controller/ftp/destroy
+    . /var/hostvn/menu/controller/ftp/destroy
 }
 
 ftp_port(){
-	. /var/hostvn/menu/controller/ftp/change_port
+    . /var/hostvn/menu/controller/ftp/change_port
 }
 
 ftp_install(){
-	. /var/hostvn/menu/controller/ftp/install_pure
+    . /var/hostvn/menu/controller/ftp/install_pure
 }
 
 domain_log(){
-	. /var/hostvn/menu/controller/log/domain_log
+    . /var/hostvn/menu/controller/log/domain_log
 }
 
 ggdrive_connect(){
-	. /var/hostvn/menu/controller/ggdrive/connect
+    . /var/hostvn/menu/controller/ggdrive/connect
 }
 
 ggdrive_backup(){
-	. /var/hostvn/menu/controller/ggdrive/backup
+    . /var/hostvn/menu/controller/ggdrive/backup
 }
 
 ggdrive_list_backup(){
-	. /var/hostvn/menu/controller/ggdrive/view_backup
+    . /var/hostvn/menu/controller/ggdrive/view_backup
 }
 
 ggdrive_restore(){
-	. /var/hostvn/menu/controller/ggdrive/restore
+    . /var/hostvn/menu/controller/ggdrive/restore
 }
 
 ggdrive_destroy(){
-	. /var/hostvn/menu/controller/ggdrive/delete
+    . /var/hostvn/menu/controller/ggdrive/delete
 }
 
 ggdrive_del_remote(){
-	. /var/hostvn/menu/controller/ggdrive/delete_remote
+    . /var/hostvn/menu/controller/ggdrive/delete_remote
 }
 
 cron_backup_local(){
-	. /var/hostvn/menu/controller/cron/backup_local
+    . /var/hostvn/menu/controller/cron/backup_local
 }
 
 cron_backup_gg(){
-	. /var/hostvn/menu/controller/cron/backup_gg
+    . /var/hostvn/menu/controller/cron/backup_gg
 }
 
 cron_destroy(){
-	. /var/hostvn/menu/controller/cron/destroy_cron
+    . /var/hostvn/menu/controller/cron/destroy_cron
 }
 
 change_all_parameter(){
@@ -500,4 +512,8 @@ inst_clamav(){
 
 scan_malware(){
     . /var/hostvn/menu/controller/security/scan_malware
+}
+
+csf_open_port(){
+    . /var/hostvn/menu/controller/csf/openport
 }

@@ -17,55 +17,56 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-}
-
-backup(){
-	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
-	fi
-	if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
-	    cd_dir /home/"${user}"/"${domain}"
-        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
-	fi
-	if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
-	    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
-	fi
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 _run(){
-    ALERT=""
-    select_remote
-    select_domain
-
-	if [[ -z "${ALERT}" ]]; then
-		for users in /home/*; do
-			if [[ -d "${users}" ]]; then
-				user=${users##*/}
-				for domains in /home/"${user}"/*; do
-					if [[ -d "${domains}" ]]; then
-						domain=${domains##*/}
-						for publics in /home/${user}/${domain}/public_html; do
-							if [[ -d "${publics}" ]]; then
-								public=${publics##*/}
-								set_var
-								backup
-							fi
-						done
-					fi
-				done
-			fi
-		done
-
-		rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
-		rm -rf /home/backup/*
-		clear
-		printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
-	else
-		printf "${ALERT}\n"
-	fi
+    set_var
+    cd_dir /home/"${username}"/"${domain}"
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+    fi
+    if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
+        cd_dir /home/"${username}"/"${domain}"
+        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html
+    fi
+    if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
+        cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
+        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+    fi
+    clear
+    printf "%s\n" "${GREEN}Dang tien hanh upload du lieu len Google Drive. Vui long doi den khi hoan tat.${NC}"
+    printf "%s\n" "${GREEN}Thoi gian upload phu thuoc vao dung luong cua file backup.${NC}"
+    rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
+    rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"
+    clear
+    printf "%s\n" "${GREEN}Sao luu du lieu thanh cong.${NC}"
 }
 
-_run
+if [ -f "/root/.config/rclone/rclone.conf" ]; then
+    if [[ $(ls -A "${USER_DIR}") ]]; then
+        remote=""
+        domain=""
+        select_remote
+        if [ -z "${remote}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
+        else
+            select_domain
+            if [ -z "${domain}" ]; then
+                clear
+                printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
+            else
+                _run
+            fi
+        fi
+    else
+        printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
+    fi
+else
+    clear
+    printf "%s\n" "${RED}Ban chua cau hinh ket noi voi Google Drive.${NC}"
+fi
+
 menu_ggdrive

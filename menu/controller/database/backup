@@ -16,50 +16,52 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
-	if [[ -z "${username}" ]]; then
-		username=${domain//[-._]/}
-	fi
-
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [[ -z "${db_name}" ]]; then
-		read -r -p "Nhap vao ten Database muon sao luu: " db_name
-	fi
+    if [[ -z "${db_name}" ]]; then
+        read -r -p "Nhap vao ten Database muon sao luu: " db_name
+    fi
 }
 
-backup(){
-	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
-		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
-	fi
+_backup(){
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    fi
 
-	cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-	mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
-	clear
-	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
+    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+    clear
+    printf "%s\n" "${GREEN}Sao luu du lieu thanh cong.${NC}"
 }
 
 _run(){
-    ALERT=""
-	select_domain
+    set_var
+    if if_is_wordpress "$username" "$domain"; then
+        printf "%s\n" "${RED}Website su dung WordPress. Vui long su dung Menu quan ly Wordpress de backup.${NC}"
+    else
+        if ! if_db_exists "${db_name}" ;
+        then
+            ALERT=$(printf "%s\n" "${RED}Database khong ton tai.${NC}")
+        fi
 
-	set_var
-	if_is_wordpress "$username" "$domain"
-
-	if ! if_db_exists "${db_name}" ;
-	then
-		ALERT=$(printf "${RED}Database khong ton tai.${NC}")
-	fi
-
-	if [ -z "${ALERT}" ]; then
-		make_backup_dir "$domain"
-		backup
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+        if [ -z "${ALERT}" ]; then
+            make_backup_dir "$domain"
+            _backup
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    fi
 }
 
-_run
+ALERT=""
+select_domain
+
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    _run
+fi
 menu_database

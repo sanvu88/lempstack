@@ -16,44 +16,51 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	current_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
-	csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
-	admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
-	ssh_port=$(grep -w "Port" /etc/ssh/sshd_config | cut -f2 -d" ")
+    current_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
+    csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+    admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+    ssh_port=$(grep -w "Port" /etc/ssh/sshd_config | cut -f2 -d" ")
 }
 
 input(){
-	read -r -p "Nhap vao Port moi: " ftp_port
+    clear
+    while true
+    do
+        read -r -p "Nhap vao Port moi [0 = Thoat]: " ftp_port
+        echo
+        if [[ ${ftp_port} =~ ^-?[0-9]+$ ]];
+        then
+            break
+        else
+            printf "%s\n" "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 check_port(){
-    set_var
     if [ -z "${ftp_port}" ]; then
-        ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
-    fi
-
-    if [[ ! ${ftp_port} =~ ^-?[0-9]+$ ]]; then
-        ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Ban chua nhap Port.${NC}")
     fi
 
     if [[ "${ftp_port}" == "${current_port}" ]]; then
-        ALERT=$(printf "${RED}Port ban nhap trung vui Port FTP hien tai.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Port ban nhap trung vui Port FTP hien tai.${NC}")
     fi
 
     if [[ "${ftp_port}" == "${ssh_port}" || "${ftp_port}" == "${csf_port}" || "${ftp_port}" == "${admin_port}" ]]; then
-        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}")
     fi
 
-    if [[ "${ftp_port}" == "22" || "${ftp_port}" == "11211" || "${ftp_port}" == "6379" ]]; then
-        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    check_se=$(semanage port -l | grep "${ftp_port}")
+    if [[ "${ftp_port}" == "22" || "${ftp_port}" == "11211" || "${ftp_port}" == "6379" || -n  "${check_se}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}")
     fi
 
-    if ! check_port_exists "${ftp_port}"; then
-	      ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
+    if check_port_exists "${ftp_port}"; then
+        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}")
     fi
 }
 
-change_port(){
+_change_port(){
     sed -i '/Bind/d' /etc/pure-ftpd/pure-ftpd.conf
     sed -i '/ftp_port=/d' "${FILE_INFO}"
     sed -i "s/,${current_port}/,${ftp_port}/g" /etc/csf/csf.conf
@@ -69,25 +76,33 @@ change_port(){
 }
 
 _run(){
-    ALERT=""
-    input
+    set_var
     check_port
 
     if [[ -z "${ALERT}" ]]; then
-        change_port
+        _change_port
         clear
-        printf "${GREEN}Doi port FTP thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Doi port FTP thanh cong.${NC}"
     else
       clear
-      printf "${ALERT}\n"
+      printf "%s\n" "${ALERT}"
     fi
 }
 
+ALERT=""
 pureftpd_status="$(pgrep -f pure-ftpd)"
+ftp_port=""
 
 if [ -z "${pureftpd_status}" ]; then
-    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 else
-    _run
-    menu_ftp
+    input
+    if [[ "${ftp_port}" == "0" ]]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thay doi Port.${NC}"
+    else
+        _run
+    fi
 fi
+
+menu_ftp

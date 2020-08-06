@@ -19,28 +19,29 @@ _run(){
     username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 
     if [ ! -d "/home/${username}/${domain}/public_html/wp-content/plugins" ]; then
-        ALERT=$(printf "${RED}Website khong su dung WordPress${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Website khong su dung WordPress${NC}")
     fi
 
     if [ -z "${ALERT}" ]; then
         cd_dir /home/*/"${domain}"/public_html
         wp plugin deactivate --all --allow-root
-        printf "${GREEN}Huy kich hoat toan bo plugin thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Huy kich hoat toan bo plugin thanh cong.${NC}"
         echo ""
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
 
 ALERT=""
+domain=""
 select_domain
 
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 
 wp_menu_plugins

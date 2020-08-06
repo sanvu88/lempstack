@@ -12,12 +12,9 @@
 
 # shellcheck disable=SC2034
 
-echo "------------------"
-echo "Danh sach Database"
-echo "------------------"
-echo ""
 #https://stackoverflow.com/a/50053525
 #https://dba.stackexchange.com/a/69667
+clear
 mysql -e "SHOW DATABASES WHERE \`Database\` NOT IN('information_schema', 'phpmyadmin', 'mysql', 'performance_schema')"
 echo
 CHOICE=0

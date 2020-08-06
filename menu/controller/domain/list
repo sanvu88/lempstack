@@ -14,6 +14,7 @@
 source /var/hostvn/menu/helpers/function
 
 list_domain(){
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [[ $(ls -A "${USER_DIR}") ]]; then
         clear
         echo "Danh sach Domain tren VPS:"
@@ -24,14 +25,14 @@ list_domain(){
             [[ -e "${entry}" ]] || break
             domain=${entry/.}
             domain=${domain//.conf}
-            printf "$i) ${GREEN}${domain}${NC}\n"
+            printf "%s) %s\n" "${i}" "${GREEN}${domain}${NC}"
             i=$((i+1));
         done
-        echo "-------------------------------------------------------------------------"
+        echo "----------------------------------"
         echo "Tong Domain: $((i-1))"
     else
         clear
-        printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
+        printf "%s\n" "${RED}Khong co Domain nao ton tai tren he thong.${NC}"
     fi
 }
 

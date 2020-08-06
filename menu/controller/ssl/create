@@ -11,12 +11,12 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+# shellcheck disable=SC2034
 source /var/hostvn/menu/helpers/function
 
-printf "${GREEN}-------------------${NC}\n"
-printf "${GREEN}Cai dat SSL tra phi${NC}\n"
-printf "${GREEN}-------------------${NC}\n"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "%sCai dat SSL tra phi%s\n" "${GREEN}" "${NC}"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
 echo
 
 set_variable(){
@@ -24,6 +24,7 @@ set_variable(){
     #https://stackoverflow.com/a/6284370
     username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     plugin_cache="$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
     cache="include /etc/nginx/extra/staticfiles.conf;"
     include_seo=""
@@ -32,35 +33,61 @@ set_variable(){
 }
 
 check_plugins_cache(){
+    wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+    xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
+
     if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
         cache="include /etc/nginx/wordpress/w3c.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="w3c"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpfc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wpfc"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
-        rewrite=""
         cache="include /etc/nginx/rocket-nginx/default.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wprocket"
+        if [[ "${plugins_cache}" == "wprocket" && ! -d "/etc/nginx/rocket-nginx" ]]; then
+            cd_dir /etc/nginx
+            git clone https://github.com/satellitewp/rocket-nginx.git
+            cd_dir /etc/nginx/rocket-nginx
+            cp rocket-nginx.ini.disabled rocket-nginx.ini
+            php rocket-parser.php
+        fi
+
+        if [[ "${plugins_cache}" == "wprocket" && ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
+            cd_dir /etc/nginx/rocket-nginx
+            php rocket-parser.php
+        fi
+        if [[ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]]; then
+            touch "${WORDPRESS_CRON_DIR}"/"${domain}"
+        fi
+        string=$(grep -rnw "/home/${username}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+        if [ -z "${string}" ]; then
+            sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${username}"/"${domain}"/public_html/wp-config.php
+        fi
+        cron_exists=$(crontab -l | grep -w 'wpcron.sh')
+        if [ -z "${cron_exists}" ]; then
+            crontab -l > wpcron
+            echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
+            crontab wpcron
+            rm -rf wpcron
+        fi
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/wpsc.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="wpsc"
     elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
         rewrite=""
         cache="include /etc/nginx/wordpress/enabler.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
-        cache="include /etc/nginx/wordpress/swift2.conf;"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+        plugin_cache="enabler"
+    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" ]]; then
+        plugin_cache="swift1"
     else
         plugin_cache="other"
-        wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
     fi
+
+    sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+    echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
 }
 
 backup_vhost(){
@@ -72,12 +99,15 @@ backup_vhost(){
 }
 
 remove_letencrypt(){
-	certbot-auto revoke --cert-path /etc/letsencrypt/live/"${domain}"/cert.pem
-    certbot-auto delete --cert-name "${domain}"
+    if [ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]; then
+        certbot-auto revoke --cert-path /etc/letsencrypt/live/"${domain}"/cert.pem
+        certbot-auto delete --cert-name "${domain}"
+    fi
 }
 
 create_crt(){
-    echo "De lưu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
+    echo "Dien ma CRT va ma CA vao file."
+    echo "De luu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
     echo "Dang mo trinh soan thao ...."
     sleep 3
     if [[ ! -d "/etc/nginx/ssl/${domain}" ]]; then
@@ -87,7 +117,7 @@ create_crt(){
 }
 
 create_private_key(){
-	echo "De lưu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
+    echo "De lưu file hay bam CTRL + X va nhan ENTER sau đo bam tiep CTRL + O"
     echo "Dang mo trinh soan thao ...."
     sleep 3
     if [[ ! -d "/etc/nginx/ssl/${domain}" ]]; then
@@ -96,23 +126,16 @@ create_private_key(){
     nano /etc/nginx/ssl/"${domain}"/privkey.pem
 }
 
-set_docroot(){
-    if [[ "${SOURCE}" == "laravel" ]]; then
-        root="root /home/${username}/${domain}/public_html/public;"
-    else
-        root="root /home/${username}/${domain}/public_html;"
-    fi
-}
-
 create_ssl_vhost(){
     backup_vhost
     set_rewrite
     fastcgi
-    set_doc_root
+    doc_root "${SOURCE}" "${username}" "${domain}"
 
     if [[ "${SOURCE}" == "wordpress" ]]; then
         check_plugins_cache
-        brute_force_wp
+        brute_force_wp "${username}"
+
         if [[ "${plugins_seo}" == "yoast_seo" ]]; then
             include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
             sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
@@ -137,7 +160,7 @@ server {
     #listen [::]:80;
     server_name ${domain} www.${domain};
 
-    ${root};
+    ${root}
     if (\$http_x_forwarded_proto != 'https') {
         return 301 https://\$host\$request_uri;
     }
@@ -153,14 +176,14 @@ server {
     #error_log off;
     error_log /home/${username}/${domain}/logs/error.log;
 
-    ${root};
+    ${root}
     index index.php index.html index.htm;
 
     ${rewrite}
     ${cache}
 
-    ssl_certificate         /etc/nginx/ssl/"${domain}"/fullchain.pem;
-    ssl_certificate_key     /etc/nginx/ssl/"${domain}"/privkey.pem;
+    ssl_certificate         /etc/nginx/ssl/${domain}/fullchain.pem;
+    ssl_certificate_key     /etc/nginx/ssl/${domain}/privkey.pem;
 
     location ~ \.php\$
     {
@@ -179,6 +202,7 @@ server {
     ${brute}
     ${wp_secure}
     ${include_seo}
+    ${xmlrpc}
     include /etc/nginx/extra/security.conf;
 }
 END
@@ -196,7 +220,6 @@ _run(){
         set_variable
 
         if [ "${SOURCE}" == "wordpress" ]; then
-            clear
             select_plugin_seo
         fi
 
@@ -206,21 +229,22 @@ _run(){
         create_ssl_vhost
         restart_nginx
         clear
-        printf "${GREEN}Cau hinh SSL thanh cong.${NC}\n"
+        printf "%sCau hinh SSL thanh cong.%s\n" "${GREEN}" "${NC}"
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
 
 ALERT=""
+domain=""
 select_domain
 
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 
 menu_sslpaid

@@ -17,15 +17,15 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_password=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	user_pass=$(grep -w "user_pass" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_password=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    user_pass=$(grep -w "user_pass" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 show_info(){
-	printf "1.  Domain                     : %s\n" "${domain}"
+    printf "1.  Domain                     : %s\n" "${domain}"
     printf "2.  DB_Name                    : %s\n" "${db_name}"
     printf "3.  DB_User                    : %s\n" "${db_user}"
     printf "4.  DB_Password                : %s\n" "${db_password}"
@@ -36,18 +36,19 @@ show_info(){
     printf "9.  Public_html                : %s\n" "/home/${username}/${domain}/public_html"
 }
 
-run(){
-    ALERT=""
-	select_domain
-
-	if [[ -z "${ALERT}" ]]; then
-		clear
-		set_var
-		show_info
-	else
-		printf "${ALERT}\n"
-	fi
+_run(){
+    clear
+    set_var
+    show_info
+    menu_account
 }
 
-run
-menu_account
+select_domain
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    menu_account
+else
+    _run
+fi
+

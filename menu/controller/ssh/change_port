@@ -10,57 +10,63 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-printf "${GREEN}-----------------${NC}\n"
-printf "${GREEN}Thay đoi port SSH${NC}\n"
-printf "${GREEN}-----------------${NC}\n"
+printf "%s=================%s\n" "${GREEN}" "${NC}"
+printf "%sThay đoi port SSH%s\n" "${GREEN}" "${NC}"
+printf "%s=================%s\n" "${GREEN}" "${NC}"
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	current_port=$(grep -w "Port" /etc/ssh/sshd_config | cut -f2 -d" ")
-	csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
-	admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
-	ftp_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
+    current_port=$(grep -w "Port" /etc/ssh/sshd_config | cut -f2 -d" ")
+    csf_port=$(grep -w "csf_port" "${FILE_INFO}" | cut -f2 -d'=')
+    admin_port=$(grep -w "admin_port" "${FILE_INFO}" | cut -f2 -d'=')
+    ftp_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=')
 }
 
 input(){
-	read -r -p "Nhap vao port ban muon đoi: " port_new
+    clear
+    while true
+    do
+        read -r -p "Nhap vao port ban muon đoi [0 = Thoat]: " port_new
+        echo
+        if [[ ${port_new} =~ ^-?[0-9]+$ ]]; then
+            break
+        else
+            printf "%s\n" "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 check_port(){
-	set_var
-	if [ -z "${port_new}" ]; then
-	    ALERT=$(printf "${RED}Ban chua nhap Port.${NC}\n")
-	fi
-
-	if [[ ! ${port_new} =~ ^-?[0-9]+$ ]]; then
-	    ALERT=$(printf "${RED}Port khong dung dinh dang, vui long nhap lai.${NC}\n")
-	fi
-
-	if [[ "${port_new}" == "${current_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban nhap trung vui Port SSH hien tai.${NC}\n")
-	fi
-
-	if [[ "${port_new}" == "${admin_port}" || "${port_new}" == "${csf_port}" || "${port_new}" == "${ftp_port}" ]]; then
-	    ALERT=$(printf "${RED}Port ban nhap trung voi Port Admin tool.${NC}\n")
-	fi
-
-    if [[ "${port_new}" == "11211" || "${port_new}" == "6379" ]]; then
-        ALERT=$(printf "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}\n")
+    if [ -z "${port_new}" ]; then
+        ALERT=$(printf "%s\n" "${RED}Ban chua nhap Port.${NC}")
     fi
 
-	if ! check_port_exists "${port_new}"; then
-	    ALERT=$(printf "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}\n")
-  fi
+    if [[ "${port_new}" == "${current_port}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban nhap trung vui Port SSH hien tai.${NC}")
+    fi
+
+    if [[ "${port_new}" == "${admin_port}" || "${port_new}" == "${csf_port}" || "${port_new}" == "${ftp_port}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}")
+    fi
+
+    check_se=$(semanage port -l | grep "${port_new}")
+    if [[ "${port_new}" == "11211" || "${port_new}" == "6379" || -n  "${check_se}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}")
+    fi
+
+    if check_port_exists "${port_new}"; then
+        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}")
+    fi
 }
 
-change_port(){
-	echo "Dang tien hanh thay đoi port SSH..."
-   	echo ""
-   	sleep 1
-   	if [[ ! -f "/etc/ssh/sshd_config.orig" ]]; then
-   		cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
-   	fi
+_change_port(){
+    echo "Dang tien hanh thay đoi port SSH..."
+    echo ""
+    sleep 1
+    if [[ ! -f "/etc/ssh/sshd_config.orig" ]]; then
+        cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+    fi
 
     sed -i "s/Port ${current_port}/Port ${port_new}/g" /etc/ssh/sshd_config
     sed -i "s/,${current_port}/,${port_new}/g" /etc/csf/csf.conf
@@ -68,28 +74,34 @@ change_port(){
     sed -i '/ssh_port=/d' "${FILE_INFO}"
     echo "ssh_port=${port_new}" >> "${FILE_INFO}"
     if [[ "${current_port}" != "22" ]]; then
-    	  semanage port -d -p tcp "${current_port}"
+        semanage port -d -p tcp "${current_port}"
     fi
     semanage port -a -t ssh_port_t -p tcp "${port_new}"
     systemctl reload sshd.service
     csf -x
     csf -e
     clear
-    printf "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}\n"
+    printf "%s\n" "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}"
 }
 
 _run(){
-    ALERT=""
-    input
+    set_var
     check_port
     if [ -z "${ALERT}" ]; then
-        change_port
+        _change_port
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
 
-_run
-echo ""
+ALERT=""
+port_new=""
+input
+if [[ "${port_new}" == "0" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thay doi Port.${NC}"
+else
+    _run
+fi
 menu_ssh

@@ -20,19 +20,19 @@ else
     status="Tat"
 fi
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}           Quan ly Opcache               ${NC}\n"
-printf "${GREEN}        Trang thai Opcache: %s           ${NC}\n" "${status}"
-printf "${GREEN}=========================================${NC}\n"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s           Quan ly Opcache               %s\n" "${GREEN}" "${NC}"
+printf "%s        Trang thai Opcache: %s           %s\n" "${GREEN}" "${status}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Bat/Tat Opcache${NC}\n"
-    printf "${GREEN}2. Them website vao blacklist${NC}\n"
-    printf "${GREEN}3. Xoa website khoi blacklist${NC}\n"
-    printf "${GREEN}4. Xoa cache Opcache${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Bat/Tat Opcache%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Them website vao blacklist%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Xoa website khoi blacklist%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Xoa cache Opcache%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -45,6 +45,6 @@ do
         3) clear; opcache_remove_blacklist ;;
         4) clear; clear_opcache ;;
         0) clear; menu_cache ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%sLua chon cua ban khong chinh xac. Vui long chon lai.%s\n" "${RED}" "${NC}";;
     esac
 done

@@ -49,8 +49,8 @@ check_service(){
 
     if [[  -z "${nginx}" || -z "${phpfpm}" || -z "${mariadb}" ]]; then
         ALERT=$(
-            printf "${RED}${ERROR_OCCURRED}${NC}\n"
-            printf "${RED}${CHECK_SERVICES}${NC}\n"
+            printf "%s%s%s\n" "${RED}" "${ERROR_OCCURRED}" "${NC}"
+            printf "%s%s%s\n" "${RED}" "${CHECK_SERVICES}" "${NC}"
             echo "-------------------------------------------------"
             printf "Nginx: %s\n" "${nginx_status}";
             printf "PHP-FPM: %s\n" "${phpfpm_status}";
@@ -71,8 +71,8 @@ validate_domain(){
 check_domain_exists(){
     if [[ -f "${USER_DIR}/.${1}.conf" || -f "${VHOST_DIR}/${1}.conf" ]]; then
         ALERT=$(
-                    printf "${RED}${DOMAIN_EXISTS1}${NC}\n"
-                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
+                    printf "%s\n" "${RED}${DOMAIN_EXISTS1}${NC}"
+                    printf "%s\n" "${RED}${DOMAIN_EXISTS2}${NC}"
                 )
     fi
 }
@@ -85,9 +85,14 @@ if_domain_exists(){
     fi
 }
 
+# Check name: only accept [a-z] [A-Z] [0-9] - _
 validate_user(){
-    if ! [[ ${1} =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-        ALERT=$(printf "${RED}${WRONG_USER}${NC}\n")
+    LEN=${#1}
+    TRAP=$(echo "${1}" | tr -d "_-" | tr -d "[:alnum:]")
+    if [[ -z "${TRAP}" && ${LEN} -ge 5 ]] && ! valid_number "$1"; then
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -113,8 +118,8 @@ check_database(){
     RESULT_DB=$(mysqlshow "${1}" | grep -v Wildcard | grep -o "${1}")
     if [ "$RESULT_DB" == "${1}" ]; then
         ALERT=$(
-                    printf "${RED}${DATABASE_EXISTS}${NC}\n"
-                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
+                    printf "%s\n" "${RED}${DATABASE_EXISTS}${NC}"
+                    printf "%s\n" "${RED}${DOMAIN_EXISTS2}${NC}"
                 )
     fi
 }
@@ -130,7 +135,7 @@ if_db_exists(){
 
 if_db_not_empty(){
     COUNT_TABLE=$(mysql -e "SELECT CASE COUNT(*) WHEN '0' THEN 'empty' ELSE 'not empty' END AS contents FROM information_schema.tables
-                                WHERE table_type = 'BASE TABLE' AND table_schema = '${1}}';" | grep "empty")
+                                WHERE table_type = 'BASE TABLE' AND table_schema = '${1}';" | grep "empty")
     if [ "${COUNT_TABLE}" == "empty" ]; then
         return 0
     else
@@ -142,8 +147,8 @@ check_mysql_user(){
     RESULT_MYSQL_USER="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}')")"
     if [ "${RESULT_MYSQL_USER}" = 1 ]; then
         ALERT=$(
-                    printf "${RED}${MYSQL_USER_EXISTS}${NC}\n"
-                    printf "${RED}${DOMAIN_EXISTS2}${NC}\n"
+                    printf "%s\n" "${RED}${MYSQL_USER_EXISTS}${NC}"
+                    printf "%s\n" "${RED}${DOMAIN_EXISTS2}${NC}"
                 )
     fi
 }
@@ -161,7 +166,7 @@ check_nginx_status(){
     nginx="$(pgrep -f nginx)"
 
     if [ -z "${nginx}" ]; then
-        ALERT=$(printf "${RED}${NGINX_NO_WORK}${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}${NGINX_NO_WORK}${NC}")
     fi
 }
 
@@ -170,8 +175,8 @@ check_a_record(){
 
     if [[ "${a_record}" != "${IPADDRESS}" ]]; then
         ALERT=$(
-            printf "${RED}${DNS_FAIL1}${NC}\n"
-            printf "${RED}${DNS_FAIL2}${NC}\n"
+            printf "%s\n" "${RED}${DNS_FAIL1}${NC}"
+            printf "%s\n" "${RED}${DNS_FAIL2}${NC}"
         )
     fi
 }
@@ -188,28 +193,29 @@ check_www_record(){
 
 check_le_exists(){
     if [ ! -d "/etc/letsencrypt/live/${1}" ]; then
-        ALERT=$(printf "${RED}${LE_NO_EXISTS}${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}${LE_NO_EXISTS}${NC}")
     fi
 }
 
 check_is_wordpress(){
     if [ ! -d "/home/${1}/${2}/public_html/wp-content" ]; then
-        ALERT=$(printf "${RED}${NO_WP}${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}${NO_WP}${NC}")
     fi
 }
 
 if_is_wordpress(){
     if [ -d "/home/${1}/${2}/public_html/wp-content" ]; then
-        ALERT=$(
-            printf "${RED}${IS_WP1}${NC}\n"
-            printf "${RED}${IS_WP2}${NC}\n"
-        )
+        return 0
+    else
+        return 1
     fi
 }
 
 check_backup_exists(){
-    if [ ! -d "/home/backup/${1}/${2}" ]; then
-        ALERT=$(printf "${RED}${NO_BACKUP}${NC}\n")
+    if [ -d "/home/backup/${1}/${2}" ]; then
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -233,7 +239,7 @@ check_docroot_empty(){
 
 check_wpconfig(){
     if [[ ! -f "/home/${1}/${2}/public_html/wp-config.php" ]]; then
-        ALERT=$(printf "${RED}${WPCONFIG_NOT_EXISTS}${NC}")
+        ALERT=$(printf "%s\n" "${RED}${WPCONFIG_NOT_EXISTS}${NC}")
     fi
 }
 
@@ -243,5 +249,14 @@ service_exists() {
         return 0
     else
         return 1
+    fi
+}
+
+check_port_exists(){
+    check_port=$(netstat -vatn | grep "${1}")
+    if [ -n "${check_port}" ]; then
+        return 0
+    else
+        return  1
     fi
 }

@@ -16,21 +16,44 @@ source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_php
 
-printf "${GREEN}---------------${NC}\n"
-printf "${GREEN}Them domain moi${NC}\n"
-printf "${GREEN}---------------${NC}\n"
+printf "%s===============%s\n" "${GREEN}" "${NC}"
+printf "%sThem domain moi%s\n" "${GREEN}" "${NC}"
+printf "%s===============%s\n" "${GREEN}" "${NC}"
 echo ""
 
 input(){
-    domain=""
-    read -r -p "Nhap domain (Khong có www) [ENTER]: " domain
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap domain (Khong có www) [0 = Thoat]: " domain
+        if [ "${domain}" == "0" ]; then
+            domain=0
+            break
+        else
+            domain=$(echo "${domain}" | tr '[:upper:]' '[:lower:]')
+            echo "${domain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${domain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
 }
 
 # Set variables
 set_var(){
     pureftpd_status="$(pgrep -f pure-ftpd)"
     username=${domain//[-._]/}
-    prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
+    username="${username}$(< /dev/urandom tr -dc 0-9 | head -c4)"
+    prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-3}";echo;)
     db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
     db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(gen_pass "$@")
@@ -41,9 +64,6 @@ set_var(){
 }
 
 validate(){
-    if ! validate_domain "${domain}"; then
-        ALERT=$(printf "${RED}Domain khong dung dinh dang.${NC}\n")
-    fi
     check_domain_exists "${domain}"
     check_database "${db_name}"
     check_mysql_user "${db_user}"
@@ -59,13 +79,14 @@ select_php(){
 
     echo "Lua chon phien ban PHP ban muon su dung"
     PS3='Nhap lua chon cua ban (1-2): '
-    options=("${php1}" "${php2}")
+    options=("${php1}" "${php2}" "Cancel")
     select opt in "${options[@]}"
     do
         case $opt in
             "${php1}") php_mode="1"; break;;
             "${php2}") php_mode="2"; break;;
-            *) printf "${RED}Ban nhap sai, he thong se su dung phien ban PHP mac đinh.${NC}\n"; break;;
+            "Cancel") php_mode="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
         esac
     done
 }
@@ -80,7 +101,7 @@ wp_auto_install_confirm(){
         case $opt in
             "Yes") promtp_inst_wp="y"; break;;
             "No") promtp_inst_wp="n"; break;;
-            *) printf "${RED}Ban nhap sai, huy tu đong cai đat WordPress..${NC}\n"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
         esac
     done
 }
@@ -329,36 +350,28 @@ show_info(){
     echo ""
     printf "Ban đa them domain thanh cong. Hay luu lai thong tin de su dung\n"
     echo   "---------------------------------------------------------------"
-    printf "1.  Domain                     : %s\n" "${domain}"
-    printf "2.  DB_Name                    : %s\n" "${db_name}"
-    printf "3.  DB_User                    : %s\n" "${db_user}"
-    printf "4.  DB_Password                : %s\n" "${db_pass}"
+    printf "* Domain                     : %s\n" "${domain}"
+    printf "* DB_Name                    : %s\n" "${db_name}"
+    printf "* DB_User                    : %s\n" "${db_user}"
+    printf "* DB_Password                : %s\n" "${db_pass}"
     if [ -n "${pureftpd_status}" ]; then
-    printf "5.  Username (FTP)             : %s\n" "${username}"
-    printf "6.  Password (FTP)             : %s\n" "${user_pass}"
-    printf "7.  FTP Host                   : %s\n" "${IPADDRESS}"
-    printf "8.  FTP Port                   : 21\n"
+    printf "* Username (FTP)             : %s\n" "${username}"
+    printf "* Password (FTP)             : %s\n" "${user_pass}"
+    printf "* FTP Host                   : %s\n" "${IPADDRESS}"
+    printf "* FTP Port                   : 21\n"
     fi
-    printf "9.  Public_html                : %s\n" "/home/${username}/${domain}/public_html"
+    printf "* Public_html                : %s\n" "/home/${username}/${domain}/public_html"
     if [ "${promtp_inst_wp}" = "y" ]; then
-    printf "10. User dang nhap wp-admin    : %s\n" "${admin_user}"
-    printf "11. Mat khau dang nhap wp-admin: %s\n" "${admin_pwd}"
+    printf "* User dang nhap wp-admin    : %s\n" "${admin_user}"
+    printf "* Mat khau dang nhap wp-admin: %s\n" "${admin_pwd}"
     fi
     echo   "---------------------------------------------------------------"
 }
 
 _run(){
-    ALERT=""
-    check_service
-    input
-    set_var "$@"
     validate
 
     if [ -z "${ALERT}" ]; then
-        if [[ "${php2_release}" == "yes" ]]; then
-            select_php
-        fi
-
         select_source
         create_docrot
         create_db
@@ -373,7 +386,7 @@ _run(){
             clear
             wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
             xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
-            brute_force_wp
+            brute_force_wp "${username}"
             wp_auto_install_confirm
             wp_auto_install "$@"
         fi
@@ -386,10 +399,35 @@ _run(){
         show_info
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
 
-_run "$@"
-echo ""
+ALERT=""
+domain=""
+
+check_service
+
+if [ -z "${ALERT}" ]; then
+    input
+    #domain="${domain}" ; echo ${domain//" "/""}
+    if [ "${domain}" == "0" ]; then
+        clear
+    else
+        set_var "$@"
+        if [[ "${php2_release}" == "yes" ]]; then
+            select_php
+        fi
+        if [ "${php_mode}" == "0" ]; then
+            clear
+        else
+            _run "$@"
+            echo ""
+        fi
+    fi
+else
+    clear
+    printf "%s\n" "${ALERT}"
+fi
+
 menu_domain

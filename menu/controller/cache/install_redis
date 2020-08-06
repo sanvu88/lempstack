@@ -13,7 +13,16 @@
 source /var/hostvn/menu/helpers/variable_php
 
 confirm(){
-    read -r -p "Ban muon cai dat Redis ? (y/n) " prompt_redis
+    while true
+    do
+        read -r -p "Ban muon cai dat Redis ? (y/n) " prompt_redis
+        echo
+        if [[ "${prompt_redis}" =~ ^([yY])$ || "${prompt_redis}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 install(){
@@ -41,18 +50,20 @@ _run(){
         install
         inst_redisdadmin
         clear
-        printf "Cai dat Redis thanh cong.\n"
+        printf "%s\n" "${GREEN}Cai dat Redis thanh cong.${NC}"
     else
-        printf "${RED}Redis da duoc cai dat truoc do roi.${NC}\n"
+        clear
+        printf "%s\n" "${RED}Redis da duoc cai dat truoc do roi.${NC}"
     fi
 }
 
+prompt_redis=""
 confirm
 if [[ "${prompt_redis}" =~ ^([yY])$ ]];then
     _run
 else
     clear
-    printf "${GREEN}Ban da huy cai dat Redis.${NC}\n"
+    printf "%sBan da huy cai dat Redis.%s\n" "${GREEN}" "${NC}"
 fi
 
 menu_cache

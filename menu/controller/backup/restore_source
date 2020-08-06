@@ -10,62 +10,93 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-# shellcheck disable=SC2154
-# shellcheck disable=SC1091
+#shellcheck disable=SC2154
+#shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-confirm_restore(){
-	read -r -p "Ban muon khoi phuc du lieu ? (y/n) " promt_restore
+confirm_restore_source(){
+    while true
+    do
+        read -r -p "Ban muon khoi phuc du lieu ? (y/n) " promt_restore_source
+        echo
+        if [[ "${promt_restore_source}" =~ ^([yY])$ || "${promt_restore_source}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-restore(){
-	if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-		mkdir -p /home/"${username}"/"${domain}"/public_html
-	fi
-	cd_dir /home/backup/"${date}"/"${domain}"
-	rm -rf /home/"${username}"/"${domain}"/public_html/*
-	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
-	chown -R "${username}":"${username}" /home/"${username}"
+_restore(){
+    if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
+        mkdir -p /home/"${username}"/"${domain}"/public_html
+    fi
+    cd_dir /home/backup/"${date}"/"${domain}"
+    rm -rf /home/"${username}"/"${domain}"/public_html/*
+    tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
+    chown -R "${username}":"${username}" /home/"${username}"
 }
 
 _run(){
-	confirm_restore
-	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
-	    ALERT=""
-		list_backup
-		select_domain
-		set_var
-		if_is_wordpress "${username}" "${domain}"
-		check_backup_exists
+    set_var
 
-		if ! check_backup_empty "${date}" "${domain}";
-		then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+    if if_is_wordpress "${username}" "${domain}"; then
+        clear
+        printf "%s\n" "${RED}Website nay su dung WordPress, vui long dung Menu 7 - 6..${NC}"
+        return 1
+    fi
 
-		if [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+    if check_backup_exists "${date}" "${domain}";then
+        if ! check_backup_empty "${date}" "${domain}" || [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ];
+        then
+            ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
+        fi
+    else
+        ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
+    fi
 
-		if [[ -z "${ALERT}" ]]; then
-			restore
-			clear
-			printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
-		else
-			clear
-			printf "${ALERT}\n"
-		fi
-	else
-		clear
-		printf "${RED}Ban da chon huy khoi phuc du lieu.${NC}\n"
-	fi
+    if [[ -z "${ALERT}" ]]; then
+        _restore
+        clear
+        printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 }
 
-_run
-menu_backup
+if [[ $(ls -A "${USER_DIR}") ]]; then
+    ALERT=""
+    promt_restore_source=""
+    date=""
+    domain=""
+
+    confirm_restore_source
+    if [[ "${promt_restore_source}" =~ ^([yY])$ ]]; then
+        list_backup
+        if [ -z "${date}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+        else
+            if [ -z "${domain}" ]; then
+                clear
+                printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+            else
+                _run
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+    fi
+else
+    printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
+fi
+
+select_restore

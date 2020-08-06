@@ -11,77 +11,48 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
     username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-    if [[ -z "${username}" ]]; then
-        username=${domain//[-._]/}
-    fi
-
-    php_mode=$(grep -w "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
 }
 
 input(){
-	  read -r -p "Nhap vao ten mien moi: " newdomain
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap domain moi (Khong có www) [0 = Thoat]: " newdomain
+        if [ "${newdomain}" == "0" ]; then
+            break
+        else
+            newdomain=$(echo "${newdomain}" | tr '[:upper:]' '[:lower:]')
+            echo "${newdomain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${newdomain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
 }
 
 change_path(){
-	  mv /home/"${username}"/"${domain}" /home/"${username}"/"${newdomain}"
-}
-
-backup_vhost(){
-    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
-        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
-    fi
-
-    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    mv /home/"${username}"/"${domain}" /home/"${username}"/"${newdomain}"
 }
 
 change_vhost(){
-	  backup_vhost
-	  check_plugins_cache
-	  fastcgi
-
-	  cat >> "${VHOST_DIR}/${newdomain}.conf" << END
-upstream php-${username} {
-    server ${fastcgi_pass}
-}
-
-server {
-    listen 80;
-    server_name ${newdomain} www.${newdomain};
-
-    #access_log off;
-    #access_log /home/${username}/${newdomain}/logs/access.log;
-    #error_log off;
-    error_log /home/${username}/${newdomain}/logs/error.log;
-    root /home/${username}/${newdomain}/public_html/public;
-    index index.php index.html index.htm;
-
-    ${rewrite}
-    ${cache}
-
-    location ~ \.php\$ {
-        try_files \$uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-        fastcgi_index index.php;
-        include /etc/nginx/fastcgi_params;
-        include /etc/nginx/extra/nginx_limits.conf;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        if (-f \$request_filename)
-        {
-            fastcgi_pass php-${username};
-        }
-    }
-
-    include /etc/nginx/extra/security.conf;
-}
-END
+    mv /etc/nginx/conf.d/"${domain}".conf /etc/nginx/conf.d/"${newdomain}".conf
+    sed -i "s/${domain}/${newdomain}/g" /etc/nginx/conf.d/"${newdomain}".conf
 }
 
 change_phpconfig(){
@@ -102,33 +73,36 @@ change_user_config(){
 }
 
 _run(){
-    ALERT=""
-    set_var
-    if_is_wordpress "${username}" "${domain}"
-    input
-    validate_domain "${newdomain}"
-    check_domain_exists "${domain}"
-
-    if [ -z "${ALERT}" ]; then
-        select_source
-        set_rewrite
+    if ! if_is_wordpress "${username}" "${domain}"; then
         change_path
+        change_user_config
         change_vhost
         change_phpconfig
-        change_user_config
         clear
-        printf "${GREEN}Doi domain thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Doi domain thanh cong.${NC}"
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${RED}Website dang su dung WordPress. Vui long su dung chuc nang doi ten mien trong menu WordPress.${NC}"
     fi
 }
 
+domain=""
+newdomain=""
+
 select_domain
-if [ -z "${ALERT}" ]; then
-    _run
+
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 else
-    printf "${ALERT}\n"
+    set_var
+    input
+    if [ "${newdomain}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    else
+        _run
+    fi
 fi
 
 menu_domain

@@ -11,55 +11,69 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+# shellcheck disable=SC2034
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [ -z "${username}" ]; then
-		read -r -p "Nhap vao FTP username: " username
-	fi
-
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [ -z "${db_name}" ]; then
-		read -r -p "Nhap vao database name: " db_name
-	fi
-
-	db_pass=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-	if [[ -z "${db_pass}" ]]; then
-		read -r -p "Nhap vao mat khau Mysql user: " db_pass
-	fi
-
-	db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-	if [[ -z "${db_user}" ]]; then
-		read -r -p "Nhap vao Mysql user: " db_user
-	fi
+    promtp_install="n"
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_pass=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 }
 
 docroot_empty(){
-	if check_docroot_empty "$username" "$domain";
-	then
-		read -r -p "Thu muc public_html dang co du lieu. Ban co muon xoa du lieu khong ? (y/n) " promtp_install
-	else
-		read -r -p "Ban muon cai dat WordPress tu dong ? (y/n) " promtp_install
-	fi
+    if check_docroot_empty "$username" "$domain";
+    then
+        while true
+        do
+            read -r -p "Thu muc public_html dang co du lieu. Ban co muon xoa du lieu khong ? (y/n) " promtp_install
+            echo
+            if [[ "${promtp_install}" =~ ^([yY])$  || "${promtp_install}" =~ ^([nN])$ ]];
+            then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    else
+        while true
+        do
+            read -r -p "Ban muon cai dat WordPress tu dong ? (y/n) " promtp_install
+            echo
+            if [[ "${promtp_install}" =~ ^([yY])$ || "${promtp_install}" =~ ^([nN])$ ]];
+            then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    fi
 }
 
 database_empty(){
-	if if_db_not_empty "${db_name}";
-	then
-		promtp_install="y"
-	else
-		read -r -p "Database dang co du lieu. Ban co muon xoa du lieu hien co khong ? (y/n) " promtp_install
-	fi
+    if if_db_not_empty "${db_name}"; then
+        promtp_install="y"
+    else
+        while true
+        do
+            read -r -p "Database dang co du lieu. Ban co muon xoa du lieu hien co khong ? (y/n) " promtp_install
+            echo
+            if [[ "${promtp_install}" =~ ^([yY])$ || "${promtp_install}" =~ ^([nN])$ ]];
+            then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    fi
 }
 
 auto_install(){
-	cd_dir "/home/${username}/${domain}/public_html"
+    cd_dir "/home/${username}/${domain}/public_html"
     # Download WordPress
     wp core download --locale=en_US --allow-root
     rm -rf license.txt readme.html
@@ -89,18 +103,18 @@ END
 }
 
 update_user_info(){
-	sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
-	sed -i '/username=/d' "${USER_DIR}"/."${domain}".conf
-	sed -i '/db_name=/d' "${USER_DIR}"/."${domain}".conf
-	{
-		echo "plugin_cache=${plugin_cache}"
-		echo "username=${username}"
-		echo "db_name=${db_name}"
-	} >>  "${USER_DIR}"/."${domain}".conf
+    sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
+    sed -i '/username=/d' "${USER_DIR}"/."${domain}".conf
+    sed -i '/db_name=/d' "${USER_DIR}"/."${domain}".conf
+    {
+        echo "plugin_cache=${plugin_cache}"
+        echo "username=${username}"
+        echo "db_name=${db_name}"
+    } >>  "${USER_DIR}"/."${domain}".conf
 }
 
 create_vhost(){
-	  if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
+    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
         rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
     fi
 
@@ -123,7 +137,7 @@ server {
     root /home/${username}/${domain}/public_html;
     index index.php index.html index.htm;
 
-    ${rewrite}
+    include /etc/nginx/rewrite/wordpress.conf;
 
     location ~ \.php\$ {
         try_files \$uri =404;
@@ -157,55 +171,57 @@ show_info(){
     echo ""
     printf "1. User dang nhap wp-admin    : %s\n" "${admin_user}"
     printf "2. Mat khau dang nhap wp-admin: %s\n" "${admin_pwd}"
-    echo   "---------------------------------------------------------------"
+    echo   "------------------------------------"
 }
 
 _run(){
-	set_var
-	docroot_empty
-	database_empty
+    set_var
+    docroot_empty
+    if [[ "${promtp_install}" =~ ^([yY])$ ]]; then
+        database_empty
+    fi
 
-	if [[ "${promtp_install}" =~ ^([yY])$ ]]; then
-		if ! if_mysql_user_exists "${db_user}";
-		then
-			ALERT=$(printf "${RED}Mysql User khong ton tai.${NC}")
-		fi
+    if [[ "${promtp_install}" =~ ^([yY])$ ]]; then
+        if ! if_mysql_user_exists "${db_user}"; then
+            ALERT=$(printf "%s\n" "${RED}Mysql User khong ton tai.${NC}")
+        fi
 
-		if ! if_db_exists "${db_name}";
-		then
-			ALERT=$(printf "${RED}Database khong ton tai.${NC}")
-		fi
+        if ! if_db_exists "${db_name}"; then
+            ALERT=$(printf "%s\n" "${RED}Database khong ton tai.${NC}")
+        fi
 
-		if [ -z "${ALERT}" ]; then
-			wp_auto_install_info
-			rm -rf /home/"$username"/"$domain"/public_html/*
-			empty_db
-			auto_install "$@"
-			clear
+        if [ -z "${ALERT}" ]; then
+            wp_auto_install_info
+            rm -rf /home/"$username"/"$domain"/public_html/*
+            empty_db
+            auto_install "$@"
+            clear
 
             create_vhost
             restart_service
             clear
-            printf "${GREEN}Cai dat WordPress thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Cai dat WordPress thanh cong.${NC}"
             show_info
-		else
-			clear
-			printf "${ALERT}\n"
-		fi
-	else
-		clear
-		printf "${RED}Ban da huy cai dat tu dong WordPress.${NC}"
-	fi
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da huy cai dat tu dong WordPress.${NC}"
+    fi
 }
 
 ALERT=""
+domain=""
+promtp_install=""
 select_domain
 
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run "$@"
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 
 menu_wp

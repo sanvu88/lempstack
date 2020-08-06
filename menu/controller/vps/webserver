@@ -11,64 +11,64 @@
 ######################################################################
 
 set_var(){
-	nginx_status=$(pgrep -f nginx)
-	php_status=$(pgrep -f php-fpm)
-	mysql_status=$(pgrep -f mariadb)
-	ssh_status=$(pgrep -f ssh)
-	lfd_status=$(pgrep -f lfd)
-	pure_status=$(pgrep -f pure-ftpd)
-	memcached_status=$(pgrep -f memcached)
-	redis_status=$(pgrep -f redis)
+    nginx_status=$(pgrep -f nginx)
+    php_status=$(pgrep -f php-fpm)
+    mysql_status=$(pgrep -f mariadb)
+    ssh_status=$(pgrep -f ssh)
+    lfd_status=$(pgrep -f lfd)
+    pure_status=$(pgrep -f pure-ftpd)
+    memcached_status=$(pgrep -f memcached)
+    redis_status=$(pgrep -f redis)
 }
 
 set_color(){
-	if [[ -z "${nginx_status}" ]]; then
-		nginx_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		nginx_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[ -z "${nginx_status}" ]]; then
+        nginx_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        nginx_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[ -z "${php_status}" ]]; then
-		php_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		php_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[ -z "${php_status}" ]]; then
+        php_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        php_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[  -z "${mysql_status}" ]]; then
-		mysql_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		mysql_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[  -z "${mysql_status}" ]]; then
+        mysql_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        mysql_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[  -z "${ssh_status}" ]]; then
-		ssh_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		ssh_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[  -z "${ssh_status}" ]]; then
+        ssh_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        ssh_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[  -z "${lfd_status}" ]]; then
-		lfd_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		lfd_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[  -z "${lfd_status}" ]]; then
+        lfd_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        lfd_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[  -z "${pure_status}" ]]; then
-		pure_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		pure_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[  -z "${pure_status}" ]]; then
+        pure_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        pure_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[ -z "${memcached_status}" ]]; then
-		memcached_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		memcached_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[ -z "${memcached_status}" ]]; then
+        memcached_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        memcached_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 
-	if [[ -z "${redis_status}" ]]; then
-		redis_status=$(printf "${RED}Khong hoat dong${NC}")
-	else
-		redis_status=$(printf "${GREEN}Hoat dong${NC}")
-	fi
+    if [[ -z "${redis_status}" ]]; then
+        redis_status=$(printf "%s\n" "${RED}Khong hoat dong${NC}")
+    else
+        redis_status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+    fi
 }
 
 show_info(){
@@ -83,9 +83,9 @@ show_info(){
 }
 
 _run(){
-	set_var
-	set_color
-	show_info
+    set_var
+    set_color
+    show_info
 }
 
 _run

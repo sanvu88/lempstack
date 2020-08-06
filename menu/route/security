@@ -12,17 +12,17 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "    ${GREEN}Bao mat VPS ${NC}   \n"
-printf "${GREEN}===================${NC}\n"
-echo ""
+printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "    %sBao mat VPS %s   \n" "${GREEN}" "${NC}"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Cai dat Clamav${NC}\n"
-    printf "${GREEN}2. Scan Malware${NC}\n"
-    printf "${GREEN}3. Cau hinh Naxsi Firewall${NC}\n"
-    printf "${GREEN} ------------------${NC}\n"
+    printf "%s1. Cai dat Clamav%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Scan Malware%s\n" "${GREEN}" "${NC}"
+    #printf "%s3. Cau hinh Naxsi Firewall%s\n" "${GREEN}" "${NC}"
+#    printf "%s4. Kiem tra ddos%s\n" "${GREEN}" "${NC}"
+    printf "%s ==================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -32,8 +32,8 @@ do
     case ${CHOICE} in
         1) clear; inst_clamav;;
         2) clear; scan_malware;;
-        3) clear; printf "${RED}Se update sau${NC}\n"; menu_security;;
+        #3) clear; printf "%sSe update sau%s\n" "${RED}" "${NC}"; menu_security;;
         0) clear; menu_vps;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

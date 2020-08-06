@@ -14,17 +14,23 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
-redis_status="$(pgrep -f redis)"
 memcached_status="$(pgrep -f memcached)"
 
-printf "${GREEN}-----------------${NC}\n"
-printf "Quan ly Memcached${NC}\n"
-printf "${GREEN}-----------------${NC}\n"
+if [ -n "${memcached_status}" ]; then
+    status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+else
+    status=$(printf "%s\n" "${RED}Khong Hoat dong${NC}")
+fi
+
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
+printf "%sQuan ly Memcached%s\n" "${GREEN}" "${NC}"
+printf "%s\n" "${GREEN}Trang thai:${NC} ${status}"
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Mo Memcached${NC}\n"
-    printf "${GREEN}2. Tat Memcached${NC}\n"
+    printf "%s1. Mo Memcached%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Tat Memcached%s\n" "${GREEN}" "${NC}"
     echo " ----------------------------------------------- "
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
@@ -37,47 +43,44 @@ do
         1)
             if [ ! -f "/etc/sysconfig/memcached" ]; then
                 clear
-                printf "${RED}Memcached chua duoc cai dat.${NC}\n"
+                printf "%sMemcached chua duoc cai dat.%s\n" "${RED}" "${NC}"
             else
-                if [[ -n "${redis_status}" && -z "${memcached_status}" ]]; then
-                    printf "${RED}Ban dang su dung Redis Cache.${NC}\n"
-                elif [[ -n "${redis_status}" && -n "${memcached_status}" ]]; then
-                    printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
-                    printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
-                elif [[ -z "${redis_status}" && -n "${memcached_status}" ]]; then
-                    printf "${RED}Memcached hien dang hoat dong.${NC}\n"
-                else
-                    printf "${GREEN}Dang tien hanh mo Memcached...${NC}\n"
-                    sleep 2
-                    systemctl start memcached
-                    systemctl enable memcached
+                printf "%sDang tien hanh mo Memcached...%s\n" "${GREEN}" "${NC}"
+                sleep 2
+                systemctl start memcached
+                systemctl enable memcached
+                cron_exists=$(crontab -l | grep -w 'memcached')
+                if [ -z "${cron_exists}" ]; then
                     crontab -l > clear_memcached
                     echo "23 */37 * * * service memcached restart >/dev/null 2>&1" >> clear_memcached
                     crontab clear_memcached
                     rm -rf clear_memcached
-                    clear
-                    printf "${GREEN}Da bat Memcached.${NC}\n"
                 fi
+                clear
+                printf "%sDa bat Memcached.%s\n" "${GREEN}" "${NC}"
             fi
 
             menu_cache
             ;;
         2)
             if [ -n "${memcached_status}" ]; then
-                printf "${GREEN}Dang tien hanh tat Memcached...${NC}\n"
+                printf "%sDang tien hanh tat Memcached...%s\n" "${GREEN}" "${NC}"
                 sleep 1
                 systemctl stop memcached
                 systemctl disable memcached
-                crontab -u root -l | grep -v "memcached" | crontab -u root -
+                cron_exists=$(crontab -l | grep -w 'memcached')
+                if [ -n "${cron_exists}" ]; then
+                    crontab -u root -l | grep -v "memcached" | crontab -u root -
+                fi
                 clear
-                printf "${GREEN}Da tat Memcached.${NC}\n"
+                printf "%sDa tat Memcached.%s\n" "${GREEN}" "${NC}"
             else
-                printf "${RED}Memcached hien khong hoat dong.${NC}\n"
+                printf "%sMemcached hien khong hoat dong.%s\n" "${RED}" "${NC}"
             fi
 
             menu_cache
             ;;
-        0) menu_cache ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        0) clear; menu_cache ;;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

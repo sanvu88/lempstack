@@ -11,117 +11,15 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+# shellcheck disable=SC2034
 source /var/hostvn/menu/helpers/function
 
-printf "${GREEN}-----------------${NC}\n"
-printf "${GREEN}Go bo SSL tra phi${NC}\n"
-printf "${GREEN}-----------------${NC}\n"
+printf "%s=================%s\n" "${GREEN}" "${NC}"
+printf "%sGo bo SSL tra phi%s\n" "${GREEN}" "${NC}"
+printf "%s=================%s\n" "${GREEN}" "${NC}"
 echo
 
-set_variable(){
-    #https://www.howtoforge.com/tutorial/linux-grep-command/
-    #https://stackoverflow.com/a/6284370
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-    plugin_cache="$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
-    rewrite="include /etc/nginx/rewrite/${SOURCE}.conf;"
-    cache="include /etc/nginx/extra/staticfiles.conf;"
-    include_seo=""
-    wp_secure=""
-    xmlrpc=""
-    brute=""
-}
-
-check_plugins_cache(){
-    wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-    xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
-
-    if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-        plugin_cache="w3c"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-        plugin_cache="wpfc"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
-        cache="include /etc/nginx/rocket-nginx/default.conf;"
-        plugin_cache="wprocket"
-        if [[ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]]; then
-            touch "${WORDPRESS_CRON_DIR}"/"${domain}"
-            string=$(grep -rnw "/home/${username}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
-            if [ -z "${string}" ]; then
-                sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${username}"/"${domain}"/public_html/wp-config.php
-                cron_exists=$(crontab -l | grep -w 'wpcron.sh')
-                if [ -z "${cron_exists}" ]; then
-                    crontab -l > wpcron
-                    echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
-                    crontab wpcron
-                    rm -rf wpcron
-                fi
-            fi
-        fi
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-        plugin_cache="wpsc"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-        plugin_cache="enabler"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-        plugin_cache="swift1"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
-        cache="include /etc/nginx/wordpress/swift2.conf;"
-        plugin_cache="swift2"
-    else
-        plugin_cache="other"
-    fi
-}
-
-backup_vhost(){
-    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
-        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
-    fi
-
-    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
-}
-
-set_docroot(){
-    if [[ "${SOURCE}" == "laravel" ]]; then
-        root="root /home/${username}/${domain}/public_html/public;"
-    else
-        root="root /home/${username}/${domain}/public_html;"
-    fi
-}
-
-create_vhost(){
-    backup_vhost
-    set_rewrite
-    fastcgi
-    set_docroot
-
-    if [ "${SOURCE}" == "wordpress" ]; then
-        check_plugins_cache
-        brute_force_wp
-
-        sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
-        echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
-
-        if [[ "${plugins_seo}" == "yoast_seo" ]]; then
-            include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-            echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${domain}".conf
-        elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
-            include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
-            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-            echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
-        else
-            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${domain}".conf
-            echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
-        fi
-    fi
-
+edit_vhost(){
     cat >> "${VHOST_DIR}/${domain}.conf" << END
 upstream php-${username} {
     server ${fastcgi_pass}
@@ -139,7 +37,6 @@ server {
     index index.php index.html index.htm;
 
     ${rewrite}
-    ${cache}
 
     location ~ \.php\$ {
         try_files \$uri =404;
@@ -153,49 +50,60 @@ server {
             fastcgi_pass php-${username};
         }
     }
-
     ${brute}
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
     ${wp_secure}
     ${xmlrpc}
-    ${include_seo}
-    include /etc/nginx/extra/security.conf;
 }
 END
-}
-
-restart_nginx(){
-    systemctl restart nginx.service
 }
 
 _run(){
     check_nginx_status
 
     if [ -z "${ALERT}" ]; then
+        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
         select_source
-        set_variable
 
-        if [ "${SOURCE}" == "wordpress" ]; then
-            select_plugin_seo
+        root="root /home/${username}/${domain}/public_html;"
+        if [ "${SOURCE}" == "laravel" ]; then
+            root="root /home/${username}/${domain}/public_html/public;"
         fi
 
-        create_vhost
-        restart_nginx
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+            xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
+            brute_force_wp "${username}"
+        fi
+        rm -rf /etc/nginx/conf.d/"${domain}".conf
+
+        set_rewrite
+        fastcgi
+        edit_vhost
+        systemctl restart nginx.service
         clear
-        printf "${GREEN}Go bo SSL thanh cong.${NC}\n"
+        printf "%sGo bo SSL thanh cong.%s\n" "${GREEN}" "${NC}"
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+        fi
+        echo ""
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
 
 ALERT=""
+domain=""
 select_domain
 
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 
 menu_sslpaid

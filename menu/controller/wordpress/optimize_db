@@ -17,62 +17,69 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 backup_confirm(){
-	read -r -p "Ban co muon backup du lieu truoc khi toi uu khong? (y/n) " promt_backup
+    while true
+    do
+        read -r -p "Ban co muon backup du lieu truoc khi toi uu khong? (y/n) " promt_backup
+        echo
+        if [[ "${promt_backup}" =~ ^([yY])$ || "${promt_backup}" =~ ^([nN])$ ]];
+        then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-backup(){
-	cd_dir /home/"${username}"/"${domain}"/public_html
-	if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
-		rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
-	fi
-	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+_backup(){
+    cd_dir /home/"${username}"/"${domain}"/public_html
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    fi
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
         mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-	wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 }
 
-optimize_db(){
-	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp db optimize --allow-root
+_optimize_db(){
+    cd_dir /home/"${username}"/"${domain}"/public_html
+    wp db optimize --allow-root
 }
 
 _run(){
-	set_var
-	check_is_wordpress "${username}" "${domain}"
+    set_var
+    check_is_wordpress "${username}" "${domain}"
 
-	backup_confirm
-	if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
-        ALERT=$(
-            printf "${RED}Ban da chon khong backup. Dieu nay khong an toan.${NC}\n"
-            printf "${RED}Dieu nay khong an toan.\n He thong se huy toi uu Database.${NC}\n"
-        )
+    if [ -z "${ALERT}" ]; then
+        backup_confirm
+        if [[ "${promt_backup}" =~ ^([yY])$ ]];then
+            make_backup_dir "${domain}"
+            _backup
+        fi
+        _optimize_db
+        restart_service
+        clear
+        printf "%s\n" "${GREEN}Toi uu database thanh cong.${NC}"
+    else
+        clear
+        printf "%s\n" "${ALERT}"
     fi
-
-	if [ -z "${ALERT}" ]; then
-		make_backup_dir "${domain}"
-		backup
-		optimize_db
-		restart_service
-		clear
-	    printf "${GREEN}Toi uu database thanh cong.${NC}\n"
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
 }
 
 ALERT=""
+domain=""
+promt_backup=""
 select_domain
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
-echo ""
+
 wp_menu_database

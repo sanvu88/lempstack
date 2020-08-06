@@ -12,23 +12,22 @@
 
 CHOICE=1
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}            Quan ly WordPress            ${NC}\n"
-printf "${GREEN}=========================================${NC}\n"
-echo
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s            Quan ly WordPress            %s\n" "${GREEN}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Cai dat WordPress tu dong${NC}\n"
-    printf "${GREEN}2. Kiem tra phien ban WordPress${NC}\n"
-    printf "${GREEN}3. Cap nhat phien ban WordPress${NC}\n"
-    printf "${GREEN}4. Quan ly Plugins${NC}\n"
-    printf "${GREEN}5. Quan ly Database${NC}\n"
-    printf "${GREEN}6. Khoi phuc/Sao luu du lieu${NC}\n"
-    printf "${GREEN}7. Chuc nang nang cao${NC}\n"
-    printf "${GREEN}8. Thay doi ten mien${NC}\n"
-    printf "${GREEN}9. Doi mat khau admin (wp-admin)${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Cai dat WordPress tu dong%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Kiem tra phien ban WordPress%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cap nhat phien ban WordPress%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Quan ly Plugins%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Quan ly Database%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Khoi phuc/Sao luu du lieu%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Chuc nang nang cao%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Thay doi ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Doi mat khau admin (wp-admin)%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -46,6 +45,6 @@ do
         8) clear; wp_change_domain ;;
         9) clear; wp_change_pass_admin ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

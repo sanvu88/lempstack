@@ -14,7 +14,16 @@ source /var/hostvn/menu/helpers/variable_php
 source /var/hostvn/menu/helpers/function
 
 confirm(){
-    read -r -p "Ban muon cai dat Memcached ? (y/n) " prompt_memcached
+    while true
+    do
+        read -r -p "Ban muon cai dat Memcached ? (y/n) " prompt_memcached
+        echo
+        if [[ "${prompt_memcached}" =~ ^([yY])$ || "${prompt_memcached}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 set_var(){
@@ -56,18 +65,19 @@ _run(){
         install
         inst_phpmemcachedadmin
         clear
-        printf "${GREEN}Cai dat Memcached thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Cai dat Memcached thanh cong.${NC}"
     else
-        printf "${RED}Memcached da duoc cai dat truoc do roi.${NC}\n"
+        printf "%s\n" "${RED}Memcached da duoc cai dat truoc do roi.${NC}"
     fi
 }
 
+prompt_memcached=""
 confirm
 if [[ "${prompt_memcached}" =~ ^([yY])$ ]];then
     _run
 else
     clear
-    printf "${GREEN}Ban da huy cai dat Memcached.${NC}\n"
+    printf "%s\n" "${GREEN}Ban da huy cai dat Memcached.${NC}"
 fi
 
 menu_cache

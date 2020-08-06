@@ -12,16 +12,16 @@
 
 CHOICE=1
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}             Quan ly Plugins             ${NC}\n"
-printf "${GREEN}=========================================${NC}\n"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s             Quan ly Plugins             %s\n" "${GREEN}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Cap nhat plugins (Tru plugins tra phi)${NC}\n"
-    printf "${GREEN}2. Huy kich hoat toan bo plugins${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Cap nhat plugins (Tru plugins tra phi)%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Huy kich hoat toan bo plugins%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -32,6 +32,6 @@ do
         1) clear; wp_update_plugins ;;
         2) clear; deactive_all_plugins ;;
         0) clear; menu_wp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

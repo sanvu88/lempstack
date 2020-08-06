@@ -12,16 +12,15 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "${GREEN}     Quan ly SSL   ${NC}\n"
-printf "${GREEN}===================${NC}\n"
-echo ""
+printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "%s     Quan ly SSL   %s\n" "${GREEN}" "${NC}"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. SSL Let's Encrypt${NC}\n"
-    printf "${GREEN}2. SSL tra phi${NC}\n"
-    printf "${GREEN} ------------------${NC}\n"
+    printf "%s1. SSL Let's Encrypt%s\n" "${GREEN}" "${NC}"
+    printf "%s2. SSL tra phi%s\n" "${GREEN}" "${NC}"
+    printf "%s ==================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -32,6 +31,6 @@ do
         1) clear; menu_letencrypt;;
         2) clear; menu_sslpaid;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

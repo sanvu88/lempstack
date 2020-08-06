@@ -14,14 +14,14 @@
 source /var/hostvn/menu/helpers/function
 
 update(){
-	cd_dir "${DEFAULT_DIR_TOOL}"
-	rm -rf ./memcached
-	git clone https://github.com/elijaa/phpmemcachedadmin.git
+    cd_dir "${DEFAULT_DIR_TOOL}"
+    rm -rf ./memcached
+    git clone https://github.com/elijaa/phpmemcachedadmin.git
     rm -rf "${DEFAULT_DIR_TOOL}"/phpmemcachedadmin/docker
     mv phpmemcachedadmin memcached
     chown -R nginx:nginx "${DEFAULT_DIR_TOOL}"/memcached
-	clear
-	printf "${GREEN}Update Memcached Dashboard thanh cong.${NC}\n"
+    clear
+    printf "%s\n" "${GREEN}Update Memcached Dashboard thanh cong.${NC}"
 }
 
 update

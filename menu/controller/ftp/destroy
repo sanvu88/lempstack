@@ -14,41 +14,61 @@
 source /var/hostvn/menu/helpers/function
 
 input(){
-	read -r -p "Nhap vao user muon xoa: " ftp_user
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "Nhap vao user muon xoa [0 = Thoat]: " ftp_user
+        echo
+        if validate_user "${ftp_user}" || [ "${ftp_user}" == "0" ]; then
+            break
+        else
+            clear
+            printf "%s\n" "${RED}User khong dung dinh dang, vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-delete(){
-	pure-pw userdel "${ftp_user}"
-	pure-pw mkdb
-	systemctl restart pure-ftpd
+_delete(){
+    pure-pw userdel "${ftp_user}"
+    pure-pw mkdb
+    systemctl restart pure-ftpd
 }
 
 _run(){
-    ALERT=""
-	input
     if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
         if ! if_pureftpd_user_exists "${ftp_user}"; then
-            ALERT=$(printf "${RED}FTP User khong ton tai.${NC}\n")
+            ALERT=$(printf "%s\n" "${RED}FTP User khong ton tai.${NC}")
         fi
-
-        validate_user "${ftp_user}"
 
         if [[ -z "${ALERT}" ]]; then
-            delete
-            printf "${GREEN}Xoa FTP User thanh cong.${NC}\n"
+            _delete
+            clear
+            printf "%s\n" "${GREEN}Xoa FTP User thanh cong.${NC}"
         else
-            printf "${ALERT}\n"
+            clear
+            printf "%s\n" "${ALERT}"
         fi
     else
-        printf "${RED}Khong co user FTP nao ton tai tren VPS.${NC}\n"
+        clear
+        printf "%s\n" "${RED}Khong co user FTP nao ton tai tren VPS.${NC}"
     fi
 }
 
+ALERT=""
+ftp_user=""
 pureftpd_status="$(pgrep -f pure-ftpd)"
 
 if [ -z "${pureftpd_status}" ]; then
-    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 else
-    _run
-    menu_ftp
+    input
+    if [ "${ftp_user}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da huy hanh dong.${NC}"
+    else
+        _run
+    fi
 fi
+
+menu_ftp

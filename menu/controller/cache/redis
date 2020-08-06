@@ -15,17 +15,23 @@ source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
 redis_status="$(pgrep -f redis)"
-memcached_status="$(pgrep -f redis)"
 
-printf "${GREEN}-------------------${NC}\n"
-printf "${GREEN}Quan ly Redis Cache${NC}\n"
-printf "${GREEN}-------------------${NC}\n"
+if [ -n "${redis_status}" ]; then
+    status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
+else
+    status=$(printf "%s\n" "${RED}Khong Hoat dong${NC}")
+fi
+
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
+printf "%sQuan ly Redis Cache%s\n" "${GREEN}" "${NC}"
+printf "%s\n" "${GREEN}Trang thai:${NC} ${status}"
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Bat Redis Cache${NC}\n"
-    printf "${GREEN}2. Tat Redis Cache${NC}\n"
-    printf "${GREEN} -----------------${NC}\n"
+    printf "%s1. Bat Redis Cache%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Tat Redis Cache%s\n" "${GREEN}" "${NC}"
+    printf "%s =================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
@@ -37,46 +43,43 @@ do
         1)
             if [ ! -f "/etc/redis.conf" ]; then
                 clear
-                printf "${RED}Redis chua duoc cai dat.${NC}\n"
+                printf "%s\n" "${RED}Redis chua duoc cai dat.${NC}"
             else
-                if [[ -n "${memcached_status}" && -z "${redis_status}" ]]; then
-                    printf "${RED}Ban dang su dung Memcached.${NC}\n"
-                elif [[ -n "${redis_status}" && -n "${memcached_status}" ]]; then
-                    printf "${RED}Ban dang su dung ca Memcached va Redis Cache.${NC}\n"
-                    printf "${RED}Dieu nay co the anh hương den hieu suat cua VPS. Khuyen nghi chi nen xai mot cache.${NC}\n"
-                elif [[ -n "${redis_status}" && -z "${memcached_status}" ]]; then
-                    printf "${RED}Redis Cache hien dang hoat dong.${NC}\n"
-                else
-                    printf "${GREEN}Dang tien hanh mo Redis Cache...${NC}\n"
-                    sleep 1
-                    systemctl enable redis.service
-                    systemctl start redis.service
+                printf "%s\n" "${GREEN}Dang tien hanh mo Redis Cache...${NC}"
+                sleep 1
+                systemctl enable redis.service
+                systemctl start redis.service
+                cron_exists=$(crontab -l | grep -w 'redis')
+                if [ -z "${cron_exists}" ]; then
                     crontab -l > clear_redis
                     echo "23 */38 * * * service redis restart >/dev/null 2>&1" >> clear_redis
                     crontab clear_redis
                     rm -rf clear_redis
-                    clear
-                    printf "${GREEN}Da bat Redis Cache.${NC}\n"
                 fi
+                clear
+                printf "%s\n" "${GREEN}Da bat Redis Cache.${NC}"
             fi
             menu_cache
             ;;
         2)
             if [ -n "${redis_status}" ]; then
-                printf "${GREEN}Dang tien hanh tat Redis Cache...${NC}\n"
+                printf "%s\n" "${GREEN}Dang tien hanh tat Redis Cache...${NC}"
                 sleep 1
                 systemctl stop redis.service
                 systemctl disable redis.service
-                crontab -u root -l | grep -v "redis" | crontab -u root -
+                cron_exists=$(crontab -l | grep -w 'redis')
+                if [ -n "${cron_exists}" ]; then
+                    crontab -u root -l | grep -v "redis" | crontab -u root -
+                fi
                 clear
-                printf "${GREEN}Da tat Redis Cache.${NC}\n"
+                printf "%s\n" "${GREEN}Da tat Redis Cache.${NC}"
             else
-                printf "${RED}Redis cache hien khong hoat dong.${NC}\n"
+                printf "%s\n" "${RED}Redis cache hien khong hoat dong.${NC}"
             fi
 
             menu_cache
             ;;
-        0) menu_cache ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        0) clear; menu_cache ;;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

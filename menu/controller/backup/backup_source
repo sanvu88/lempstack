@@ -17,35 +17,35 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-backup(){
-	cd_dir /home/"${username}"/"${domain}"
-	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
-		mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
-	fi
-	if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
-	    /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
-	fi
-	tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html
+_backup(){
+    cd_dir /home/"${username}"/"${domain}"
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+    fi
+    if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
+        /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
+    fi
+    tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html
 }
 
 _run(){
-    ALERT=""
-	select_domain
-
-	if [[ -z "${ALERT}" ]]; then
-		set_var
-		backup
-		clear
-		printf "${GREEN}Sao luu ma nguon thanh cong.${NC}\n"
-		printf "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${CURRENT_DATE}/${domain}${NC}\n"
-	else
-	  clear
-		printf "${ALERT}\n"
-	fi
+    set_var
+    _backup
+    clear
+    printf "%sSao luu ma nguon thanh cong.%s\n" "${GREEN}" "${NC}"
+    printf "%s\n" "${GREEN}Ban co the tim thay ban sao luu tai:\n /home/backup/${CURRENT_DATE}/${domain}${NC}"
 }
 
-_run
+domain=""
+select_domain
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+   _run
+fi
+
 select_backup

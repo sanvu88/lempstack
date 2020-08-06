@@ -48,7 +48,7 @@ check_duplicate_php(){
     fi
 
     if [[ "${php2_new}" == "${php1_version}" ]]; then
-    	ALERT=$(printf "${RED}Phien ban PHP 2 ban chon giong phien ban PHP 1. Huy cai dat.${NC}\n")
+        ALERT=$(printf "${RED}Phien ban PHP 2 ban chon giong phien ban PHP 1. Huy cai dat.${NC}\n")
     fi
 }
 
@@ -72,7 +72,7 @@ select_php_ver(){
                 break
             else
                 clear
-                printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}"
             fi
         done
     fi
@@ -117,9 +117,9 @@ install_igbinary_2(){
     cd_dir /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
     if [[ -f "${php2_module_dir}/igbinary.so" ]]; then
-    	if [[ -f "${php2_ini_path}/40-igbinary.ini" ]]; then
-			rm -rf "${php2_ini_path}"/40-igbinary.ini
-		fi
+        if [[ -f "${php2_ini_path}/40-igbinary.ini" ]]; then
+            rm -rf "${php2_ini_path}"/40-igbinary.ini
+        fi
         cat >> "${php2_ini_path}/40-igbinary.ini" << EOF
 extension=igbinary.so
 EOF
@@ -139,9 +139,9 @@ install_php_memcached_2(){
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
     if [[ -f "${php2_module_dir}/memcached.so" ]]; then
-    	if [[ -f "${php2_ini_path}/50-memcached.ini" ]]; then
-    		rm -rf "${php2_ini_path}"/50-memcached.ini
-    	fi
+        if [[ -f "${php2_ini_path}/50-memcached.ini" ]]; then
+            rm -rf "${php2_ini_path}"/50-memcached.ini
+        fi
         cat >> "${php2_ini_path}/50-memcached.ini" << EOF
 extension=memcached.so
 EOF
@@ -161,9 +161,9 @@ install_php_redis_2(){
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
     if [[ -f "${php2_module_dir}/redis.so" ]]; then
-    	if [[ -f "${php2_ini_path}/50-redis.ini" ]]; then
-    		rm -rf "${php2_ini_path}"/50-redis.ini
-    	fi
+        if [[ -f "${php2_ini_path}/50-redis.ini" ]]; then
+            rm -rf "${php2_ini_path}"/50-redis.ini
+        fi
         cat >> "${php2_ini_path}/50-redis.ini" << EOF
 extension=redis.so
 EOF
@@ -258,9 +258,9 @@ EOwww_2_conf
 }
 
 hostvn_custom_ini_2(){
-	if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
-		rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
-	fi
+    if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
+        rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
+    fi
     cat > "${php2_ini_path}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
@@ -336,13 +336,13 @@ _run(){
             write_info
 
             clear
-            printf "${GREEN}Thay doi phien ban PHP thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Thay doi phien ban PHP thanh cong.${NC}"
         else
             clear
-            printf "${ALERT}\n"
+            printf "%s\n" "${ALERT}"
         fi
     else
-        printf "${RED}PHP 2 chua duoc cai dat. Vui long cai dat PHP 2 truoc.${NC}\n"
+        printf "%s\n" "${RED}PHP 2 chua duoc cai dat. Vui long cai dat PHP 2 truoc.${NC}"
     fi
 }
 
@@ -351,6 +351,6 @@ confirm
 if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
     _run
 else
-    printf "${GREEN}Ban da huy thay doi phien ban PHP 2.${NC}\n"
+    printf "%s\n" "${GREEN}Ban da huy thay doi phien ban PHP 2.${NC}"
 fi
 menu_php

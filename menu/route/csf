@@ -14,25 +14,25 @@
 
 CHOICE=1
 
-printf "${GREEN}=============================${NC}\n"
-printf "${GREEN}    Quan ly CSF Firewall     ${NC}\n"
-printf "${GREEN}=============================${NC}\n"
-printf "${GREEN}CSF GUI:${NC} ${RED}%s${NC}\n" "https://${IPADDRESS}:${csf_port}"
-printf "${GREEN}-----------------------------${NC}\n"
-echo ""
+printf "%s=====================================%s\n" "${GREEN}" "${NC}"
+printf "%s         Quan ly CSF Firewall        %s\n" "${GREEN}" "${NC}"
+printf "%s=====================================%s\n" "${GREEN}" "${NC}"
+printf "%sCSF GUI:%s %s%s%s\n" "${GREEN}" "${NC}" "${RED}" "https://${IPADDRESS}:${csf_port}" "${NC}"
+printf "%s======================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Kiem tra Block IP${NC}\n"
-    printf "${GREEN}2. Block IP${NC}\n"
-    printf "${GREEN}3. Go Block IP${NC}\n"
-    printf "${GREEN}4. Go Block toan bo IP${NC}\n"
-    printf "${GREEN}5. Allow IP${NC}\n"
-    printf "${GREEN}6. Cap quyen truy cap CSF GUI${NC}\n"
-    printf "${GREEN}7. Restart CSF${NC}\n"
-    printf "${GREEN}8. Tat CSF${NC}\n"
-    printf "${GREEN}9. Bat CSF${NC}\n"
-    printf "${GREEN} ----------------------------${NC}\n"
+    printf "%s1. Mo Port%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Kiem tra Block IP%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Block IP%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Go Block IP%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Go Block toan bo IP%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Allow IP%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Cap quyen truy cap CSF GUI%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Restart CSF%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Tat CSF%s\n" "${GREEN}" "${NC}"
+    printf "%s10. Bat CSF%s\n" "${GREEN}" "${NC}"
+    printf "%s ============================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -40,89 +40,108 @@ do
         continue
     fi
     case ${CHOICE} in
-        1)
+        1) clear; csf_open_port ;;
+        2)
             read -r -p "Nhap vao IP muon kiem tra: " ip
             csf -g "${ip}"
             echo ""
             menu_csf
             ;;
-        2)
+        3)
             read -r -p "Nhap vao IP muon block: " ip
             csf -d "${ip}"
+            csf -x
+            csf -e
+            systemctl restart csf
+            systemctl restart lfd
             clear
-            printf "${GREEN}Block IP thanh cong.${NC}\n"
-            echo ""
-            menu_csf
-            ;;
-        3)
-            read -r -p "Nhap vao IP muon go block: " ip
-            csf -dr "${ip}"
-            clear
-            printf "${GREEN}Go Block IP thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Block IP thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         4)
-            csf -tf
-            csf -df
+            read -r -p "Nhap vao IP muon go block: " ip
+            csf -dr "${ip}"
+            csf -x
+            csf -e
+            systemctl restart csf
             systemctl restart lfd
             clear
-            printf "${GREEN}Go Block toan bo IP thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Go Block IP thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         5)
-            read -r -p "Nhap vao IP muon allow: " ip
-            csf -a "${ip}"
+            csf -tf
+            csf -df
             csf -x
             csf -e
+            systemctl restart csf
+            systemctl restart lfd
             clear
-            printf "${GREEN}Allow IP thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Go Block toan bo IP thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         6)
-            read -r -p "Nhap vao IP muon cap quyen truy cap CSF GUI: " ip
-            echo "${ip}" >>  /etc/csf/ui/ui.allow
+            read -r -p "Nhap vao IP muon allow: " ip
+            csf -a "${ip}"
             csf -x
             csf -e
+            systemctl restart csf
+            systemctl restart lfd
             clear
-            printf "${GREEN}Cap quyen truy cap CSF GUI thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Allow IP thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         7)
+            read -r -p "Nhap vao IP muon cap quyen truy cap CSF GUI: " ip
+            cat >> "/etc/csf/ui/ui.allow" << EOcsfui
+${ip}
+EOcsfui
+            csf -a "${ip}"
             csf -x
             csf -e
+            systemctl restart csf
             systemctl restart lfd
             clear
-            printf "${GREEN}Khoi dong lai CSF thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Cap quyen truy cap CSF GUI thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         8)
+            csf -x
+            csf -e
+            systemctl restart lfd
+            clear
+            printf "%s\n" "${GREEN}Khoi dong lai CSF thanh cong.${NC}"
+            echo ""
+            menu_csf
+            ;;
+        9)
             csf -x
             systemctl stop csf
             systemctl stop lfd
             systemctl disable csf
             systemctl disable lfd
             clear
-            printf "${GREEN}Tat CSF thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Tat CSF thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
-        9)
+        10)
             csf -e
             systemctl start csf
             systemctl start lfd
             systemctl enable csf
             systemctl enable lfd
             clear
-            printf "${GREEN}Bat CSF thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Bat CSF thanh cong.${NC}"
             echo ""
             menu_csf
             ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n"  "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

@@ -11,224 +11,151 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+# shellcheck disable=SC2034
 source /var/hostvn/menu/helpers/function
+ALERT=""
+domain=""
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [[ -z "${username}" ]]; then
-		read -r -p "Nhap vao FTP username: " username
-	fi
-
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [[ -z "${db_name}" ]]; then
-		read -r -p "Nhap vao database name: " db_name
-	fi
-
-    #https://www.howtoforge.com/tutorial/linux-grep-command/
-    #https://stackoverflow.com/a/6284370
-	php_mode=$(grep -w "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	rewrite="include /etc/nginx/rewrite/wordpress.conf;"
-	plugin_cache="$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    rewrite="include /etc/nginx/rewrite/wordpress.conf;"
+    plugin_cache="$(grep -w "plugin_cache" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
 }
 
 input(){
-	read -r -p "Nhap vao ten mien moi: " newdomain
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap domain (Khong có www) [0 = Thoat]: " new_domain
+        if [ "${new_domain}" == "0" ]; then
+            new_domain=0
+            break
+        else
+            new_domain=$(echo "${new_domain}" | tr '[:upper:]' '[:lower:]')
+            echo "${new_domain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${new_domain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
 }
 
 backup_confirm(){
-    read -r -p "Ban co muon backup du lieu truoc khi toi uu khong? (y/n) " promt_backup
+    while true
+    do
+        read -r -p "Ban co muon backup du lieu truoc khi doi ten mien khong? (y/n) " promt_backup
+        echo
+        if [[ "${promt_backup}" =~ ^([yY])$ || "${promt_backup}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-backup(){
+_backup(){
     cd_dir /home/"${username}"/"${domain}"/public_html
-    if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
-        rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
     fi
 
-    if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${domain}"
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-    wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
-}
-
-check_plugins_cache(){
-    if [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/w3-total-cache" ]]; then
-        cache="include /etc/nginx/wordpress/w3c.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-fastest-cache" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/wpfc.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-rocket" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/rocket-nginx/default.conf;"
-        if [[ ! -d "/etc/nginx/rocket-nginx" ]]; then
-            cd_dir /etc/nginx
-            git clone https://github.com/satellitewp/rocket-nginx.git
-            cd_dir /etc/nginx/rocket-nginx
-            cp rocket-nginx.ini.disabled rocket-nginx.ini
-            php rocket-parser.php
-        fi
-        if [[ ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
-            cd_dir /etc/nginx/rocket-nginx
-            php rocket-parser.php
-        fi
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/wp-super-cache" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/wpsc.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/cache-enabler" ]]; then
-        rewrite=""
-        cache="include /etc/nginx/wordpress/enabler.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift1" ]]; then
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-    elif [[ -d "/home/${username}/${domain}/public_html/wp-content/plugins/swift-performance-lite" && "${plugin_cache}" == "swift2" ]]; then
-        cache="include /etc/nginx/wordpress/swift2.conf;"
-    else
-        cache="include /etc/nginx/extra/staticfiles.conf;"
-    fi
+    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 }
 
 change_path(){
-	mv /home/"${username}"/"${domain}" /home/"${username}"/"${newdomain}"
-}
-
-backup_vhost(){
-    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
-        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
-    fi
-
-    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    mv /home/"${username}"/"${domain}" /home/"${username}"/"${new_domain}"
 }
 
 change_vhost(){
-	backup_vhost
-	check_plugins_cache
-    clear
-    select_plugin_seo
-	fastcgi
-
-    if [[ "${plugins_seo}" == "yoast_seo" ]]; then
-        include_seo="include /etc/nginx/wordpress/yoast_seo.conf;"
-    elif [[ "${plugins_seo}" == "rank_math_seo" ]]; then
-        include_seo="include /etc/nginx/wordpress/rank_math_seo.conf;"
-    else
-        include_seo=""
-    fi
-
-	cat >> "${VHOST_DIR}/${newdomain}.conf" << END
-upstream php-${username} {
-    server ${fastcgi_pass}
-}
-
-server {
-    listen 80;
-    server_name ${newdomain} www.${newdomain};
-
-    #access_log off;
-    #access_log /home/${username}/${newdomain}/logs/access.log;
-    #error_log off;
-    error_log /home/${username}/${newdomain}/logs/error.log;
-    root /home/${username}/${newdomain}/public_html;
-    index index.php index.html index.htm;
-
-    ${rewrite}
-    ${cache}
-
-    location ~ \.php\$ {
-        try_files \$uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-        fastcgi_index index.php;
-        include /etc/nginx/fastcgi_params;
-        include /etc/nginx/extra/nginx_limits.conf;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        if (-f \$request_filename)
-        {
-            fastcgi_pass php-${username};
-        }
-    }
-
-    location = /wp-login.php {
-        limit_req zone=two burst=1 nodelay;
-        include /etc/nginx/fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_pass php-${username};
-    }
-
-    ${include_seo}
-    include /etc/nginx/wordpress/wordpress_secure.conf;
-    include /etc/nginx/wordpress/disable_xmlrpc.conf;
-    include /etc/nginx/extra/security.conf;
-}
-END
+    mv /etc/nginx/conf.d/"${domain}".conf /etc/nginx/conf.d/"${new_domain}".conf
+    sed -i "s/${domain}/${new_domain}/g" /etc/nginx/conf.d/"${new_domain}".conf
 }
 
 change_phpconfig(){
-	php_conf_path="/etc/php-fpm.d"
-	if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+    php_conf_path="/etc/php-fpm.d"
+    if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
         if [[ "${php2_version}" == "php56" ]]; then
             php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
         fi
     fi
 
-    mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${newdomain}".conf
-    sed -i "s/${domain}/${newdomain}/g" "${php_conf_path}"/"${newdomain}".conf
+    mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${new_domain}".conf
+    sed -i "s/${domain}/${new_domain}/g" "${php_conf_path}"/"${new_domain}".conf
 }
 
 change_in_db(){
-    cd_dir /home/"${username}"/"${domain}"/public_html
-    wp search-replace --allow-root "https://${domain}" "http://${newdomain}"
-    wp search-replace --allow-root "http://${domain}" "http://${newdomain}"
+    cd_dir /home/"${username}"/"${new_domain}"/public_html
+    wp search-replace --allow-root "${domain}" "${new_domain}"
 }
 
 change_user_config(){
-    mv "${USER_DIR}"/."${domain}".conf "${USER_DIR}"/."${newdomain}".conf
+    mv "${USER_DIR}"/."${domain}".conf "${USER_DIR}"/."${new_domain}".conf
 }
 
 _run(){
-	set_var
-	check_is_wordpress "${username}" "${domain}"
     check_wpconfig "${username}" "${domain}"
-	input
-	validate_domain "${newdomain}"
-    backup_confirm
 
-    if [[ "$domain" == "$newdomain" ]]; then
-        ALERT=$(printf "${RED}Ten mien moi cua ban giong ten mien cu. Huy thay doi ten mien.${NC}\n")
+    if [[ "${domain}" == "${new_domain}" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Ten mien moi cua ban giong ten mien cu. Huy thay doi ten mien.${NC}")
     fi
 
-    if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
-        ALERT=$(
-            printf "${RED}Ban da chon khong backup.${NC}\n"
-            printf "${RED}Dieu nay khong an toan.\n He thong se huy thay doi ten mien.${NC}\n"
-        )
-    fi
-
-	if [ -z "${ALERT}" ]; then
-        backup
-		change_path
-		change_vhost
-		change_phpconfig
-		change_in_db
+    if [ -z "${ALERT}" ]; then
+        change_path
         change_user_config
+        change_vhost
+        change_phpconfig
+        change_in_db
+        if [ -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+            rm -rf "${WORDPRESS_CRON_DIR}"/"${domain:?}"
+            touch "${WORDPRESS_CRON_DIR}"/"${new_domain}"
+        fi
         restart_service
         clear
-		printf "${GREEN}Doi ten mien thanh cong.${NC}\n"
-	else
+        printf "%s\n" "${GREEN}Doi ten mien thanh cong.${NC}"
+    else
         clear
-		printf "${ALERT}\n"
-	fi
+        printf "%s\n" "${ALERT}"
+    fi
 }
 
 ALERT=""
+domain=""
+new_domain=""
+promt_backup=""
 select_domain
-if [ -z "${ALERT}" ]; then
-    _run
+
+if [ -n "${domain}" ]; then
+    set_var
+    input
+    if [ "${new_domain}" == "0" ]; then
+        menu_wp
+    else
+        backup_confirm
+        if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
+            _backup
+        fi
+        _run
+        menu_wp
+    fi
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    menu_wp
 fi
-menu_wp

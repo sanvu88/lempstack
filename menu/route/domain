@@ -12,18 +12,18 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "${GREEN}   Quan ly Domain  ${NC}\n"
-printf "${GREEN}===================${NC}\n"
-echo ""
+printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "%s   Quan ly Domain  %s\n" "${GREEN}" "${NC}"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Danh sach ten mien${NC}\n"
-    printf "${GREEN}2. Them ten mien${NC}\n"
-    printf "${GREEN}3. Xoa ten mien${NC}\n"
-    printf "${GREEN}4. Thay doi ten mien${NC}\n"
-    printf "${GREEN} ------------------${NC}\n"
+    printf "%s1. Danh sach ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Them ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Xoa ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Thay doi ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Rewrite Vhost Config%s\n" "${GREEN}" "${NC}"
+    printf "%s ==================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -35,7 +35,8 @@ do
         2) clear; domain_create ;;
         3) clear; domain_destroy ;;
         4) clear; domain_change ;;
+        5) clear; rewrite_config ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

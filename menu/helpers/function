@@ -32,52 +32,33 @@ bytes_for_humans(){
     fi
 }
 
-check_port_exists(){
-    check_port=$(netstat -vatn | grep "${1}")
-    if [ -z  "${check_port}" ]; then
-        return 0
-    else
-        return  1
-    fi
-}
-
 gen_pass(){
-    < /dev/urandom tr -dc A-Za-z0-9 | head -c12
+    < /dev/urandom tr -dc A-Za-z0-9 | head -c16
 }
 
 select_domain(){
     domain=""
     #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [[ "$(ls -A "${USER_DIR}")" ]]; then
-        while true
+        echo "${LIST_DOMAIN}"
+        domains=()
+        cd_dir "${USER_DIR}"
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry in .*.conf; do
+            domain=${entry/.}
+            domain=${domain//.conf}
+            domains+=("${domain}")
+        done
+        PS3="${INPUT_SELECT} [0 = Thoat] "
+        select opt in "${domains[@]}"
         do
-            echo "${LIST_DOMAIN}"
-            domains=()
-            cd_dir "${USER_DIR}"
-            #https://stackoverflow.com/a/2437466
-            #https://stackoverflow.com/a/1951523
-            #https://stackoverflow.com/a/46882842
-            for entry in .*.conf; do
-                domain=${entry/.}
-                domain=${domain//.conf}
-                domains+=("${domain}")
-            done
-            PS3="${INPUT_SELECT}"
-            select opt in "${domains[@]}"
-            do
-                domain=$opt
-                break
-            done
-            if [[ " ${domains[*]} " == *" ${domain} "* ]] && validate_domain "${domain}";
-            then
-                break
-            else
-                clear
-                printf "%s%s%s\n" "${RED}" "${WRONG_DOMAIN}" "${NC}"
-            fi
+            domain=$opt
+            break
         done
     else
-        ALERT=$(printf "%s%s%s\n" "${RED}" "${EMPTY_DOMAIN}" "${NC}")
+        ALERT=$(printf "%s\n" "${RED}${EMPTY_DOMAIN}${NC}")
     fi
 }
 
@@ -103,7 +84,7 @@ select_source(){
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
-            *) printf "%s%s%S\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
+            *) printf "%s\n" "${RED}${WRONG_SELECT}${NC}";;
         esac
     done
 }
@@ -141,9 +122,7 @@ set_rewrite(){
 
 fastcgi(){
     fastcgi_pass="unix:/var/run/php-fpm/${username}.sock;"
-    if [[ -z "${php_mode}" ]]; then
-        php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
-    fi
+
     if [[ "${php_mode}" == "2" ]]; then
         fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
     fi
@@ -167,33 +146,42 @@ list_backup(){
     date=""
     #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [[ "$(ls -A /home/backup)" ]]; then
-        while true
-        do
-            echo "${LIST_BACKUP}"
-            selects=()
-            cd_dir /home/backup
-            for date in * ; do
+        echo "${LIST_BACKUP}"
+        dates=()
+        cd_dir /home/backup
+        for date in * ; do
+            if valid_date "${date}"; then
                 dates+=("${date}")
-            done
-            PS3="${SELECT_OPTION}"
-            select opt in "${selects[@]}"
-            do
-                date=${opt}
-                break
-            done
-            if [[ " ${dates[*]} " == *" ${date} "* ]];
-            then
-                break
-            elif [[ ${remote} -eq 0 ]];
-            then
-                menu_primary
-            else
-                clear
-                printf "%s%s%s\n" "${RED}" "${WRONG_OPTION}" "${NC}"
             fi
         done
+
+        PS3="${SELECT_OPTION}"
+        select opt1 in "${dates[@]}"
+        do
+            case $opt1 in
+            $opt1) date=${opt1}; break;;
+            esac
+        done
+
+        if [ -n "${date}" ]; then
+            echo "Chon ten mien muon khoi phuc [0 = Thoat]: "
+            domains=()
+            cd_dir /home/backup/"${date}"
+            for entry in * ; do
+                if [ -d "${entry}" ]; then
+                    domains+=("${entry}")
+                fi
+            done
+
+            PS3="${SELECT_OPTION}"
+            select opt2 in "${domains[@]}"
+            do
+                domain=${opt2}
+                break
+            done
+        fi
     else
-        ALERT=$(printf "%s%s%s\n" "${RED}" "${BACKUP_EMPTY}" "${NC}")
+        ALERT=$(printf "%s\n" "${RED}${BACKUP_EMPTY}${NC}")
     fi
 }
 
@@ -221,7 +209,7 @@ select_plugin_cache(){
             "Swift Performance - PHP Caching Mode") plugins_cache="swift1"; break;;
             "Swift Performance - Rewrite Caching Mode") plugins_cache="swift2"; break;;
             "Other") plugins_cache="other"; break;;
-            *) printf "%s%s%s\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
+            *) printf "%s\n" "${RED}${WRONG_SELECT}${NC}";;
         esac
     done
 }
@@ -237,7 +225,7 @@ select_plugin_seo(){
             "Yoast Seo") plugins_seo="yoast_seo"; break;;
             "Rank Math Seo") plugins_seo="rank_math_seo"; break;;
             "Other") plugins_seo=""; break;;
-            *) printf "%s%s%s\n" "${RED}" "${WRONG_SELECT}" "${NC}";;
+            *) printf "%s\n" "${RED}${WRONG_SELECT}${NC}";;
         esac
     done
 }
@@ -245,13 +233,15 @@ select_plugin_seo(){
 wp_auto_install_info(){
     while true
     do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
         read -r -p "${INPUT_WP_ADMIN}" admin_user
+        LEN=${#admin_user}
         echo
-        if [[ "${admin_user}" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]];
-        then
+        if validate_user "${admin_user}" && [[ $LEN -ge 5 ]]; then
             break
         else
-            printf "%s%s%s" "${RED}" "${WRONG_USERNAME}" "${NC}"
+            clear
+            printf "%s\n" "${RED}${WRONG_USERNAME}${NC}"
         fi
     done
 
@@ -261,11 +251,11 @@ wp_auto_install_info(){
     do
         read -r -p "${INPUT_EMAIL}" admin_email
         echo
-        if [[ "${admin_email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]];
-        then
+        if [[ "${admin_email}" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]; then
             break
         else
-            printf "%s%s%s"  "${RED}" "${WRONG_EMAIL}" "${NC}"
+            clear
+            printf "%s\n"  "${RED}${WRONG_EMAIL}${NC}"
         fi
     done
 
@@ -276,7 +266,7 @@ wp_auto_install_info(){
     fi
 
     if [ -z "${site_name}" ]; then
-        site_name="The web is built on WordPress"
+        site_name="Just another WordPress site"
     fi
 }
 
@@ -285,37 +275,26 @@ brute_force_wp(){
         limit_req zone=two burst=1 nodelay;
         include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_pass php-${username};
+        fastcgi_pass php-${1};
     }"
 }
 
 select_remote(){
-    while true
+    echo "${SELECT_REMOTE}"
+    remotes=()
+    list_remote=( $(rclone listremotes) )
+    for entry in "${list_remote[@]}"; do
+        rt=${entry//:}
+        remotes+=("${rt}")
+    done
+
+    PS3="${SELECT_OPTION}"
+
+    select opt in "${remotes[@]}"
     do
-        echo "${SELECT_REMOTE}"
-        remotes=()
-        list_remote=( $(rclone listremotes) )
-        for entry in "${list_remote[@]}"; do
-            rt=${entry//:}
-            remotes+=("${rt}")
-        done
-
-        PS3="${SELECT_OPTION}"
-        select opt in "${remotes[@]}"
-        do
-            remote=${opt}
-            break
-        done
-
-        if [[ " ${remotes[*]} " == *" ${remote} "* ]];
-        then
-            break
-        elif [[ ${remote} -eq 0 ]];
-        then
-            menu_primary
-        else
-            printf "%s%s%s\n" "${RED}" "${WRONG_OPTION}" "${NC}"
-        fi
+        case $opt in
+            $opt) remote=${opt}; break ;;
+        esac
     done
 }
 

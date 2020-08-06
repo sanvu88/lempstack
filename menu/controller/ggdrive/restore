@@ -15,22 +15,32 @@
 source /var/hostvn/menu/helpers/function
 
 confirm_restore(){
-	read -r -p "Ban muon khoi phuc du lieu ? (y\n) " promt_restore
+    while true
+    do
+        read -r -p "Ban muon khoi phuc du lieu ? (y/n) " promt_restore
+        echo
+        if [[ "${promt_restore}" =~ ^([yY])$ || "${promt_restore}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
 select_backup(){
-	echo "Chon ngay ban muon khoi phuc: "
-	  dates=()
+    clear
+    echo "Chon ngay ban muon khoi phuc: "
+    dates=()
     selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     for entry in ${selects}; do
-    	select=${entry///}
+        select=${entry///}
         dates+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -39,17 +49,14 @@ select_backup(){
         date=${date}
         break
     done
-
-    if ! valid_date "${date}"; then
-        ALERT=$(printf "${RED}Gia tri ban nhap khong dung.${NC}\n")
-    fi
 }
 
 choose_domain(){
-	echo "Chon ten mien ban muon khoi phuc: "
+    clear
+    echo "Chon ten mien ban muon khoi phuc: "
     selects=$(rclone lsf "${remote}":"${IPADDRESS}"/"${date}")
     for entry in ${selects}; do
-    	select=${entry///}
+        select=${entry///}
         domains+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -58,71 +65,118 @@ choose_domain(){
         domain=${domain}
         break
     done
-
-    if ! validate_domain "${domain}"; then
-      ALERT=$(printf "${RED}Ten mien khong dung dinh dang.${NC}\n")
-    fi
 }
 
 download_backup(){
-  if [ -d "/home/backup/${date}/${domain}" ]; then
-      rm -rf /home/backup/"${date}"/"${domain}"
-  else
-    mkdir -p /home/backup/"${date}"/"${domain}"
-  fi
-	rclone copy "${remote}:/${IPADDRESS}/${date}/${domain}" /home/backup/"${date}"
+    if [ -d "/home/backup/${date}/${domain}" ]; then
+        rm -rf /home/backup/"${date}"/"${domain}"
+    else
+        mkdir -p /home/backup/"${date}"/"${domain}"
+    fi
+    rclone copy "${remote}:/${IPADDRESS}/${date}/${domain}" /home/backup/"${date}"/"${domain}"
 }
 
-restore_source(){
-	if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-		mkdir -p /home/"${username}"/"${domain}"/public_html
-	fi
-	rm -rf /home/"${username}"/"${domain}"/public_html/*
-	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
-	chown -R "${username}":"${username}" /home/"${username}"
+_restore_source(){
+    if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
+        mkdir -p /home/"${username}"/"${domain}"/public_html
+    fi
+    rm -rf /home/"${username}"/"${domain}"/public_html/*
+    tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
+    chown -R "${username}":"${username}" /home/"${username}"
 }
 
-restore_db(){
-	cd_dir /home/backup/"${date}"/"${domain}"
-	mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
+select_db(){
+    clear
+    cd_dir /home/backup/"${date}"/"${domain}"
+    sql_files=()
+    for entry in *.{sql,sql.gz}; do
+        if [ -f "${entry}" ]; then
+            sql_files+=("${entry}")
+        fi
+    done
+
+    echo "Chon file database muon khoi phuc"
+    PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+    select opt in "${sql_files[@]}"
+    do
+        sql=$opt
+        break
+    done
+}
+
+_restore_db(){
+    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
 }
 
 _run(){
-	confirm_restore
-	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
-	    ALERT=""
-		domain=""
-		select_remote
-		select_backup
+    select_backup
+    if [ -z "${date}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+    else
+        choose_domain
 
-		if [[ -n "${domain}" ]]; then
-			set_var
-			if ! if_domain_exists ${domain}; then
-				ALERT=$(printf "${RED}Website khong ton tai tren VPS.${NC}\n")
-			fi
+        if [ -z "${domain}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+        else
+            if [ ! -f "${USER_DIR}/.${domain}.conf"  ]; then
+                ALERT=$(printf "%s\n" "${RED}Ten mien nay khong ton tai tren VPS.${NC}")
+            else
+                set_var
+                if ! if_db_exists "${db_name}"; then
+                    ALERT=$(printf "%s\n" "${RED}Database khong ton tai.${NC}")
+                fi
+            fi
 
-			if ! if_db_exists "${db_name}"; then
-				ALERT=$(printf "${RED}Database khong ton tai.${NC}\n")
-			fi
-		fi
-
-		if [[ -z "${ALERT}" ]]; then
-			download_backup
-			restore_source
-			empty_db
-			restore_db
-			rm -rf /home/backup/"${date}"/"${domain}"
-			clear
-			printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
-		else
-			clear
-			printf "${ALERT}\n"
-		fi
-	else
-		clear
-		printf "${RED}Ban da chon huy khoi phuc du lieu.${NC}\n"
-	fi
+            if [[ -z "${ALERT}" ]]; then
+                clear
+                printf "%s\n" "${GREEN}Dang download backup tu Google Drive....${NC}"
+                download_backup
+                select_db
+                if [ -z "${sql}" ]; then
+                    clear
+                    printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+                else
+                    _restore_source
+                    empty_db
+                    _restore_db
+                    rm -rf /home/backup/"${date}"/"${domain}"
+                    clear
+                    printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
+                fi
+            else
+                clear
+                printf "%s\n" "${ALERT}"
+            fi
+        fi
+    fi
 }
 
-_run
+if [ -f "/root/.config/rclone/rclone.conf" ]; then
+    ALERT=""
+    remote=""
+    domain=""
+    promt_restore=""
+    sql=""
+    confirm_restore
+    if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
+        if [[ $(ls -A "${USER_DIR}") ]]; then
+            select_remote
+            if [ -z "${remote}" ]; then
+                clear
+                printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+            else
+                _run
+            fi
+        else
+            printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+    fi
+else
+    printf "%s\n" "${RED}Ban chua cau hinh ket noi voi Google Drive.${NC}"
+fi
 menu_ggdrive

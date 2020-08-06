@@ -15,37 +15,59 @@
 source /var/hostvn/menu/helpers/function
 
 confirm_delete(){
-	read -r -p "Ban muon xoa backup ? (y\n) " promt_delete
+    while true
+    do
+        read -r -p "Ban muon xoa backup ? (y/n) " promt_delete
+        echo
+        if [[ "${promt_delete}" =~ ^([yY])$ || "${promt_delete}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-delete(){
-	rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql
+_delete(){
+    rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql
 }
 
 _run(){
-	confirm_delete
+    list_backup
 
-	if [[ "${promt_delete}" =~ ^([yY])$ ]]; then
-	    ALERT=""
-		list_backup
-		select_domain
+    if [ -z "${date}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    else
+        if [ -z "${domain}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+        else
+            if ! check_backup_empty "${date}" "${domain}"; then
+                ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
+            fi
 
-		if ! check_backup_empty "${date}" "${domain}";
-		then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
-
-		if [[ -z "${ALERT}" ]]; then
-			delete
-			clear
-			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
-		else
-			printf "${ALERT}\n"
-		fi
-	else
-		printf "${RED}Ban da huy xoa backup.${NC}\n"
-	fi
+            if [[ -z "${ALERT}" ]]; then
+                _delete
+                clear
+                printf "%s\n" "${GREEN}Xoa backup thanh cong.${NC}"
+            else
+                clear
+                printf "%s\n" "${ALERT}"
+            fi
+        fi
+    fi
 }
 
-_run
+ALERT=""
+promt_delete=""
+date=""
+domain=""
+
+confirm_delete
+if [[ "${promt_delete}" =~ ^([yY])$ ]]; then
+    _run
+else
+    clear
+    printf "%s\n" "${RED}Ban da huy xoa backup.${NC}"
+fi
 menu_backup

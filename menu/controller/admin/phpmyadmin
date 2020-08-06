@@ -17,13 +17,10 @@ set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
     phpmyadmin_v=$(curl -s "${UPDATE_LINK}"/version | grep "phpmyadmin_version=" | cut -f2 -d'=')
-}
-
-check_php_version(){
     php_v=$(rpm -qa php-fpm | cut -f3 -d'-')
 
     if [ "${php_v}" -lt 7 ]; then
-        ALERT=$(printf "${GREEN}Phien ban hien tai dang la moi nhat${NC}\n")
+        phpmyadmin_v="4.9.5"
     fi
 }
 
@@ -44,13 +41,17 @@ update(){
 }
 
 config_phpmyadmin(){
-    blowfish_secret=$(date +%s%N | sha256sum | base64 | head -c 64)
+    blowfish_secret=$(date +%s%N | sha256sum | base64 | head -c 82)
     rm -rf "${DEFAULT_DIR_TOOL}"/phpmyadmin/setup
     mkdir -p "${DEFAULT_DIR_TOOL}"/phpmyadmin/tmp
 
+    if [ "${phpmyadmin_v}" != "4.9.5" ]; then
+        declare="declare(strict_types=1);"
+    fi
+
     cat > "${DEFAULT_DIR_TOOL}/phpmyadmin/config.inc.php" <<EOCONFIGINC
 <?php
-declare(strict_types=1);
+${declare}
 \$cfg['blowfish_secret'] = '${blowfish_secret}';
 \$i = 0;
 \$i++;
@@ -74,21 +75,14 @@ EOCONFIGINC
 }
 
 run(){
-    ALERT=""
     set_var
-    check_php_version
 
-    if [ -z "${ALERT}" ]; then
-        check_dir
-        update
-        config_phpmyadmin
-        restart_service
-        clear
-        printf "${GREEN}Update phpMyAdmin thanh cong.${NC}"
-    else
-        clear
-        printf "${ALERT}\n"
-    fi
+    check_dir
+    update
+    config_phpmyadmin
+    restart_service
+    clear
+    printf "%s\n" "${GREEN}Update phpMyAdmin thanh cong.${NC}"
 }
 
 run

@@ -15,22 +15,22 @@ source /var/hostvn/menu/helpers/function
 
 set_variable(){
     #https://stackoverflow.com/a/6546314
-	MemTotal=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-	MemAvailable=$(awk '/MemAvailable/ { print $2 }' /proc/meminfo)
-	SwapTotal=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
-	SwapFree=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+    MemTotal=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+    MemAvailable=$(awk '/MemAvailable/ { print $2 }' /proc/meminfo)
+    SwapTotal=$(awk '/SwapTotal/ {print $2}' /proc/meminfo)
+    SwapFree=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 }
 
 show_info(){
-	set_variable
-	printf "Uptime          : %s\n" "$(uptime | xargs)"
-	printf "CPU loading     : %s\n" "$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
-	printf "Ram             : %s\n" "$(bytes_for_humans "${MemTotal}") (Con trong: $(bytes_for_humans "${MemAvailable}"))"
-	printf "Swap            : %s\n" "$(bytes_for_humans "${SwapTotal}") (Con trong: $(bytes_for_humans "${SwapFree}") )"
+    printf "Uptime          : %s\n" "$(uptime | xargs)"
+    printf "CPU loading     : %s\n" "$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
+    printf "Ram             : %s\n" "$(bytes_for_humans "${MemTotal}") (Con trong: $(bytes_for_humans "${MemAvailable}"))"
+    printf "Swap            : %s\n" "$(bytes_for_humans "${SwapTotal}") (Con trong: $(bytes_for_humans "${SwapFree}") )"
     printf "Disk da su dung : %s\n" "$(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)%"
-	echo ""
+    echo ""
 }
 
+set_variable
 show_info
 sleep 2
 menu_vps

@@ -11,18 +11,26 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 confirm_destroy(){
-	read -r -p "Ban muon xoa backup ? (y\n) " promt_destroy
+    while true
+    do
+        read -r -p "Ban muon xoa backup ? (y/n) " promt_destroy
+        echo
+        if [[ "${promt_destroy}" =~ ^([yY])$ || "${promt_destroy}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 select_backup(){
-	echo "Chon ngay ban muon khoi phuc: "
+    echo "Chon ngay ban muon khoi phuc: "
     selects=$(rclone lsf "${remote}":"${IPADDRESS}")
     for entry in ${selects}; do
-    	select=${entry///}
+        select=${entry///}
         dates+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -31,19 +39,13 @@ select_backup(){
         date=${date}
         break
     done
-
-    if ! valid_date "${date}"; then
-    	ALERT=$(printf "${RED}Ngay ban chon khong dung dinh dang.${NC}\n")
-    else
-    	choose_domain
-    fi
 }
 
 choose_domain(){
-	echo "Chon ten mien ban muon khoi phuc: "
+    echo "Chon ten mien ban muon xoa: "
     selects=$(rclone lsf "${remote}":"${IPADDRESS}"/"${date}")
     for entry in ${selects}; do
-    	select=${entry///}
+        select=${entry///}
         domains+=("${select}")
     done
     PS3="Nhap lua chon cua ban [0 = Thoat]: "
@@ -52,33 +54,52 @@ choose_domain(){
         domain=${domain}
         break
     done
-
-    if ! validate_domain "${domain}"; then
-      ALERT=$(printf "${RED}Ten mien khong dung dinh dang.${NC}\n")
-    fi
 }
 
 _run(){
-	if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
-	    ALERT=""
-        select_remote
-        select_backup
+    select_backup
+    if [ -z "${date}" ]; then
+        clear
+        printf "%s\n" "${GREEN}Ban da huy xoa backup.${NC}"
+    else
+        choose_domain
 
-		if [[ -z "${ALERT}" ]]; then
-			rclone delete "${remote}":/"${IPADDRESS}"/"${date}"/"${domain}" --rmdirs > /dev/null  2>&1
-			rclone cleanup "${remote}":"${IPADDRESS}" > /dev/null  2>&1
-			rm -rf /home/backup/"${date}"/"${domain}"
-			clear
-			printf "${GREEN}Xoa backup thanh cong.${NC}\n"
-		else
-		  clear
-			printf "${ALERT}\n"
-		fi
-	else
-	  clear
-		printf "${GREEN}Ban da huy xoa backup.${NC}\n"
-	fi
+        if [ -z "${domain}" ]; then
+            clear
+            printf "%s\n" "${GREEN}Ban da huy xoa backup.${NC}"
+        else
+            rclone delete "${remote}":/"${IPADDRESS}"/"${date}"/"${domain}" --rmdirs > /dev/null  2>&1
+            rclone cleanup "${remote}":"${IPADDRESS}" > /dev/null  2>&1
+            rm -rf /home/backup/"${date}"/"${domain}"
+            clear
+            printf "%s\n" "${GREEN}Xoa backup thanh cong.${NC}"
+        fi
+    fi
 }
 
-_run
+if [ -f "/root/.config/rclone/rclone.conf" ]; then
+    date=""
+    remote=""
+    domain=""
+    promt_destroy="n"
+    confirm_destroy
+    if [[ "${promt_destroy}" =~ ^([yY])$ ]]; then
+        if [[ $(ls -A "${USER_DIR}") ]]; then
+            select_remote
+            if [ -z "${remote}" ]; then
+                clear
+                printf "%s\n" "${GREEN}Ban da huy xoa backup.${NC}"
+            else
+                _run
+            fi
+        else
+            printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${GREEN}Ban da huy xoa backup.${NC}"
+    fi
+else
+    printf "%s\n" "${RED}Ban chua cau hinh ket noi voi Google Drive.${NC}"
+fi
 menu_ggdrive

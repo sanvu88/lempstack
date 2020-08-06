@@ -18,8 +18,17 @@ source /var/hostvn/menu/helpers/function
 source /var/hostvn/menu/helpers/variable_php
 
 confirm(){
-    prompt_php1="n"
-    read -r -p "Ban co muon thay doi phien ban PHP mac dinh khong ? (y/n) " prompt_php1
+    while true
+    do
+        read -r -p "Ban co muon thay doi phien ban PHP mac dinh khong ? (y/n) " prompt_php1
+        echo
+        if [[ "${prompt_php1}" =~ ^([yY])$ || "${prompt_php1}" =~ ^([nN])$ ]];
+        then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 set_var(){
@@ -44,39 +53,28 @@ set_var(){
 
 check_duplicate_php(){
     if [[ "${php1_new}" == "${php1_version}" ]]; then
-        ALERT=$(printf "${RED}Phien ban PHP mac dinh ban muon thay doi giong phien ban hien tai. Huy cai dat.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Phien ban PHP mac dinh ban muon thay doi giong phien ban hien tai. Huy cai dat.${NC}")
     fi
 
     if [[ "${php2_release}" == "yes" && "${php1_new}" == "${php2_version}" ]]; then
-    	ALERT=$(printf "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2. Huy cai dat.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Phien ban PHP mac dinh ban chon giong phien ban PHP 2. Huy cai dat.${NC}")
     fi
 }
 
 select_php_ver(){
     clear
-    while true
+    printf "Lua chon phien ban PHP mac dinh\n"
+    PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+    select opt in "${PHP_LIST[@]}"
     do
-        printf "Lua chon phien ban PHP mac dinh\n"
-        PS3="Nhap vao lua chon cua ban: "
-        select opt in "${PHP_LIST[@]}"
-        do
-            case $opt in
-                "${opt}") php1_new="${opt/.}"; break;;
-            esac
-        done
-        echo
-
-        if [[ " ${PHP_LIST[*]} " == *" $(echo "${php1_new}" | fold -w4 | paste -sd'.') "* ]]; then
-            break
-        else
-            clear
-            printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
-        fi
+        case $opt in
+            "${opt}") php1_new="${opt/.}"; break;;
+        esac
     done
 }
 
 remove_old_php(){
-	yum -y remove php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
+    yum -y remove php php-fpm php-ldap php-zip php-embedded php-cli php-mysql php-common php-gd php-xml php-mbstring \
         php-mcrypt php-pdo php-soap php-json php-simplexml php-process php-curl php-bcmath php-snmp php-pspell php-gmp \
         php-intl php-imap php-enchant php-pear php-zlib php-xmlrpc php-devel \
         php-tidy php-opcache php-cli php-pecl-zip php-dom php-ssh2 php-xmlreader php-date php-exif php-filter php-ftp \
@@ -124,9 +122,9 @@ install_igbinary(){
     cd /root && rm -rf igbinary-"${IGBINARY_VERSION}" igbinary-"${IGBINARY_VERSION}".tgz
 
     if [[ -f "/usr/lib64/php/modules/igbinary.so" ]]; then
-    	if [[ -f "/etc/php.d/40-igbinary.ini" ]]; then
-    		rm -rf /etc/php.d/40-igbinary.ini
-    	fi
+        if [[ -f "/etc/php.d/40-igbinary.ini" ]]; then
+            rm -rf /etc/php.d/40-igbinary.ini
+        fi
         cat >> "/etc/php.d/40-igbinary.ini" << EOF
 extension=igbinary.so
 EOF
@@ -146,9 +144,9 @@ install_php_memcached(){
         cd /root && rm -rf memcached-"${PHP_MEMCACHED_VERSION}".tgz memcached-"${PHP_MEMCACHED_VERSION}"
 
     if [[ -f "/usr/lib64/php/modules/memcached.so" ]]; then
-    	  if [[ -f "/etc/php.d/50-memcached.ini" ]]; then
-    		    rm -rf /etc/php.d/50-memcached.ini
-    	  fi
+        if [[ -f "/etc/php.d/50-memcached.ini" ]]; then
+            rm -rf /etc/php.d/50-memcached.ini
+        fi
         cat >> "/etc/php.d/50-memcached.ini" << EOF
 extension=memcached.so
 EOF
@@ -168,9 +166,9 @@ install_php_redis(){
     cd /root && rm -rf redis-"${PHP_REDIS_VERSION}".tgz redis-"${PHP_REDIS_VERSION}"
 
     if [[ -f "/usr/lib64/php/modules/redis.so" ]]; then
-    	  if [[ -f "/etc/php.d/50-redis.ini" ]]; then
-    		    rm -rf /etc/php.d/50-redis.ini
-    	  fi
+        if [[ -f "/etc/php.d/50-redis.ini" ]]; then
+            rm -rf /etc/php.d/50-redis.ini
+        fi
         cat >> "/etc/php.d/50-redis.ini" << EOF
 extension=redis.so
 EOF
@@ -257,8 +255,8 @@ EOwww_conf
 # Custom PHP Ini
 hostvn_custom_ini(){
     if [[ -f "/etc/php.d/00-hostvn-custom.ini" ]]; then
-		rm -rf /etc/php.d/00-hostvn-custom.ini
-	fi
+        rm -rf /etc/php.d/00-hostvn-custom.ini
+    fi
     cat > "/etc/php.d/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
@@ -317,36 +315,42 @@ write_info(){
 _run(){
     set_var
     select_php_ver
-    check_duplicate_php
-
-    if [[ -z "${ALERT}" ]]; then
-        remove_old_php
-
-        install_php
-        install_igbinary
-        install_php_memcached
-        install_php_redis
-        php_global_config
-        hostvn_custom_ini
-        php_opcache
-        systemctl restart php-fpm
-        systemctl enable php-fpm
-        write_info
-
-        clear
-        printf "${GREEN}Thay doi phien ban PHP thanh cong.${NC}\n"
+    if [ -z "${php1_new}" ]; then
+        printf "%s\n" "${RED}Huy thay doi phien ban PHP.${NC}"
     else
-        clear
-        printf "${ALERT}\n"
+        check_duplicate_php
+
+        if [[ -z "${ALERT}" ]]; then
+            remove_old_php
+
+            install_php
+            install_igbinary
+            install_php_memcached
+            install_php_redis
+            php_global_config
+            hostvn_custom_ini
+            php_opcache
+            systemctl restart php-fpm
+            systemctl enable php-fpm
+            write_info
+
+            clear
+            printf "%s\n" "${GREEN}Thay doi phien ban PHP thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
     fi
 }
 
+prompt_php1=""
+php1_new=""
 ALERT=""
 confirm
 if [[ "${prompt_php1}" =~ ^([yY])$ ]]; then
     _run
 else
-    printf "${GREEN}Ban da huy thay doi phien ban PHP.${NC}\n"
+    printf "%s\n" "${GREEN}Ban da huy thay doi phien ban PHP.${NC}"
 fi
 
 menu_php

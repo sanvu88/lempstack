@@ -12,18 +12,18 @@
 
 CHOICE=1
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}             Sao luu/Khoi phuc           ${NC}\n"
-printf "${GREEN}=========================================${NC}\n"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s             Sao luu/Khoi phuc           %s\n" "${GREEN}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Sao luu du lieu (Local)${NC}\n"
-    printf "${GREEN}2. Khoi phuc du lieu (Local)${NC}\n"
-    printf "${GREEN}3. Sao luu len Google Drive${NC}\n"
-    printf "${GREEN}4. Thiet lap backup tu dong${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Sao luu du lieu (Local)%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Khoi phuc du lieu (Local)%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Sao luu len Google Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Thiet lap backup tu dong%s\n" "${GREEN}" "${NC}"
+    printf "%s ==========================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -36,6 +36,6 @@ do
         3) clear; menu_ggdrive ;;
         4) clear; menu_cronjob ;;
         0) clear; menu_wp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

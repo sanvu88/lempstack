@@ -12,21 +12,20 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "${GREEN}Quan ly Admin Tool ${NC}\n"
-printf "${GREEN}===================${NC}\n"
-echo ""
+printf "%s===========================%s\n" "${GREEN}" "${NC}"
+printf "     %sQuan ly Admin Tool %s\n   " "${GREEN}" "${NC}"
+printf "%s===========================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Cap nhat phpMyAdmin${NC}\n"
-    printf "${GREEN}2. Cap nhat phpSysInfo${NC}\n"
-    printf "${GREEN}3. Cap nhat Opcache Panel${NC}\n"
-    printf "${GREEN}4. Cap nhat Memcached Admin${NC}\n"
-    printf "${GREEN}5. Cap nhat Redis Admin${NC}\n"
-    printf "${GREEN}6. Doi mat khau Admin Tool${NC}\n"
-    printf "${GREEN}7. Doi port Admin Tool${NC}\n"
-    printf "${GREEN} -------------------------${NC}\n"
+    printf "%s1. Cap nhat phpMyAdmin%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Cap nhat phpSysInfo%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cap nhat Opcache Panel%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Cap nhat Memcached Admin%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Cap nhat Redis Admin%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Doi mat khau Admin Tool%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Doi port Admin Tool%s\n" "${GREEN}" "${NC}"
+    printf "%s =========================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -36,20 +35,20 @@ do
     case ${CHOICE} in
         1) update_phpmyadmin ;;
         2) update_phpsysinfo ;;
-		    3) update_opcache_panel ;;
+        3) update_opcache_panel ;;
         4) update_memcached_panel ;;
         5) update_redis_panel ;;
-		    6)
+        6)
             read -r -p "Nhap mat khau moi: " admin_new_pwd
             htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
                   sed -i '/admin_pwd=/d' "${FILE_INFO}"
                   echo "admin_pwd=${admin_new_pwd}" >> "${FILE_INFO}"
             clear
-            printf "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}"
             menu_admin
             ;;
         7) change_port_admin ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

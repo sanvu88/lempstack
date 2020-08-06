@@ -335,7 +335,7 @@ _run(){
     restart_service
     systemctl restart mariadb
     clear
-    printf "${GREEN}Cap nhat lai thong so thanh cong.${NC}\n"
+    printf "%s\n" "${GREEN}Cap nhat lai thong so thanh cong.${NC}"
 }
 
 confirm
@@ -343,7 +343,7 @@ confirm
 if [[ "${promtp_update}" =~ ^([yY])$ ]]; then
     _run
 else
-    printf "${GREEN}Ban da huy cap nhat lai thong so SCRIPT.${NC}\n"
+    printf "%s\n" "${GREEN}Ban da huy cap nhat lai thong so SCRIPT.${NC}"
 fi
 
 menu_vps

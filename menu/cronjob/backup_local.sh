@@ -21,39 +21,49 @@ source /var/hostvn/menu/helpers/variable_common
 backup_num=$(grep -w "backup_num" "${FILE_INFO}" | cut -f2 -d'=')
 
 for users in /home/*; do
-	if [[ -d "${users}" ]]; then
-		user=${users##*/}
-		for domains in /home/"${user}"/*; do
-			if [[ -d "${domains}" ]]; then
-				domain=${domains##*/}
-				for publics in /home/${user}/${domain}/public_html; do
-					if [[ -d "${publics}" ]]; then
-						public=${publics##*/}
-						#https://www.howtoforge.com/tutorial/linux-grep-command/
+    if [[ -d "${users}" ]]; then
+        user=${users##*/}
+        for domains in /home/"${user}"/*; do
+            if [[ -d "${domains}" ]]; then
+                domain=${domains##*/}
+                for publics in /home/${user}/${domain}/public_html; do
+                    if [[ -d "${publics}" ]]; then
+                        public=${publics##*/}
+                        #https://www.howtoforge.com/tutorial/linux-grep-command/
                         #https://stackoverflow.com/a/6284370
-						db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-						if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
-							mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
-						fi
-						rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
-						cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-						mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+                        db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+                        if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+                            mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+                        fi
+                        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
+                        cd /home/backup/"${CURRENT_DATE}"/"${domain}" || exit
+                        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 
-						cd_dir /home/"${user}"/"${domain}"
-						tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
-					fi
-				done
-			fi
-		done
-	fi
+                        cd /home/"${user}"/"${domain}" || exit
+                        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+                    fi
+                done
+            fi
+        done
+    fi
 done
 
-old_backup=$(date -d "${backup_num} days ago" +%Y-%m-%d)
+find /home/backup -type d -mtime +"$backup_num" -exec rm -r {} \;
 
-for D in /home/backup/*; do
-	[[ -d "${D}" ]] || continue
-	folder=${D##*/}
-	if [[ ${folder} -ne ${old_backup} ]]; then
-		rm -rf /home/backup/"${folder}"
-	fi
-done
+#old_backup=$(date -d "$backup_num days ago" +%Y-%m-%d)
+#date1=$(echo "$old_backup"| cut -d'-' -f3)
+#month1=$(echo "$old_backup" | cut -d'-' -f2)
+#year1=$(echo "$old_backup" | cut -d'-' -f1)
+#old_backup="$year1-$((10#$month1))-$((10#$date1))"
+#
+#for D in /home/backup/*; do
+#    [[ -d "${D}" ]] || continue
+#        folder=${D##*/}
+#        date=$(echo "$folder"| cut -d'-' -f3)
+#        month=$(echo "$folder" | cut -d'-' -f2)
+#        year=$(echo "$folder" | cut -d'-' -f1)
+#        folder1="$year-$((10#$month))-$((10#$date))"
+#    if [[ ${old_backup} -gt ${folder1} ]]; then
+#        rm -rf /home/backup/"${folder}"
+#    fi
+#done

@@ -14,18 +14,18 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-printf "${GREEN}======================${NC}\n"
-printf "${GREEN}Chinh sua thong so php${NC}\n"
-printf "${GREEN}======================${NC}\n"
+printf "%s======================%s\n" "${GREEN}" "${NC}"
+printf "%sChinh sua thong so php%s\n" "${GREEN}" "${NC}"
+printf "%s======================%s\n" "${GREEN}" "${NC}"
 
-printf "${RED}Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.${NC}\n"
-printf "${RED}Can suy nghi ky truoc khi thay doi bat ky thong so nao.${NC}\n"
+printf "%s\n" "${RED}Luu y: Tat ca cac thong so deu da duoc toi uu theo thong so cua VPS.${NC}"
+printf "%s\n" "${RED}Can suy nghi ky truoc khi thay doi bat ky thong so nao.${NC}"
 
 set_variable(){
-	ini_1="/etc/php.d/00-hostvn-custom.ini"
-	ini_2="/etc/opt/remi/${php2_version}/php.d/00-hostvn-custom.ini"
+    ini_1="/etc/php.d/00-hostvn-custom.ini"
+    ini_2="/etc/opt/remi/${php2_version}/php.d/00-hostvn-custom.ini"
 
-	if [[ ${php2_version} == "php56" ]]; then
+    if [[ ${php2_version} == "php56" ]]; then
         ini_2="/opt/remi/${php2_version}/root/etc/php.d/00-hostvn-custom.ini"
     fi
 }
@@ -33,7 +33,7 @@ set_variable(){
 select_parameter(){
     echo "Lua chon thong so muon thay đoi"
     PS3='Nhap lua chon cua ban (1-5): '
-    options=("post_max_size" "upload_max_filesize" "memory_limit" "max_input_time" "max_execution_time")
+    options=("post_max_size" "upload_max_filesize" "memory_limit" "max_input_time" "max_execution_time" "Cancel")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -42,63 +42,77 @@ select_parameter(){
             "memory_limit") parameter="memory_limit"; break;;
             "max_input_time") parameter="max_input_time"; break;;
             "max_execution_time") parameter="max_execution_time"; break;;
-            *) printf "${RED}Ban nhap sai, vui long nhap lai.${NC}\n" ;;
+            "Cancel") parameter="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}" ;;
         esac
     done
 }
 
 input_parameter(){
-	read -r -p "Nhap vao thong so moi (Ex: 120): " num
+    while true
+    do
+        read -r -p "Nhap vao thong so moi (Ex: 120) [0 = Thoat]: " num
+        echo
+        if [[ "${num}" =~ ^[0-9]+$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri ban nhap khong dung. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 remove_ini_bak(){
-	if [[ -f "${ini_1}.bak" ]]; then
-		rm -rf "${ini_1}".bak
-	fi
+    if [[ -f "${ini_1}.bak" ]]; then
+        rm -rf "${ini_1}".bak
+    fi
 
-	if [[ -f "${ini_2}.bak" ]]; then
-		rm -rf "${ini_2}".bak
-	fi
+    if [[ -f "${ini_2}.bak" ]]; then
+        rm -rf "${ini_2}".bak
+    fi
 }
 
 change_parameter(){
-	if [[ "${parameter}" == "max_input_time" || "${parameter}" == "max_execution_time" ]]; then
-		parameter_new=${num}
-	else
-		parameter_new=${num}M
-	fi
+    if [[ "${parameter}" == "max_input_time" || "${parameter}" == "max_execution_time" ]]; then
+        parameter_new=${num}
+    else
+        parameter_new=${num}M
+    fi
 
-	sed -i.bak "/${parameter}/d" ${ini_1}
-	echo "${parameter} = ${parameter_new}" >> "${ini_1}"
+    sed -i.bak "/${parameter}/d" ${ini_1}
+    echo "${parameter} = ${parameter_new}" >> "${ini_1}"
 
-	if [[ "${php2_release}" == "yes" ]]; then
-		sed -i.bak "/${parameter}/d" "${ini_2}"
-		echo "${parameter} = ${parameter_new}" >> "${ini_2}"
-	fi
+    if [[ "${php2_release}" == "yes" ]]; then
+        sed -i.bak "/${parameter}/d" "${ini_2}"
+        echo "${parameter} = ${parameter_new}" >> "${ini_2}"
+    fi
 }
 
 restart_php(){
-	systemctl restart php-fpm
-	if [[ "${php2_release}" == "yes" ]]; then
-		systemctl restart "${php2_version}"-php-fpm
-	fi
+    systemctl restart php-fpm
+    if [[ "${php2_release}" == "yes" ]]; then
+        systemctl restart "${php2_version}"-php-fpm
+    fi
 }
 
 _run(){
-	set_variable
-	select_parameter
-	input_parameter
-
-	if valid_number "${num}"; then
-	    remove_ini_bak
-        change_parameter
-        restart_php
-        printf "${GREEN}Thay đoi thong so PHP thanh cong.${NC}\n"
+    set_variable
+    select_parameter
+    if [ "${parameter}" == "0" ]; then
+        printf "%s\n" "${RED}Huy thay đoi thong so PHP.${NC}"
     else
-        printf "${RED}Gia tri ban nhap khong chinh xac.${NC}\n"
-	fi
-}
+        input_parameter
 
+        if [ "${num}" == "0" ]; then
+            printf "%s\n" "${RED}Huy thay đoi thong so PHP.${NC}"
+        else
+            remove_ini_bak
+            change_parameter
+            restart_php
+            printf "%s\n" "${GREEN}Thay đoi thong so PHP thanh cong.${NC}"
+        fi
+    fi
+}
+parameter=""
+num=""
 _run
-sleep 2
 menu_php

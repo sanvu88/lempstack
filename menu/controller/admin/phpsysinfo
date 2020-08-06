@@ -34,7 +34,7 @@ update(){
 	mv serverinfo/phpsysinfo.ini.new serverinfo/phpsysinfo.ini
 	chown -R nginx:nginx serverinfo
 	clear
-	printf "${GREEN}Update phpSysInfo thanh cong.${NC}\n"
+	printf "%sUpdate phpSysInfo thanh cong.%s\n" "${GREEN}" "${NC}"
 }
 
 run(){

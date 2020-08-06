@@ -12,20 +12,19 @@
 
 CHOICE=1
 
-printf "${GREEN}==============================================${NC}\n"
-printf "${GREEN}                Quan ly cronjob               ${NC}\n"
-printf "${GREEN}==============================================${NC}\n"
-echo ""
+printf "%s==============================================%s\n" "${GREEN}" "${NC}"
+printf "%s                Quan ly cronjob               %s\n" "${GREEN}" "${NC}"
+printf "%s==============================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Kiem tra cac Cronjob tren VPS${NC}\n"
-    printf "${GREEN}2. Tao Cronjob auto renew Let's Encrypt${NC}\n"
-    printf "${GREEN}3. Tao Cronjob tu dong backup tai VPS${NC}\n"
-    printf "${GREEN}4. Tao Cronjob tu dong backup len Google Drive${NC}\n"
-    printf "${GREEN}5. Tao cronjob tuy chinh${NC}\n"
-    printf "${GREEN}6. Xóa cronjob${NC}\n"
-    printf "${GREEN} ---------------------------------------------${NC}\n"
+    printf "%s1. Kiem tra cac Cronjob tren VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Tao Cronjob auto renew Let's Encrypt%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Tao Cronjob tu dong backup tai VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Tao Cronjob tu dong backup len Google Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Tao cronjob tuy chinh%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Xóa cronjob%s\n" "${GREEN}" "${NC}"
+    printf "%s =============================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -36,7 +35,7 @@ do
         1)
             echo ""
             cron=$(crontab -l)
-            printf "${RED}${cron}${NC}\n"
+            printf "${RED}${cron}%s\n"
             echo ""
             ;;
         2)
@@ -47,11 +46,11 @@ do
                 crontab le
                 rm -rf le
                 clear
-                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+                printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
                 echo ""
             else
                 clear
-                printf "${RED}Cronjob da ton tai.${NC}\n"
+                printf "${RED}Cronjob da ton tai.%s\n"
                 echo ""
             fi
 
@@ -61,7 +60,7 @@ do
         4) clear; cron_backup_gg ;;
         5)
             clear
-            printf "${RED}Bam Ctrl + C de huy tao cronjob${NC}\n"
+            printf "${RED}Bam Ctrl + C de huy tao cronjob%s\n"
             echo ""
             read -r -p "Nhap vao phut (Bo trong neu chay hang moi phut): " minutes
             read -r -p "Nhap vao gio (Bo trong neu chay moi gio): " hours
@@ -97,11 +96,11 @@ do
                 crontab cu_cron
                 rm -rf cu_cron
                 clear
-                printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+                printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
                 echo ""
             else
                 clear
-                printf "${RED}Cronjob da ton tai.${NC}\n"
+                printf "%s\n" "${GREEN}Cronjob da ton tai.${RED}"
                 echo ""
             fi
 
@@ -109,6 +108,6 @@ do
             ;;
         6) clear; cron_destroy ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${GREEN}Lua chon cua ban khong chinh xac. Vui long chon lai.${RED}";;
     esac
 done

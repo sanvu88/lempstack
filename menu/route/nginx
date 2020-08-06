@@ -16,29 +16,28 @@ nginx_status=$(pgrep -f nginx)
 nginx_v=$(nginx -v 2>&1 | grep -o '[0-9.]*$'; echo)
 set_cl(){
     if [[ -n ${nginx_status} ]]; then
-        nginx_status=$(printf "${GREEN}Hoat dong${NC}")
+        nginx_status=$(printf "%sHoat dong%s" "${GREEN}" "${NC}")
     else
-        nginx_status=$(printf "${RED}Khong hoat dong${NC}")
+        nginx_status=$(printf "%sKhong hoat dong%s" "${RED}" "${NC}")
     fi
 }
 
 set_cl
 
-printf "${GREEN}=============================${NC}\n"
-printf "${GREEN}        Quan ly Nginx        ${NC}\n"
-printf "${GREEN}=============================${NC}\n"
-printf "${GREEN}Phien ban : %s${NC}\n" "${nginx_v}"
-printf "${GREEN}-----------------------------${NC}\n"
-printf "${GREEN}Trang thai: %s${NC}\n" "${nginx_status}"
-printf "${GREEN}-----------------------------${NC}\n"
-echo
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
+printf "%s        Quan ly Nginx        %s\n" "${GREEN}" "${NC}"
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
+printf "%sPhien ban : %s%s\n" "${GREEN}" "${nginx_v}" "${NC}"
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
+printf "%sTrang thai: %s%s\n" "${GREEN}" "${nginx_status}" "${NC}"
+printf "%s=============================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Khoi đong lai nginx${NC}\n"
-    printf "${GREEN}2. Kiem tra cau hinh Nginx${NC}\n"
-    printf "${GREEN}3. Cap nhat Nginx${NC}\n"
-    printf "${GREEN} -------------------------${NC}\n"
+    printf "%s1. Khoi đong lai nginx%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Kiem tra cau hinh Nginx%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cap nhat Nginx%s\n" "${GREEN}" "${NC}"
+    printf "%s =========================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
@@ -49,11 +48,11 @@ do
     case ${CHOICE} in
         1)
             clear
-            printf "${RED}Dang khoi đong lai...${NC}\n"
+            printf "%s\n" "${RED}Dang khoi đong lai...${NC}"
             sleep 1
             systemctl restart nginx
             clear
-            printf "${GREEN}Khoi đong lai Nginx thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Khoi đong lai Nginx thanh cong.${NC}"
             sleep 1
             echo
             menu_nginx
@@ -67,15 +66,15 @@ do
             menu_nginx
             ;;
         3)
-            printf "${RED}Chuan bi cap nhat...${NC}\n"
+            printf "%s\n" "${RED}Chuan bi cap nhat...${NC}"
             sleep 1
             yum -y update nginx
             clear
-            printf "${GREEN}Hoan tat cap nhat.${NC}\n"
+            printf "%s\n" "${GREEN}Hoan tat cap nhat.${NC}"
             echo
             menu_nginx
             ;;
         0) clear; menu_lemp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

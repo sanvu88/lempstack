@@ -1,0 +1,264 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+# shellcheck disable=SC2034
+source /var/hostvn/menu/helpers/function
+
+set_ssl(){
+    echo "Ban dang su dung loai SSL nao ?"
+    PS3="Nhap vao lua chon cua ban: "
+    options=("Let's Encrypt" "SSL tra phi" "Chua cai SSL" "Cancel")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Let's Encrypt") ssl="le"; break;;
+            "SSL tra phi") ssl="ssl_paid"; break;;
+            "Chua cai SSL") ssl="no_ssl"; break;;
+            "Cancel") ssl="0"; break;;
+            *) printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
+        esac
+    done
+
+    if [[ "${ssl}" == "le" && ! -f "/etc/letsencrypt/live/${domain}/fullchain.pem" ]]; then
+        printf "%s\n" "${RED}Khong tim thay chung chi Let's Encrypt.${NC}"
+        printf "%s\n" "${RED}He thong se Rewirte vhost khong co SSL.${NC}"
+        ssl="no_ssl"
+        sleep 3
+    fi
+
+    if [[ "${ssl}" == "ssl_paid" && ! -f "/etc/nginx/ssl/${domain}/fullchain.pem" ]]; then
+        printf "%s\n" "${RED}Khong tim thay chung chi SSL.${NC}"
+        printf "%s\n" "${RED}Hay dam bao chung chi cua ban duoc dat dung duong dan /etc/nginx/ssl/${domain}.${NC}"
+        printf "%s\n" "${RED}He thong se Rewirte vhost khong co SSL.${NC}"
+        ssl="no_ssl"
+        sleep 3
+    fi
+}
+
+vhost_nossl(){
+    set_rewrite
+    fastcgi
+
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+upstream php-${username} {
+    server ${fastcgi_pass}
+}
+
+server {
+    listen 80;
+    server_name ${domain} www.${domain};
+
+    #access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+    ${root}
+    index index.php index.html index.htm;
+
+    ${rewrite}
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass php-${username};
+        }
+    }
+    ${brute}
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+    ${wp_secure}
+    ${xmlrpc}
+}
+END
+}
+
+vhost_sslle(){
+    set_rewrite
+    fastcgi
+
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+upstream php-${username} {
+    server ${fastcgi_pass}
+}
+
+server {
+    listen 443 ssl http2; # managed by Certbot
+    server_name ${domain} www.${domain};
+
+    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+    #access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+    ${root}
+    index index.php index.html index.htm;
+
+    ${rewrite}
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass php-${username};
+        }
+    }
+    ${brute}
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+    ${wp_secure}
+    ${xmlrpc}
+}
+
+server {
+    if (\$host = ${domain}) {
+        return 301 https://\$host\$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    server_name ${domain} www.${domain};
+    return 404; # managed by Certbot
+}
+END
+}
+
+vhost_sslpaid(){
+    set_rewrite
+    fastcgi
+
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+upstream php-${username} {
+    server ${fastcgi_pass}
+}
+
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${domain} www.${domain};
+
+    ${root}
+    if (\$http_x_forwarded_proto != 'https') {
+        return 301 https://\$host\$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${domain} www.${domain};
+
+    access_log off;
+    #access_log /home/${username}/${domain}/logs/access.log;
+    log_not_found off;
+    #error_log off;
+    error_log /home/${username}/${domain}/logs/error.log;
+
+    ${root}
+    index index.php index.html index.htm;
+
+    ${rewrite}
+
+    ssl_certificate         /etc/nginx/ssl/"${domain}"/fullchain.pem;
+    ssl_certificate_key     /etc/nginx/ssl/"${domain}"/privkey.pem;
+
+    location ~ \.php\$
+    {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass php-${username};
+        }
+    }
+
+    ${brute}
+    ${wp_secure}
+    ${xmlrpc}
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+}
+END
+}
+
+_run(){
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+    select_source
+    set_ssl
+    if [ "${ssl}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+    else
+        root="root /home/${username}/${domain}/public_html;"
+        if [ "${SOURCE}" == "laravel" ]; then
+            root="root /home/${username}/${domain}/public_html/public;"
+        fi
+
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+            xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
+            brute_force_wp "${username}"
+        fi
+
+        rm -rf /etc/nginx/conf.d/"${domain}".conf
+
+        if [[ "${ssl}" == "le" ]]; then
+            vhost_sslle
+        elif [[ "${ssl}" == "ssl_paid" ]]; then
+            vhost_sslpaid
+        else
+            vhost_nossl
+        fi
+
+        restart_service
+        clear
+        echo ""
+        printf "%sRewrite Vhost thanh cong.%s\n" "${GREEN}" "${NC}"
+        if [[ "${SOURCE}" == "wordpress" ]]; then
+            printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+        fi
+        echo ""
+    fi
+}
+
+SOURCE=""
+domain=""
+ssl=""
+
+select_domain
+
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    _run
+fi
+
+menu_domain

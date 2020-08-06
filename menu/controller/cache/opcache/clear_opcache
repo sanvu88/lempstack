@@ -14,6 +14,6 @@
 source /var/hostvn/menu/helpers/function
 
 restart_service
-printf "${GREEN}Xoa cache Opcache thanh cong.${NC}\n"
+printf "%s\n" "${GREEN}Xoa cache Opcache thanh cong.${NC}"
 
 manage_opcache

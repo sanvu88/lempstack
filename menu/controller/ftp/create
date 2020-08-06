@@ -19,14 +19,28 @@ set_var(){
     #https://stackoverflow.com/a/6284370
     pureftpd_status="$(pgrep -f pure-ftpd)"
     ftp_port=$(grep -w "ftp_port" "${FILE_INFO}" | cut -f2 -d'=');
-    username=${domain//[-._]/}
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 }
 
 input(){
-	  read -r -p "Nhap vao user muon tao: " ftp_user
-	  read -r -p "Nhap vao mat khau muon tao: " ftp_pwd
-	  echo "Nhap vao duong dan duoc phep truy cap. VD: /home/example, /home/example/example.com/public_html"
-	  read -r -p "Nhap duong dan: " ftp_path
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "Nhap vao user muon tao [0 = Thoat]: " ftp_user
+        echo
+        if validate_user "${ftp_user}" || [ "${ftp_user}" == "0" ] ; then
+            break
+        else
+            clear
+            printf "%s\n" "${RED}User khong dung dinh dang, vui long nhap lai.${NC}"
+        fi
+    done
+
+    if [ "${ftp_user}" != "0" ]; then
+        ftp_pwd=$(gen_pass "$@")
+        echo "Nhap vao duong dan duoc phep truy cap. VD: /home/example, /home/example/example.com/public_html"
+        read -r -p "Nhap duong dan [0 = Thoat]: " ftp_path
+    fi
 }
 
 show_info(){
@@ -39,49 +53,61 @@ show_info(){
     echo ""
 }
 
-create(){
-	  pure-pw useradd "${ftp_user}" -u "${username}" -g "${username}" -d "${ftp_path}" <<EOF
+_create(){
+    pure-pw useradd "${ftp_user}" -u "${username}" -g "${username}" -d "${ftp_path}" <<EOF
 ${ftp_pwd}
 ${ftp_pwd}
 EOF
-	  pure-pw mkdb
-	  systemctl restart pure-ftpd
+    pure-pw mkdb
+    systemctl restart pure-ftpd
 }
 
 _run(){
-    ALERT=""
-    select_domain
-
     set_var
-    input
 
-    if if_pureftpd_user_exists ftp_user; then
-        ALERT=$(printf "${RED}User da ton tai.${NC}\n")
+    if if_pureftpd_user_exists "${ftp_user}"; then
+        ALERT=$(printf "%s\n" "${RED}User da ton tai.${NC}")
     fi
 
     if [ "${ftp_path}" == "/" ]; then
-        ALERT=$(printf "${RED}Duong dan truy cap khong chinh xac.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Duong dan truy cap khong chinh xac.${NC}")
     fi
 
     if [[ ! -d "${ftp_path}" ]]; then
-        ALERT=$(printf "${RED}Duong dan truy cap ban nhap khong ton tai.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Duong dan truy cap ban nhap khong ton tai.${NC}")
     fi
 
-    validate_user "${ftp_user}"
-
     if [[ -z "${ALERT}" ]]; then
-        create
+        _create
+        clear
         show_info
     else
-        printf "${ALERT}\n"
+        clear
+        printf "%s\n" "${ALERT}"
     fi
 }
 
+ALERT=""
+ftp_user=""
 pureftpd_status="$(pgrep -f pure-ftpd)"
+
 if [ -z "${pureftpd_status}" ]; then
-    printf "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}\n"
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 else
-    _run
-    menu_ftp
+    select_domain
+    if [ -z "${domain}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    else
+        input "$@"
+        if [[ "${ftp_user}" == "0" || "${ftp_path}" == "0" ]]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+        else
+            _run
+        fi
+    fi
 fi
 
+menu_ftp

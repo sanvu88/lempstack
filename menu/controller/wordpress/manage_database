@@ -12,16 +12,16 @@
 
 CHOICE=1
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}             Quan ly Database            ${NC}\n"
-printf "${GREEN}=========================================${NC}\n"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s             Quan ly Database            %s\n" "${GREEN}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 echo
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Toi uu database${NC}\n"
-    printf "${GREEN}2. Repair database${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Toi uu database%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Repair database%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -32,6 +32,6 @@ do
         1) clear; wp_optimize_db ;;
         2) clear; wp_repair_db ;;
         0) clear; menu_wp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

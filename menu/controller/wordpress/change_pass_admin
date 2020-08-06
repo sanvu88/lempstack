@@ -17,75 +17,88 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [[ -z "${username}" ]]; then
-		read -r -p "Nhap vao FTP user: " username
-	fi
-
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-
-	if [[ -z "${db_name}" ]]; then
-		read -r -p "Nhap vao database name: " db_name
-	fi
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    new_admin_pwd=$(gen_pass)
 }
 
 backup_confirm(){
-	read -r -p "Ban co muon backup du lieu truoc khi doi mat khau admin khong? (y/n) " promt_backup
+    while true
+    do
+        read -r -p "Ban co muon backup du lieu truoc khi doi mat khau admin khong? (y/n) " promt_backup
+        echo
+        if [[ "${promt_backup}" =~ ^([yY])$ || "${promt_backup}" =~ ^([nN])$ ]]; then
+            break
+        else
+            clear
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 input(){
-	read -r -p "Nhap admin username: " admin_username
-    read -r -p "Nhap mat khau admin wp-admin moi: " new_admin_pwd
+    while true
+    do
+        read -r -p "Nhap ID cua tai khoan admin muon doi mat khau [0 = Thoat]: " admin_id
+        echo
+        if valid_number "${admin_id}"; then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 backup(){
     cd_dir /home/"${username}"/"${domain}"/public_html
-    if [[ -f "/home/backup/${DATE}/${domain}/${db_name}.sql" ]]; then
-        rm -rf /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
     fi
-    if [[ ! -d "/home/backup/${DATE}/${domain}" ]]; then
-        mkdir -p /home/backup/"${DATE}"/"${domain}"
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-    wp db export --allow-root /home/backup/"${DATE}"/"${domain}"/"${db_name}".sql
-}
-
-change_pass_admin(){
-	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp user update "${admin_username}" --user_pass="${new_admin_pwd}" --allow-root
+    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 }
 
 _run(){
-    set_var
-	backup_confirm
-	check_wpconfig "${username}" "${domain}"
+    cd_dir /home/"${username}"/"${domain}"/public_html
+    check_wpconfig "${username}" "${domain}"
 
-    if ! [[ "${promt_backup}" =~ ^([yY])$ ]];then
-        ALERT=$(
-            printf "${RED}Ban da chon khong backup. Dieu nay khong an toan.${NC}\n"
-            printf "${RED}He thong se huy thay doi mat khau admin (wp-admin).${NC}\n"
-        )
+    if [ -z "${ALERT}" ]; then
+        clear
+        echo "Lay danh sach User co quyen Admin tren website: "
+        wp user list --role=administrator --fields=ID,user_login --allow-root
+        input
+        if [ "${admin_id}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+        else
+            wp user update "${admin_id}" --user_pass="${new_admin_pwd}" --allow-root
+            restart_service
+            clear
+            printf "%s\n" "${GREEN}Doi mat khau admin (wp-admin) thanh cong.${NC}"
+            printf "%s\n" "${GREEN}Mat khau moi la:${NC} ${RED}${new_admin_pwd}${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
     fi
-
-	if [ -z "${ALERT}" ]; then
-		input
-		backup
-		change_pass_admin
-		restart_service
-		clear
-		printf "${GREEN}Doi mat khau admin (wp-admin) thanh cong.${NC}\n"
-	else
-		clear
-		printf "${ALERT}"
-	fi
 }
 
 ALERT=""
+promt_backup=""
+domain=""
+admin_id=""
 select_domain
-if [ -z "${ALERT}" ]; then
-    _run
+if [ -n "${domain}" ]; then
+    set_var
+    backup_confirm
+    if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
+        backup
+    fi
+    _run "$@"
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
 fi
 menu_wp

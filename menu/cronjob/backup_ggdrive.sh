@@ -17,31 +17,31 @@ source /var/hostvn/hostvn.conf
 source /var/hostvn/menu/helpers/variable_common
 
 for users in /home/*; do
-	if [[ -d "${users}" ]]; then
-		user=${users##*/}
-		for domains in /home/"${user}"/*; do
-			if [[ -d "${domains}" ]]; then
-				domain=${domains##*/}
-				for publics in /home/${user}/${domain}/public_html; do
-					if [[ -d "${publics}" ]]; then
-						public=${publics##*/}
-						#https://www.howtoforge.com/tutorial/linux-grep-command/
+    if [[ -d "${users}" ]]; then
+        user=${users##*/}
+        for domains in /home/"${user}"/*; do
+            if [[ -d "${domains}" ]]; then
+                domain=${domains##*/}
+                for publics in /home/${user}/${domain}/public_html; do
+                    if [[ -d "${publics}" ]]; then
+                        public=${publics##*/}
+                        #https://www.howtoforge.com/tutorial/linux-grep-command/
                         #https://stackoverflow.com/a/6284370
-						db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-						if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
-							mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
-						fi
-						rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
-						cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-						mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+                        db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+                        if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+                            mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+                        fi
+                        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
+                        cd /home/backup/"${CURRENT_DATE}"/"${domain}" || exit
+                        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
 
-						cd_dir /home/"${user}"/"${domain}"
-						tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
-					fi
-				done
-			fi
-		done
-	fi
+                        cd /home/"${user}"/"${domain}" || exit
+                        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+                    fi
+                done
+            fi
+        done
+    fi
 done
 
 rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1

@@ -14,36 +14,64 @@
 source /var/hostvn/menu/helpers/function
 
 input(){
-	read -r -p "1. Nhap ten database: " db_name
-	read -r -p "2. Nhap Mysql User: " db_user
-	read -r -p "Xac nhan them database? (y/n): " promtp_db
-	password=$(gen_pass "$@")
-}
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "1. Nhap ten database [0 = Thoat]: " db_name
+        echo
+        if validate_user "${db_name}"; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 
-validate_input(){
-	if [ "$db_name" = "" ] || [ "$db_user" = "" ] || [ "$password" = "" ]; then
-	    ALERT=$(printf "${RED}Vui long nhap day du thong tin.${NC}\n")
-	fi
+    if [ "${db_name}" != "0" ]; then
+        while true
+        do
+            echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+            read -r -p "Nhap Mysql User [0 = Thoat]: " db_user
+            echo
+            if validate_user "${db_user}"; then
+                break
+            else
+                printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+
+        if [ "${db_user}" != "0" ]; then
+            while true
+            do
+                read -r -p "Xac nhan them database? (y/n): " promtp_db
+                echo
+                if [[ "${promtp_db}" =~ ^([yY])$ || "${promtp_db}" =~ ^([nN])$ ]]; then
+                    break
+                else
+                    printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+                fi
+            done
+            password=$(gen_pass "$@")
+        fi
+    fi
 }
 
 validate(){
-	validate_input
-	check_database "${db_name}"
-	check_mysql_user "${db_user}"
+    check_database "${db_name}"
+    check_mysql_user "${db_user}"
 }
 
 create_db(){
-	printf "${GREEN}Dang tao database moi...${NC}\n"
-	mysql -e "CREATE DATABASE IF NOT EXISTS ${db_name}"
-  mysql -e "CREATE USER IF NOT EXISTS '${db_user}'@'localhost' IDENTIFIED BY '$password'"
-  mysql -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost'"
-  mysql -e "FLUSH PRIVILEGES"
-  clear
-  printf "${GREEN}Da them databse thanh cong.${NC}\n"
+    printf "%s\n" "${GREEN}Dang tao database moi...${NC}"
+    mysql -e "CREATE DATABASE IF NOT EXISTS ${db_name}"
+    mysql -e "CREATE USER IF NOT EXISTS '${db_user}'@'localhost' IDENTIFIED BY '$password'"
+    mysql -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost'"
+    mysql -e "FLUSH PRIVILEGES"
+    clear
+    printf "%s\n" "${GREEN}Da them databse thanh cong.${NC}"
 }
 
 show_info(){
-	clear
+    clear
     printf "DB_Name    : s%\n" "${RED}${db_name}${NC}"
     printf "DB_User    : s%\n" "${RED}${db_user}${NC}"
     printf "DB_Password: s%\n" "${RED}${password}${NC}"
@@ -52,22 +80,38 @@ show_info(){
 }
 
 _run(){
-    ALERT=""
-	input "$@"
-	if [[ ${promtp_db} =~ ^([yY])$  ]]; then
-	   validate
+    if [[ ${promtp_db} =~ ^([yY])$  ]]; then
+       validate
 
-    if [ -z "${ALERT}" ]; then
-      create_db
-      show_info
+        if [ -z "${ALERT}" ]; then
+            create_db
+            show_info
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
     else
-      clear
-      printf "${ALERT}\n"
+        clear
+        printf "%s\n" "${RED}Ban da huy them database.${NC}"
     fi
-  else
-     printf "${RED}Ban da huy them database.${NC}\n"
-	fi
 }
 
-_run "$@"
+ALERT=""
+promtp_db=""
+db_name=""
+db_user=""
+input "$@"
+
+if [ "${db_name}" == "0" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da huy them database.${NC}"
+else
+    if [ "${db_user}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da huy them database.${NC}"
+    else
+        _run "$@"
+    fi
+fi
+
 menu_database

@@ -14,13 +14,22 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-echo "======================"
-echo "Phan quyen Chown/Chmod"
-echo "======================"
-echo
+printf "%s\n" "${GREEN}======================${NC}"
+printf "%s\n" "${GREEN}Phan quyen Chown/Chmod${NC}"
+printf "%s\n" "${GREEN}======================${NC}"
 
 action(){
-    read -r -p "Xac nhan phan quyen cho ten mien: ${domain}? (y/n): " confirm
+    while true
+    do
+        read -r -p "Xac nhan phan quyen cho ten mien: ${domain}? (y/n): " confirm
+        echo
+        if [[ "${confirm}" =~ ^([yY])$ || "${confirm}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
     if [[ "$confirm" =~ ^([yY])$ ]]; then
         #https://www.howtoforge.com/tutorial/linux-grep-command/
         #https://stackoverflow.com/a/6284370
@@ -30,28 +39,29 @@ action(){
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
-        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -0 chmod 0755
-        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -0 chmod 0644
+        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -I {} -0 chmod 0755 {}
+        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -I {} -0 chmod 0644 {}
         chown -R "${username}":"${username}" /home/"${username}"
         clear
-        printf "${GREEN}Da phan quyen cho website: ${domain}.${NC}\n"
+        printf "%s\n" "${GREEN}Da phan quyen cho website: ${domain}.${NC}"
     else
         clear
-        printf "${RED}Huy phan quyen.${NC}\n"
+        printf "%s\n" "${RED}Huy phan quyen.${NC}"
     fi
 }
 
 _run(){
-    ALERT=""
     select_domain
 
-    if [ -z "${ALERT}" ]; then
-        action
+    if [ -n "${domain}" ]; then
+       action
     else
         clear
-        printf "${ALERT}\n"
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
     fi
 }
 
+confirm=""
+domain=""
 _run
 menu_permission

@@ -12,22 +12,22 @@
 
 CHOICE=1
 
-printf "${GREEN}=========================================${NC}\n"
-printf "${GREEN}            Chuc nang nang cao           ${NC}\n"
-printf "${GREEN}=========================================${NC}\n"
-echo
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
+printf "%s            Chuc nang nang cao           %s\n" "${GREEN}" "${NC}"
+printf "%s=========================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Bat/Tat Yoast Seo config${NC}\n"
-    printf "${GREEN}2. Bat/Tat Rank Math Seo config${NC}\n"
-    printf "${GREEN}3. Cau hinh Nginx voi plugin cache${NC}\n"
-    printf "${GREEN}4. Them cache key tranh trung lap noi dung${NC}\n"
-    printf "${GREEN}5. Bat/Tat Debug mode${NC}\n"
-    printf "${GREEN}6. Bat/Tat che do bao tri (Maintenance mode)${NC}\n"
-    printf "${GREEN}7. Bat/Tat disable xmlrpc${NC}\n"
-    printf "${GREEN}8. Bat/Tat WP-Cron${NC}\n"
-    printf "${GREEN} ----------------------------------------${NC}\n"
+    printf "%s1. Bat/Tat Yoast Seo config%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Bat/Tat Rank Math Seo config%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cau hinh Nginx voi plugin cache%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Them cache key tranh trung lap noi dung%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Bat/Tat Debug mode%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Bat/Tat che do bao tri (Maintenance mode)%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Bat/Tat disable xmlrpc%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Bat/Tat WP-Cron%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Toi uu anh%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -43,7 +43,8 @@ do
         6) clear; wp_maintenance ;;
         7) clear; wp_xmlrpc ;;
         8) clear; wp_cron ;;
+        9) clear; wp_optimize_img ;;
         0) clear; menu_wp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n"  "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

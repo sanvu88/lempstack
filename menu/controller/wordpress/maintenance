@@ -15,26 +15,29 @@
 source /var/hostvn/menu/helpers/function
 
 _run(){
-    ALERT=""
+    domain=""
     select_domain
-    if [[ -z "${ALERT}" ]]; then
-        username=${domain//[-._]/}
+    if [[ -n "${domain}" ]]; then
+        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         cd_dir /home/"${username}"/"${domain}"/public_html
         wp maintenance-mode is-active --allow-root
 
         if [[ $? == 1 ]]; then
             wp maintenance-mode activate --allow-root
-            printf "${GREEN}Bat che do bao tri thanh cong.${NC}\n"
+            restart_service
+            clear
+            printf "%s\n" "${GREEN}Bat che do bao tri thanh cong.${NC}"
             echo ""
         else
             wp maintenance-mode deactivate --allow-root
-            clear
             restart_service
-            printf "${GREEN}Tat che do bao tri thanh cong.${NC}\n"
+            clear
+            printf "%s\n" "${GREEN}Tat che do bao tri thanh cong.${NC}"
             echo ""
         fi
     else
-        printf "${ALERT}\n"
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
     fi
 }
 

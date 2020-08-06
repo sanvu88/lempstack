@@ -17,51 +17,52 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-backup(){
-	if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
-      mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
-  fi
+_backup(){
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+    fi
 
-	cd_dir /home/"${username}"/"${domain}"
-	if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
-	    rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
-	fi
-	tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
+    cd_dir /home/"${username}"/"${domain}"
+    if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
+    fi
+    tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache"
 
-	if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
-	    rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
-	fi
-	cd_dir /home/"${username}"/"${domain}"/public_html
-	wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    fi
+    cd_dir /home/"${username}"/"${domain}"/public_html
+    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
 
-	clear
-	printf "${GREEN}Sao luu du lieu thanh cong.${NC}\n"
+    clear
+    printf "%s\n" "${GREEN}Sao luu du lieu thanh cong.${NC}"
 }
 
 _run(){
-	set_var
-	check_is_wordpress "${username}" "${domain}"
+    set_var
+    check_is_wordpress "${username}" "${domain}"
 
-	if [ -z "${ALERT}" ]; then
-		make_backup_dir "${domain}"
-		backup
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+    if [ -z "${ALERT}" ]; then
+        make_backup_dir "${domain}"
+        _backup
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 }
 
 ALERT=""
+domain=""
 select_domain
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
-echo ""
+
 menu_wp

@@ -15,7 +15,7 @@ source /var/hostvn/menu/helpers/function
 
 _run(){
     string1=$(grep -rnw "/etc/php.d/opcache-default.blacklist" -e "${domain}")
-    username=${domain//[-._]/}
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     if [ -z "${string1}" ]; then
         echo "/home/${username}/${domain}/public_html" >> /etc/php.d/opcache-default.blacklist
         systemctl restart php-fpm
@@ -32,15 +32,20 @@ _run(){
             systemctl restart "${php2_version}"-php-fpm
         fi
     fi
-    printf "${GREEN}Them website vao blacklist thanh cong.${NC}\n"
+    clear
+    printf "%s\n" "${GREEN}Them website vao blacklist thanh cong.${NC}"
+    manage_opcache
 }
+
+domain=""
 
 select_domain
 
-if [ -z "${ALERT}" ]; then
-    _run
+if [ -z "${domain}" ]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    manage_opcache
 else
-    printf "${ALERT}\n"
+    _run
 fi
 
-manage_opcache

@@ -14,22 +14,21 @@
 
 CHOICE=1
 
-printf "${GREEN}==================================${NC}\n"
-printf "${GREEN}           Quan ly PHP            ${NC}\n"
-printf "${GREEN}==================================${NC}\n"
-echo
+printf "%s==================================%s\n" "${GREEN}" "${NC}"
+printf "%s           Quan ly PHP            %s\n" "${GREEN}" "${NC}"
+printf "%s==================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Kiem tra phien ban PHP mac dinh${NC}\n"
-    printf "${GREEN}2. Kiem tra phien ban PHP 2${NC}\n"
-    printf "${GREEN}3. Cap nhat phien ban PHP${NC}\n"
-    printf "${GREEN}4. Khoi đong lai PHP              ${NC}\n"
-    printf "${GREEN}5. Cau hinh thong so PHP          ${NC}\n"
-    printf "${GREEN}6. Thay doi phien ban PHP mac dinh${NC}\n"
-    #printf "${GREEN}7. Thay doi phien ban PHP 2       ${NC}\n"
-    printf "${GREEN}7. Cai dat phien ban PHP thu 2    ${NC}\n"
-    printf "${GREEN} ---------------------------------${NC}\n"
+    printf "%s1. Kiem tra phien ban PHP mac dinh%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Kiem tra phien ban PHP 2%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cap nhat phien ban PHP%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Khoi đong lai PHP              %s\n" "${GREEN}" "${NC}"
+    printf "%s5. Cau hinh thong so PHP          %s\n" "${GREEN}" "${NC}"
+    printf "%s6. Thay doi phien ban PHP mac dinh%s\n" "${GREEN}" "${NC}"
+    #printf "%s7. Thay doi phien ban PHP 2       %s\n"
+    printf "%s7. Cai dat phien ban PHP thu 2    %s\n" "${GREEN}" "${NC}"
+    printf "%s =================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -41,7 +40,7 @@ do
         2)
             if [[ "${php2_release}" != "yes" ]]; then
                 clear
-                printf "${RED}Ban chua cai dat phien ban PHP thu 2.${NC}\n"
+                printf "${RED}Ban chua cai dat phien ban PHP thu 2.%s\n"
             else
                 #https://www.howtoforge.com/tutorial/linux-grep-command/
                 #https://stackoverflow.com/a/6284370
@@ -55,12 +54,12 @@ do
         3)
             yum -y update php-fpm
             clear
-            printf "${RED}Phien ban PHP mac dinh da la moi nhat.${NC}\n"
+            printf "%s\n" "${RED}Phien ban PHP mac dinh da la moi nhat.${NC}"
 
             if [[ "${php2_release}" == "yes" ]]; then
                 yum -y update "${php2_version}"-php-fpm
                 clear
-                printf "${RED}Phien ban PHP 2 dang la moi nhat.${NC}\n"
+                printf "%s\n" "${RED}Phien ban PHP 2 dang la moi nhat.${NC}"
             fi
             menu_php
             ;;
@@ -70,7 +69,7 @@ do
                 systemctl restart "${php2_version}"-php-fpm
             fi
             clear
-            printf "${GREEN}Khoi dong lai PHP thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Khoi dong lai PHP thanh cong.${NC}"
             menu_php
             ;;
         5) clear; php_setting ;;
@@ -78,6 +77,6 @@ do
         #7) clear; php2_change ;;
         7) clear; php_inst_ver_2 ;;
         0) clear; menu_lemp ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

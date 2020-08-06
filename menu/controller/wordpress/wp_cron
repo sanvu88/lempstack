@@ -15,7 +15,7 @@
 source /var/hostvn/menu/helpers/function
 
 set_var(){
-    user=${domain//[-._]/}
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 }
 
 _run(){
@@ -45,17 +45,21 @@ _run(){
                 rm -rf "${WORDPRESS_CRON_DIR}"/"${domain}"
             fi
         fi
-        printf "${GREEN}${noti}${NC}\n"
+        printf "%s\n" "${GREEN}${noti}${NC}"
     else
         clear
-        printf "${RED}File wp-config.php khong ton tai.${NC}\n"
+        printf "%s\n" "${RED}File wp-config.php khong ton tai.${NC}"
     fi
 }
 
 ALERT=""
+domain=""
 select_domain
 
-if [ -z "${ALERT}" ]; then
+if [ -n "${domain}" ]; then
     _run
+else
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 wp_menu_advanced

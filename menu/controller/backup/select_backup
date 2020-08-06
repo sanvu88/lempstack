@@ -12,17 +12,17 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "${GREEN}  Sao luu du lieu  ${NC}\n"
-printf "${GREEN}===================${NC}\n"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "%s  Sao luu du lieu  %s\n" "${GREEN}" "${NC}"
+printf "%s===================%s\n" "${GREEN}" "${NC}"
 echo ""
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Sao luu ma nguon${NC}\n"
-    printf "${GREEN}2. Sao luu database${NC}\n"
-    printf "${GREEN}3. Sao luu full${NC}\n"
-    printf "${GREEN} --------------------------${NC}\n"
+    printf "%s1. Sao luu ma nguon%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Sao luu database%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Sao luu full%s\n" "${GREEN}" "${NC}"
+    printf "%s ================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -34,6 +34,6 @@ do
         2) clear; backup_db ;;
         3) clear; backup_full ;;
         0) clear; menu_backup ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

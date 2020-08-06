@@ -13,12 +13,21 @@
 # shellcheck disable=SC2034
 
 confirm(){
-    read -r -p "Ban muon cai dat ClamAV ? (y/n) " prompt_clamav
+    while true
+    do
+        read -r -p "Ban muon cai dat ClamAV ? (y/n) " prompt_clamav
+        echo
+        if [[ "${prompt_clamav}" =~ ^([yY])$ || "${prompt_clamav}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 install(){
     if [ -f "/etc/clamd.d/scan.conf" ]; then
-        printf "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}\n"
+        printf "%s\n" "${RED}ClamAV da duoc cai dat. Ban khong can cai dat lai.${NC}"
     else
         if [[ ${OS_VER} -eq 8 ]]; then
             dnf install clamav-server clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd -y
@@ -38,17 +47,18 @@ install(){
             echo "DatabaseCustomURL http://cdn.malware.expert/malware.expert.fp"
         } >> /etc/freshclam.conf
         clear
-        printf "${GREEN}Cai dat ClamAV thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Cai dat ClamAV thanh cong.${NC}"
         echo ""
     fi
 }
 
+prompt_clamav=""
 confirm
 if [[ "${prompt_clamav}" =~ ^([yY])$ ]];then
     install
 else
     clear
-    printf "${GREEN}Ban da huy cai dat ClamAV.${NC}\n"
+    printf "%s\n" "${GREEN}Ban da huy cai dat ClamAV.${NC}"
 fi
 
 menu_security

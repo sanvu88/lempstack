@@ -13,18 +13,16 @@
 # shellcheck disable=SC2154
 
 set_var(){
-	redis_status="$(pgrep -f redis)"
-	memcached_status="$(pgrep -f memcached)"
+    redis_status="$(pgrep -f redis)"
+    memcached_status="$(pgrep -f memcached)"
 }
 
 clear_cache(){
     if [ -n "${redis_status}" ]; then
         systemctl restart redis
-        printf "${GREEN}Xoa cache thanh cong.${NC}\n"
     fi
     if [ -n "${memcached_status}" ]; then
         systemctl restart memcached
-        printf "${GREEN}Xoa cache thanh cong.${NC}\n"
     fi
 
     systemctl restart php-fpm
@@ -32,15 +30,16 @@ clear_cache(){
     if [[ "${php2_release}" == "yes" ]]; then
         systemctl restart "${php2_version}"-php-fpm
     fi
-
-    printf "${GREEN}Xoa cache thanh cong.${NC}\n"
+    clear
+    printf "%s\n" "${GREEN}Xoa cache thanh cong.${NC}"
 }
 
 _run(){
-	set_var
-	clear_cache
+    set_var
+    clear_cache
 }
 
+redis_status=""
+memcached_status=""
 _run
-sleep 2
 menu_cache

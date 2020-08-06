@@ -62,7 +62,7 @@ _run(){
     fi
     restart_service
     clear
-    printf "${GREEN}${noti}${nc}\n"
+    printf "%s\n" "${GREEN}${noti}${NC}"
 }
 
 _run

@@ -20,32 +20,32 @@ source /var/hostvn/menu/lang/"${lang}"
 
 CHOICE=1
 
-printf "${GREEN}==================================================${NC}\n"
-printf "${GREEN}       %s Scripts - Cong cu quan ly VPS    ${NC}\n" "${AUTHOR}"
-printf "${GREEN}             %s - Version %s             ${NC}\n" "${AUTHOR_WEB}" "${script_version}"
-printf "${GREEN}==================================================${NC}\n"
-printf "${GREEN}IP VPS: %s${NC}\n" "${IPADDRESS}"
-printf "${GREEN}phpMyAdmin: %s${NC}\n" "http://${IPADDRESS}:${admin_port}/phpmyadmin"
-printf "${GREEN}CSF GUI: %s${NC}\n" "https://${IPADDRESS}:${csf_port} "
-printf "${GREEN}Phim tat: Ctrl + C hoac nhap 0 đe thoat            ${NC}\n"
-printf "${GREEN}---------------------------------------------------${NC}\n"
+printf "%s==================================================%s\n" "${GREEN}" "${NC}"
+printf "%s      %s Scripts - Cong cu quan ly VPS    %s\n" "${GREEN}" "${AUTHOR}" "${NC}"
+printf "%s             %s - Version %s             %s\n" "${GREEN}" "${AUTHOR_WEB}" "${script_version}" "${NC}"
+printf "%s==================================================%s\n" "${GREEN}" "${NC}"
+printf "%sIP VPS: %s%s\n" "${GREEN}" "${IPADDRESS}" "${NC}"
+printf "%sphpMyAdmin: %s%s\n" "${GREEN}" "http://${IPADDRESS}:${admin_port}/phpmyadmin" "${NC}"
+printf "%sCSF GUI: %s%s\n" "${GREEN}" "https://${IPADDRESS}:${csf_port}" "${NC}"
+printf "%sPhim tat: Ctrl + C hoac nhap 0 đe thoat            %s\n" "${GREEN}" "${NC}"
+printf "%s==================================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}---------------------------------------------------${NC}\n"
-    printf "${GREEN}1. Quan ly ten mien${NC}\n"
-    printf "${GREEN}2. Quan ly SSL${NC}\n"
-    printf "${GREEN}3. Quan ly Cache${NC}\n"
-    printf "${GREEN}4. Quan ly LEMP (Nginx - MariaDB - PHP - FTP - Log)${NC}\n"
-    printf "${GREEN}5. Quan ly CSF Firewall${NC}\n"
-    printf "${GREEN}6. Phan quyen Chown/Chmod${NC}\n"
-    printf "${GREEN}7. Quan ly WordPress${NC}\n"
-    printf "${GREEN}8. Sao luu/Khoi phuc du lieu${NC}\n"
-    printf "${GREEN}9. Admin Tool${NC}\n"
-    printf "${GREEN}10. Quan ly VPS${NC}\n"
-    printf "${GREEN}11. Xem thong tin tai khoan${NC}\n"
-    printf "${GREEN}12. Quan ly Cronjob${NC}\n"
-    printf "${GREEN}--------------------------------------------------${NC}\n"
+    printf "%s1. Quan ly ten mien%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Quan ly SSL%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Quan ly Cache%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Quan ly LEMP (Nginx - MariaDB - PHP - FTP - Log)%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Quan ly CSF Firewall%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Phan quyen Chown/Chmod%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Quan ly WordPress%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Sao luu/Khoi phuc du lieu%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Admin Tool%s\n" "${GREEN}" "${NC}"
+    printf "%s10. Quan ly VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s11. Xem thong tin tai khoan%s\n" "${GREEN}" "${NC}"
+    printf "%s12. Quan ly Cronjob%s\n" "${GREEN}" "${NC}"
+    printf "%s13. Cap nhat HOSTVN Scripts%s\n" "${GREEN}" "${NC}"
+    printf "%s==================================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -65,7 +65,8 @@ do
         10) clear; menu_vps;;
         11) clear; menu_account ;;
         12) clear; menu_cronjob ;;
-        0) clear; printf "${GREEN}Bye Bye... Cam on ban da su dung ${AUTHOR} Script${NC}\n";;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        13) update_script;;
+        0) clear; printf "%s\n" "${GREEN}Bye Bye... Cam on ban da su dung ${AUTHOR} Script${NC}";;
+        *) clear; printf "%s\n" "${GREEN}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

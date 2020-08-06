@@ -11,24 +11,36 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
 _run(){
     select_plugin_cache
-    sed -i "/${plugin_cache}/d" "${VHOST_DIR}"/"${domain}".conf
+
+    if [ "${plugins_cache}" == "wprocket" ]; then
+        sed -i "/rocket-nginx/d" "${VHOST_DIR}"/"${domain}".conf
+    else
+        sed -i "/${plugin_cache}/d" "${VHOST_DIR}"/"${domain}".conf
+    fi
+    staticfiles=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "staticfiles.conf")
+    if [ -z "${staticfiles}" ]; then
+        sed -i '/index.html/a include /etc/nginx/extra/staticfiles.conf;' "${VHOST_DIR}"/"${domain}".conf
+    fi
     sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
     echo "plugin_cache=" >> "${USER_DIR}"/."${domain}".conf
+    if [ -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+        rm -rf "${WORDPRESS_CRON_DIR}"/"${domain:?}"
+    fi
     clear
-    printf "${GREEN}Xoa cau hinh plugins cache ${plugin_cache} thanh cong${NC}\n"
+    printf "%s\n" "${GREEN}Xoa cau hinh plugins cache ${plugin_cache} thanh cong${NC}"
 }
 
-ALERT=""
+domain=""
 select_domain
-if [ -z "${ALERT}" ]; then
+
+if [ -n "${domain}" ]; then
     _run
 else
     clear
-    printf "${ALERT}\n"
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 fi
 wp_plugin_cache

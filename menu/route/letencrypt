@@ -12,17 +12,17 @@
 
 CHOICE=1
 
-printf "${GREEN}=====================${NC}\n"
-printf "${GREEN}Quan ly Let's Encrypt${NC}\n"
-printf "${GREEN}=====================${NC}\n"
-echo
+printf "%s========================+%s\n" "${GREEN}" "${NC}"
+printf "%s  Quan ly Let's Encrypt  %s\n" "${GREEN}" "${NC}"
+printf "%s========================+%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Them Let's Encrypt${NC}\n"
-    printf "${GREEN}2. Kiem tra thoi han${NC}\n"
-    printf "${GREEN}3. Go bo Let's Encrypt${NC}\n"
-    printf "${GREEN} ---------------------${NC}\n"
+    printf "%s1. Them Let's Encrypt%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Let's Encrypt Wildcard%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Kiem tra thoi han%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Go bo Let's Encrypt%s\n" "${GREEN}" "${NC}"
+    printf "%s ========================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -31,9 +31,10 @@ do
     fi
     case ${CHOICE} in
         1) clear; le_create ;;
-        2) clear; le_check_expired ;;
-        3) clear; le_remove ;;
+        2) clear; le_wildcard ;;
+        3) clear; le_check_expired ;;
+        4) clear; le_remove ;;
         0) clear; menu_ssl ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

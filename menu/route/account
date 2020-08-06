@@ -12,18 +12,17 @@
 
 CHOICE=1
 
-printf "${GREEN}============================${NC}\n"
-printf "${GREEN}Kiem tra thong tin tai khoan${NC}\n"
-printf "${GREEN}============================${NC}\n"
-echo
+printf "%s================================%s\n" "${GREEN}" "${NC}"
+printf "  %sKiem tra thong tin tai khoan%s\n  " "${GREEN}" "${NC}"
+printf "%s=================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Thong tin dang nhap Admin Tool${NC}\n"
-    printf "${GREEN}2. Thong tin dang nhap phpMyAdmin${NC}\n"
-    printf "${GREEN}3. Kiem tra SSH Port${NC}\n"
-    printf "${GREEN}4. Thong tin theo website${NC}\n"
-    printf "${GREEN} --------------------------------${NC}\n"
+    printf "%s1. Thong tin dang nhap Admin Tool%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Thong tin dang nhap phpMyAdmin%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Kiem tra SSH Port%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Thong tin theo website%s\n" "${GREEN}" "${NC}"
+    printf "%s ================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
     if [ -z "${CHOICE}" ]
@@ -35,8 +34,8 @@ do
         1) clear; c_tool ;;
         2) clear; pma_info ;;
         3) clear; ssh_info ;;
-		4) clear; user_info ;;
+        4) clear; user_info ;;
         0) clear; menu_primary ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

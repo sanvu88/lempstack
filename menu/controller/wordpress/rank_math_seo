@@ -15,9 +15,6 @@
 source /var/hostvn/menu/helpers/function
 
 _run(){
-    ALERT=""
-    select_domain
-
     check_yoast=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "yoast_seo")
 
     if [ -n "${check_yoast}" ]; then
@@ -29,10 +26,10 @@ _run(){
                 sed -i '/yoast_seo/d' "${VHOST_DIR}"/"${domain}".conf
                 break
             elif [[ "${del_yoast}" =~ ^([nN])$ ]]; then
-                ALERT=$(printf "${RED}Ban da chon khong xoa config Yoast Seo. Huy cau hinh Rank Math Seo.${NC}\n")
+                ALERT=$(printf "%s\n" "${RED}Ban da chon khong xoa config Yoast Seo. Huy cau hinh Rank Math Seo.${NC}")
                 break
             else
-                printf "${RED}Gia tri ban nhap khong chinh xac vui long nhap lai.${NC}\n"
+                printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac vui long nhap lai.${NC}"
             fi
         done
     fi
@@ -44,17 +41,27 @@ _run(){
             sed -i '/rank_math_seo/d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
             restart_service
-            printf "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}"
         else
             echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
             sed -i '/index.html/a include /etc/nginx/wordpress/rank_math_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
             restart_service
-            printf "${GREEN}Bat cau hinh Rank Math Seo thanh cong.${NC}\n"
+            printf "%s\n" "${GREEN}Bat cau hinh Rank Math Seo thanh cong.${NC}"
         fi
     else
-        printf "${ALERT}\n"
+        printf "%s\n" "${ALERT}"
     fi
 }
+ALERT=""
+del_yoast=""
+domain=""
+select_domain
 
-_run
+if [ -n "${domain}" ]; then
+    _run
+else
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+fi
+
 wp_menu_advanced

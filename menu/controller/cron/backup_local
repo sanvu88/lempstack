@@ -23,8 +23,8 @@ select_time(){
             "Backup 1 lan/tuan") time="@weekly"; break;;
             "Backup 1 lan/thang") time="@monthly"; break;;
             "Backup 1 lan/nam") time="@yearly"; break;;
-            "Huy tao cronjob") clear; menu_cronjob; break;;
-            *) printf "${RED}Ban nhap sai, vui long nhap lai.${NC}\n";;
+            "Huy tao cronjob") time="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
         esac
     done
 }
@@ -32,17 +32,17 @@ select_time(){
 input_backup_num(){
     echo "Nhap so ban backup ban muon luu tru: "
     echo "VD: 14 - Se luu 14 ban backup gan nhap - Cac ban cu hon se bi xoa"
-    read -r -p "Nhap vao lua chon cua ban:" backup_num
 
-    if ! valid_number "${backup_num}" ; then
-        backup_num="14"
-        printf "${RED}So ban backup ban nhap khong dung. He thong se set mac dinh là 14."
-    fi
-
-    if [[ -z "${backup_num}" ]]; then
-        backup_num="14"
-        printf "${RED}Ban chua nhap so ban backup. He thong se set mac dinh là 14."
-    fi
+    while true
+    do
+        read -r -p "Nhap vao lua chon cua ban [0 = Thoat]:" backup_num
+        echo
+        if [[ "${backup_num}" =~ ^[0-9]+$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 set_backup_num(){
@@ -66,21 +66,34 @@ create_cron(){
     echo "${time} /var/hostvn/menu/cronjob/backup_local.sh >/dev/null 2>&1" >> backuplocal
     crontab backuplocal
     rm -rf backuplocal
-    printf "${GREEN}Tao cronjob thanh cong.${NC}\n"
+    clear
+    printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
 }
 
 _run(){
     select_time
-    set_backup_num
-    create_cron
+    if [ "${time}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+    else
+        set_backup_num
+        if [ "${backup_num}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+        else
+            create_cron
+        fi
+    fi
 }
 
+time=""
+backup_num=""
 cron_exists=$(crontab -l | grep -w 'backup_local')
 
 if [ -z "${cron_exists}" ]; then
     _run
 else
     clear
-    printf "${RED}Cronjob da ton tai.${NC}\n"
+    printf "%s\n" "${RED}Cronjob da ton tai.${NC}"
 fi
 menu_cronjob

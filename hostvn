@@ -3418,7 +3418,7 @@ install_csf(){
         sed -i "s/PORTS_sshd = \"22\"/PORTS_sshd = \"22,${SSH_PORT}\"/g" /etc/csf/csf.conf
     fi
 
-    sed -i "s/993,995/993,995,30000:50000/g" /etc/csf/csf.conf
+    sed -i "s/993,995/993,995,9200,9300,30000:50000/g" /etc/csf/csf.conf
     sed -i "s/443,465/443,${RANDOM_ADMIN_PORT},465/g" /etc/csf/csf.conf
     sed -i "s/443,587/443,465,587,${RANDOM_ADMIN_PORT}/g" /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
@@ -3432,6 +3432,16 @@ install_csf(){
 exe:/usr/sbin/nginx
 exe:/usr/sbin/php-fpm
 exe:/usr/sbin/rpcbind
+exe:/usr/share/elasticsearch/bin/elasticsearch
+exe:/usr/share/elasticsearch/modules/x-pack-ml/platform/linux-x86_64/bin/controller
+cmd:/usr/share/elasticsearch/modules/x-pack-ml/platform/linux-x86_64/bin/controller
+exe:/usr/share/elasticsearch/bin/systemd-entrypoint
+exe:/usr/bin/pkttyagent
+exe:/usr/share/elasticsearch/jdk/bin/java
+exe:/usr/bin/redis-server
+cmd:/usr/bin/redis-server 127.0.0.1:6379
+exe:/usr/bin/rsync
+exe:/usr/bin/memcached
 EOCSF
 
     {
@@ -3565,7 +3575,7 @@ add_menu(){
     mkdir -p /var/log/hostvn
     mkdir -p /var/hostvn/wpcron
     chmod 711 menu users wpcron
-    chmod +x ./menu/* ./menu/*/* ./menu/*/*/* > /dev/null
+    chmod +x ./menu/* ./menu/*/* ./menu/*/*/* ./menu/*/*/*/* > /dev/null
     dos2unix ./menu/* > /dev/null
     dos2unix ./menu/*/* > /dev/null
     dos2unix ./menu/*/*/* > /dev/null
@@ -3756,13 +3766,13 @@ clear
 sleep 1
 
 printf "=========================================================================\n"
-echo   "                        Cai dat thanh cong                                 "
+printf "                              Cai dat thanh cong                         \n"
 printf "                 File luu thong tin: %s\n" "${FILE_INFO}"
 printf "          Neu can ho tro vui long truy cap %s\n" "${AUTHOR_CONTACT}"
-printf "=========================================================================\n"
-echo "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin       "
-printf "                  ${RED}De mo Menu su dung lenh:  hostvn${NC}\n            "
-echo "-----------------------------------------------------------------------------"
+printf "==========================================================================\n"
+printf "              Luu lai thong tin duoi day de truy cap SSH va phpMyAdmin    \n"
+printf "                  ${RED}De mo Menu su dung lenh:  hostvn${NC}\n           \n"
+printf "==========================================================================\n"
 printf "SSH  Port                    : %s\n" "${SSH_PORT}"
 printf "phpMyAdmin                   : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/phpmyadmin"
 printf "Link Opcache Dashboard       : %s\n" "http://${IPADDRESS}:${RANDOM_ADMIN_PORT}/opcache"

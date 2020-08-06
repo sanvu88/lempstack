@@ -13,10 +13,9 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-printf "${GREEN}======================${NC}\n"
-printf "${GREEN}Phan quyen Chown/Chmod${NC}\n"
-printf "${GREEN}======================${NC}\n"
-echo
+printf "%s\n" "${GREEN}======================${NC}"
+printf "%s\n" "${GREEN}Phan quyen Chown/Chmod${NC}"
+printf "%s\n" "${GREEN}======================${NC}"
 
 #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
 if [ "$(ls -A "${USER_DIR}")" ]; then
@@ -35,14 +34,14 @@ if [ "$(ls -A "${USER_DIR}")" ]; then
         chmod 711 /home/"${username}"/"${domain}"
         chmod 711 /home/"${username}"/"${domain}"/logs
         chmod 755 /home/"${username}"/"${domain}"/public_html
-        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -0 chmod 0755
-        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -0 chmod 0644
+        find /home/"${username}"/"${domain}"/public_html/ -type d -print0 | xargs -I {} -0 chmod 0755 {}
+        find /home/"${username}"/"${domain}"/public_html/ -type f -print0 | xargs -I {} -0 chmod 0644 {}
         chown -R "${username}":"${username}" /home/"${username}"
     done
-    printf "${GREEN}Phan quyen hoan tat.${NC}\n"
+    printf "%s\n" "${GREEN}Phan quyen hoan tat.${NC}"
 else
     clear
-    printf "${RED}Khong co Domain nao ton tai tren he thong.${NC}\n"
+    printf "%s\n" "${RED}Khong co Domain nao ton tai tren he thong.${NC}"
     menu_permission
 fi
 

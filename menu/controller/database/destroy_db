@@ -13,56 +13,73 @@
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/function
 
-echo "------------"
-echo "Xoa database"
-echo "------------"
-echo ""
+printf "%s============%s" "${GREEN}" "${NC}"
+printf "%sXoa database%s" "${GREEN}" "${NC}"
+printf "%s============%s" "${GREEN}" "${NC}"
 
 list_db(){
-	echo "Danh sach Database tren VPS"
-	#https://stackoverflow.com/a/50053525
-	#https://dba.stackexchange.com/a/69667
-	mysql -e "SHOW DATABASES WHERE \`Database\` NOT IN('information_schema', 'phpmyadmin', 'mysql', 'performance_schema')"
-	echo
+    echo "Danh sach Database tren VPS"
+    #https://stackoverflow.com/a/50053525
+    #https://dba.stackexchange.com/a/69667
+    mysql -e "SHOW DATABASES WHERE \`Database\` NOT IN('information_schema', 'phpmyadmin', 'mysql', 'performance_schema')"
+    echo
 }
 
 input(){
-	read -r -p "Nhap ten database ban can xoa: " db_name
-	read -r -p "Xac nhan xoa database? (y/n): " prompt_destroy
-}
+    while true
+    do
+        echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
+        read -r -p "Nhap ten database [0 = Thoat]: " db_name
+        echo
+        if validate_user "${db_name}"; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 
-validate(){
-	if [ -z "${db_name}" ]; then
-	    ALERT=$(printf "${RED}Database khong duoc bo trong.${NC}\n")
-	fi
+    if [ "${db_name}" != "0" ]; then
+        while true
+        do
+            read -r -p "Xac nhan xoa database? (y/n): " prompt_destroy
+            echo
+            if [[ "${prompt_destroy}" =~ ^([yY])$ || "${prompt_destroy}" =~ ^([nN])$ ]]; then
+                break
+            else
+                printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    fi
 }
 
 delete_db(){
-	if [[ "${prompt_destroy}" =~ ^([yY])$ ]]; then
-		printf "${GREEN}Dang tien hanh xoa database...${NC}\n"
-		sleep 1
-	    mysql -e "DROP DATABASE IF EXISTS ${db_name}"
-	    clear
-	    printf "${GREEN}Xoa database thanh cong.${NC}\n"
+    if [[ "${prompt_destroy}" =~ ^([yY])$ ]]; then
+        printf "%s\n" "${GREEN}Dang tien hanh xoa database...${NC}"
+        sleep 1
+        mysql -e "DROP DATABASE IF EXISTS ${db_name}"
+        clear
+        printf "%s\n" "${GREEN}Xoa database thanh cong.${NC}"
     else
-    	clear
-    	printf "${RED}Ban da huy xoa database.${NC}\n"
-	fi
+        clear
+        printf "%s\n" "${RED}Ban da huy xoa database.${NC}"
+    fi
 }
 
 _run(){
-    ALERT=""
-	list_db
-	input
-	validate
+    list_db
+    input
 
-	if [ -z "${ALERT}" ]; then
-		delete_db
-	else
-		clear
-		printf "${ALERT}\n"
-	fi
+    if [ "${db_name}" != "0" ]; then
+        delete_db
+    else
+        clear
+        printf "%s\n" "${RED}Ban da huy xoa database.${NC}"
+    fi
+
 }
+
+db_name=""
+prompt_destroy=""
 
 _run
 menu_database

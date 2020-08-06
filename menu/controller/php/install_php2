@@ -114,37 +114,25 @@ memory_calculation(){
 }
 
 check_php2_release(){
-	if [[ "${php2_release}" == "yes" ]]; then
-		ALERT=$(printf "${RED}Phien ban PHP thu 2 da duoc cai dat tren VPS.${NC}\n")
-	fi
+    if [[ "${php2_release}" == "yes" ]]; then
+        ALERT=$(printf "%s\n" "${RED}Phien ban PHP thu 2 da duoc cai dat tren VPS.${NC}")
+    fi
 }
 
 select_php_ver(){
-    clear
-    while true
+    printf "Lua chon phien ban PHP ban muon cai dat\n"
+    PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+    select opt in "${PHP_LIST[@]}"
     do
-        printf "Lua chon phien ban PHP ban muon cai dat\n"
-        PS3="Nhap vao lua chon cua ban: "
-        select opt in "${PHP_LIST[@]}"
-        do
-            case $opt in
-                "${opt}") php2_version="${opt/.}"; break;;
-            esac
-        done
-        echo
-
-        if [[ " ${PHP_LIST[*]} " == *" $(echo "${php2_version}" | fold -w4 | paste -sd'.') "* ]]; then
-            break
-        else
-            clear
-            printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n"
-        fi
+        case $opt in
+            "${opt}") php2_version="${opt/.}"; break;;
+        esac
     done
 }
 
 check_duplicate_php(){
     if [[ "${php2_version}" == "${php1_version}" ]]; then
-        ALERT=$(printf "${RED}Phien ban PHP thu 2 trung voi phien ban mac dinh. Huy cai dat.${NC}\n")
+        ALERT=$(printf "%s\n" "${RED}Phien ban PHP thu 2 trung voi phien ban mac dinh. Huy cai dat.${NC}")
     fi
 }
 
@@ -223,7 +211,7 @@ EOF
 }
 
 php2_global_config(){
-	php2_fpm_config_file="/etc/opt/remi/${php2_version}/php-fpm.conf"
+    php2_fpm_config_file="/etc/opt/remi/${php2_version}/php-fpm.conf"
     php2_fpm_config_path="/etc/opt/remi/${php2_version}/php-fpm.d"
     www2_config_file="/etc/opt/remi/${php2_version}/php-fpm.d/www.conf"
 
@@ -310,9 +298,9 @@ EOwww_2_conf
 }
 
 hostvn_custom_ini_2(){
-	if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
-		rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
-	fi
+    if [[ -f "${php2_ini_path}/00-hostvn-custom.ini" ]]; then
+        rm -rf "${php2_ini_path}"/00-hostvn-custom.ini
+    fi
     cat > "${php2_ini_path}/00-hostvn-custom.ini" <<EOhostvn_custom_ini
 date.timezone = Asia/Ho_Chi_Minh
 max_execution_time = 90
@@ -364,9 +352,9 @@ EOopcache_blacklist
 }
 
 write_info(){
-	sed -i '/php2_release=/d' "${FILE_INFO}"
-	sed -i '/php2_version=/d' "${FILE_INFO}"
-	{
+    sed -i '/php2_release=/d' "${FILE_INFO}"
+    sed -i '/php2_version=/d' "${FILE_INFO}"
+    {
         echo "php2_release=${php2_release}"
         echo "php2_version=${php2_version}"
     } >> "${FILE_INFO}"
@@ -375,29 +363,35 @@ write_info(){
 _run(){
     ALERT=""
     set_var
-	check_php2_release
-	select_php_ver
-	check_duplicate_php
+    check_php2_release
+    select_php_ver
+    if [ -z "${php2_version}" ]; then
+        clear
+        printf "%s\n" "${RED}Huy hanh dong.${NC}"
+    else
+        check_duplicate_php
 
-	if [[ -z "${ALERT}" ]]; then
-		memory_calculation
-		install_php_2
-		install_igbinary_2
-		install_php_memcached_2
-		install_php_redis_2
-		php2_global_config
-		hostvn_custom_ini_2
-		php_opcache_2
-		write_info
-		systemctl start "${php2_version}"-php-fpm
-		systemctl enable "${php2_version}"-php-fpm
-		clear
-		printf "${GREEN}Cai dat thanh cong.${NC}\n"
-	else
-	    clear
-		printf "${ALERT}\n"
-	fi
+        if [[ -z "${ALERT}" ]]; then
+            memory_calculation
+            install_php_2
+            install_igbinary_2
+            install_php_memcached_2
+            install_php_redis_2
+            php2_global_config
+            hostvn_custom_ini_2
+            php_opcache_2
+            write_info
+            systemctl start "${php2_version}"-php-fpm
+            systemctl enable "${php2_version}"-php-fpm
+            clear
+            printf "%s\n" "${GREEN}Cai dat thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    fi
 }
 
+php2_version=""
 _run
 menu_php

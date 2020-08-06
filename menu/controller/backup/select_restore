@@ -12,17 +12,16 @@
 
 CHOICE=1
 
-printf "${GREEN}===================${NC}\n"
-printf "${GREEN}Khoi phuc du lieu  ${NC}\n"
-printf "${GREEN}===================${NC}\n"
-echo ""
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
+printf "%s  Khoi phuc du lieu  %s\n" "${GREEN}" "${NC}"
+printf "%s=====================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "${GREEN}1. Khoi phuc ma nguon${NC}\n"
-    printf "${GREEN}2. Khoi phuc database${NC}\n"
-    printf "${GREEN}3. Khoi phuc full${NC}\n"
-    printf "${GREEN} --------------------------${NC}\n"
+    printf "%s1. Khoi phuc full%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Khoi phuc ma nguon%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Khoi phuc database%s\n" "${GREEN}" "${NC}"
+    printf "%s ====================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -30,10 +29,10 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) clear; restore_source;;
-        2) clear; restore_db ;;
-        3) clear; restore_full ;;
+        1) clear; restore_full ;;
+        2) clear; restore_source;;
+        3) clear; restore_db ;;
         0) clear; menu_backup ;;
-        *) clear; printf "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}\n";;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac
 done

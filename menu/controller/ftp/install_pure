@@ -11,12 +11,21 @@
 ######################################################################
 
 confirm(){
-    read -r -p "Ban muon cai dat PURE-FTPD ? (y/n) " promtp_ftp
+    while true
+    do
+        read -r -p "Ban muon cai dat PURE-FTPD ? (y/n) " promtp_ftp
+        echo
+        if [[ "${promtp_ftp}" =~ ^([yY])$ || "${promtp_ftp}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 install(){
     if [ -f "/etc/pure-ftpd/pure-ftpd.conf" ]; then
-        printf "${RED}PURE-FTPD da duoc cai dat truoc do. Ban khong can cai dat lai.${NC}\n"
+        printf "%s\n" "${RED}PURE-FTPD da duoc cai dat truoc do. Ban khong can cai dat lai.${NC}"
     else
         yum -y install pure-ftpd
         PURE_CONF_PATH="/etc/pure-ftpd"
@@ -76,16 +85,17 @@ EOpure_ftpd_conf
         systemctl start pure-ftpd
         systemctl enable pure-ftpd
         clear
-        printf "${GREEN}Cai dat PURE-FTPD thanh cong.${NC}\n"
+        printf "%s\n" "${GREEN}Cai dat PURE-FTPD thanh cong.${NC}"
     fi
 }
 
+promtp_ftp=""
 confirm
 if [[ "${promtp_ftp}" =~ ^([yY])$ ]]; then
     install
 else
     clear
-    printf "${RED}Ban da huy cai dat PURE-FTPD.${NC}\n"
+    printf "%s\n" "${RED}Ban da huy cai dat PURE-FTPD.${NC}"
 fi
 
 menu_ftp

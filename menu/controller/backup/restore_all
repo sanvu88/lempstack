@@ -17,68 +17,96 @@ source /var/hostvn/menu/helpers/function
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-	username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
-	db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-confirm_restore(){
-	read -r -p "Ban muon khoi phuc du lieu ? (y\n) " promt_restore
+confirm_restore_all(){
+    while true
+    do
+        read -r -p "Ban muon khoi phuc du lieu ? (y/n) " promt_restore_all
+        echo
+        if [[ "${promt_restore_all}" =~ ^([yY])$ || "${promt_restore_all}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
-restore_source(){
-	if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-		mkdir -p /home/"${username}"/"${domain}"/public_html
-	fi
-	rm -rf /home/"${username}"/"${domain}"/public_html/*
-	tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
-	chown -R "${username}":"${username}" /home/"${username}"
+_restore_source(){
+    if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
+        mkdir -p /home/"${username}"/"${domain}"/public_html
+    fi
+    rm -rf /home/"${username}"/"${domain}"/public_html/*
+    tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
+    chown -R "${username}":"${username}" /home/"${username}"
 }
 
-restore_db(){
-	cd_dir /home/backup/"${date}"/"${domain}"
-	mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
+_restore_db(){
+    cd_dir /home/backup/"${date}"/"${domain}"
+    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
 }
 
 _run(){
-	confirm_restore
+    set_var
+    if if_is_wordpress "$username" "$domain"; then
+        printf "%s\n" "${GREEN}Web site su dung WordPress. Vui long dung Menu Quan ly WordPress de restore.${NC}"
+    else
+        check_backup_exists "${date}" "${domain}"
 
-	if [[ "${promt_restore}" =~ ^([yY])$ ]]; then
-	    ALERT=""
-		list_backup
-		select_domain
-        set_var
-		if_is_wordpress "${username}" "${domain}"
-		check_backup_exists "${date}" "${domain}"
+        if ! check_backup_empty "${date}" "${domain}";
+        then
+            ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+        fi
 
-		if ! check_backup_empty "${date}" "${domain}";
-		then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+        if [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
+            ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+        fi
 
-		if [ ! -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
+        if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
+            ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+        fi
 
-		if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
-			ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
-		fi
-
-		if [ -z "${ALERT}" ]; then
-
-			restore_source
-			empty_db
-			restore_db
-			clear
-			printf "${GREEN}Khoi phuc du lieu thanh cong.${NC}\n"
-		else
-			clear
-			printf "${ALERT}\n"
-		fi
-	else
-		clear
-		printf "${RED}Ban da chon huy khoi phuc du lieu.${NC}\n"
-	fi
+        if [ -z "${ALERT}" ]; then
+            _restore_source
+            empty_db
+            _restore_db
+            clear
+            printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
+    fi
 }
 
-_run
-menu_backup
+if [[ $(ls -A "${USER_DIR}") ]]; then
+    promt_restore_all=""
+    date=""
+    domain=""
+    ALERT=""
+
+    confirm_restore_all
+    if [[ "${promt_restore_all}" =~ ^([yY])$ ]]; then
+        list_backup
+        if [ -z "${date}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+        else
+            if [ -z "${domain}" ]; then
+                clear
+                printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+            else
+                _run
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da chon huy khoi phuc du lieu.${NC}"
+    fi
+else
+    printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
+fi
+
+select_restore
