@@ -169,4 +169,4 @@ Script được viết bằng shell dùng để cài đặt LEMP Stack (Nginx - 
 - Giapvv
 - Lamhn
 - tannm2611
-- Hoàng Nguyễn Cảnh Sơn
+- Nguyễn Cảnh Sơn
