@@ -1,0 +1,110 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+select_primary_domain(){
+    primary_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    if [[ "$(ls -A "/etc/nginx/alias")" ]]; then
+        echo "Chon ten mien chinh"
+        primary_domains=()
+        cd_dir /etc/nginx/alias
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry_domain in *; do
+            if [ -d "${entry_domain}" ]; then
+                primary_domain=${entry_domain}
+                primary_domains+=("${primary_domain}")
+            fi
+        done
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt_domain in "${primary_domains[@]}"
+        do
+            primary_domain=$opt_domain
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}Ban chua tao Alias Domain.${NC}")
+    fi
+}
+
+select_alias_domain(){
+    alias_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    if [[ -d "/etc/nginx/alias/${primary_domain}" && "$(ls -A "/etc/nginx/alias/${primary_domain}")" ]]; then
+        echo "Chon Alias Domain ban muon xoa"
+        alias_domains=()
+        cd_dir /etc/nginx/alias/"${primary_domain}"
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry_alias in *.conf; do
+            alias_domain=${entry_alias//.conf}
+            alias_domains+=("${alias_domain}")
+        done
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt_alias in "${alias_domains[@]}"
+        do
+            alias_domain=$opt_alias
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}Ban chua tao Alias Domain cho ten mien${NC} ${GREEN}${primary_domain}.${NC}")
+    fi
+}
+
+_run(){
+    rm -rf /etc/nginx/alias/"${primary_domain}"/"${alias_domain}".conf
+    if [ -d "/root/.acme.sh/${alias_domain}" ]; then
+        rm -rf "/root/.acme.sh/${alias_domain}"
+    fi
+
+    if nginx -t; then
+        systemctl restart nginx
+        clear
+        printf "%s\n" "${GREEN}Xoa Parked/Alias thanh cong.${NC}"
+    else
+        clear
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai vhost.${NC}"
+    fi
+}
+
+ALERT=""
+
+select_primary_domain
+
+if [[ -z "${primary_domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        select_alias_domain
+        if [[ -z "${alias_domain}" && -z "${ALERT}" ]]; then
+            clear
+            printf "%s\n" "${RED}Huy thao tac.${NC}"
+        else
+             if [ -z "${ALERT}" ]; then
+                _run
+            else
+                clear
+                printf "%s\n" "${ALERT}"
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+menu_domain

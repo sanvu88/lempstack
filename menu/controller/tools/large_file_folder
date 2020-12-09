@@ -1,0 +1,29 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    clear
+    printf "%s\n" "${GREEN}Dang tim kiem...${NC}"
+    sleep 1
+    find /var/log -type f -print0 | xargs -0 du | sort -n | tail -5 | cut -f2 | xargs -I{} du -sh {}
+    find /var/log -type d -print0 | xargs -0 du | sort -n | tail -5 | cut -f2 | xargs -I{} du -sh {}
+    find /home -type f -print0 | xargs -0 du | sort -n | tail -10 | cut -f2 | xargs -I{} du -sh {}
+    find /home -type d -print0 | xargs -0 du | sort -n | tail -10 | cut -f2 | xargs -I{} du -sh {}
+    printf "%s\n" "${GREEN}Keo len tren de xem them.${NC}"
+}
+
+_run
+menu_tools

@@ -28,6 +28,8 @@ do
     printf "%s8. Khoi dong lai MariaDB%s\n" "${GREEN}" "${NC}"
     printf "%s9. Tat MariaDB%s\n" "${GREEN}" "${NC}"
     printf "%s10. Bat MariaDB%s\n" "${GREEN}" "${NC}"
+    printf "%s11. Set Mysql Charset UTF-8%s\n" "${GREEN}" "${NC}"
+    printf "%s12. Import Database%s\n" "${GREEN}" "${NC}"
     printf "%s ======================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -42,9 +44,11 @@ do
         4) clear; db_destroy ;;
         5) clear; db_backup ;;
         6) clear; db_restore ;;
-        7) clear; destroy_backup ;;
+        7) clear; db_destroy_backup ;;
         8)
             systemctl restart mariadb
+            clear
+            printf "%s\n" "${GREEN}Khoi dong lai MariaDB thanh cong.${NC}"
             menu_database
             ;;
         9)
@@ -59,6 +63,13 @@ do
             printf "%s\n" "${GREEN}Bat MariaDB thanh cong.${NC}"
             menu_database
             ;;
+        11)
+            sed -i "s/#character-set-server/character-set-server/g" /etc/my.cnf
+            systemctl restart mariadb
+            clear
+            printf "%s\n" "${GREEN}Set Mysql Charset UTF-8 thanh cong.${NC}"
+            ;;
+        12) clear; db_import_database;;
         0) clear; menu_lemp ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

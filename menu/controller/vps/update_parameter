@@ -13,6 +13,7 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 source /var/hostvn/menu/helpers/variable_php
 source /var/hostvn/menu/helpers/mysql_variable
@@ -199,13 +200,15 @@ php_global_config(){
     sed -i '/pm.min_spare_servers/d' /etc/php-fpm.d/www.conf
     sed -i '/pm.max_spare_servers/d' /etc/php-fpm.d/www.conf
     sed -i '/pm.max_requests/d' /etc/php-fpm.d/www.conf
+    sed -i '/pm.process_idle_timeout/d' /etc/php-fpm.d/www.conf
+    sed -i '/rlimit_files/d' /etc/php-fpm.d/www.conf
+    sed -i '/rlimit_core/d' /etc/php-fpm.d/www.conf
+    sed -i 's/dynamic/ondemand/g' /etc/php-fpm.d/www.conf
 
     {
         echo "pm.max_children = ${PM_MAX_CHILDREN}"
-        echo "pm.start_servers = ${PM_START_SERVERS}"
-        echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
-        echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
         echo "pm.max_requests = ${PM_MAX_REQUEST}"
+        echo "pm.process_idle_timeout = 20"
     } >> /etc/php-fpm.d/www.conf
 }
 
@@ -221,13 +224,15 @@ php_global_config_2(){
     sed -i '/pm.min_spare_servers/d' "${www2_config_file}"
     sed -i '/pm.max_spare_servers/d' "${www2_config_file}"
     sed -i '/pm.max_requests/d' "${www2_config_file}"
+    sed -i '/pm.process_idle_timeout/d' "${www2_config_file}"
+    sed -i '/rlimit_files/d' "${www2_config_file}"
+    sed -i '/rlimit_core/d' "${www2_config_file}"
+    sed -i 's/dynamic/ondemand/g' "${www2_config_file}"
 
     {
         echo "pm.max_children = ${PM_MAX_CHILDREN}"
-        echo "pm.start_servers = ${PM_START_SERVERS}"
-        echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
-        echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
         echo "pm.max_requests = ${PM_MAX_REQUEST}"
+        echo "pm.process_idle_timeout = 20"
     } >> "${www2_config_file}"
 }
 
@@ -300,13 +305,15 @@ change_php_user(){
         sed -i '/pm.min_spare_servers/d' "${php_conf_path}"/"${domain}".conf
         sed -i '/pm.max_spare_servers/d' "${php_conf_path}"/"${domain}".conf
         sed -i '/pm.max_requests/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/request_terminate_timeout/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/rlimit_files/d' "${php_conf_path}"/"${domain}".conf
+        sed -i '/rlimit_core/d' "${php_conf_path}"/"${domain}".conf
+        sed -i 's/dynamic/ondemand/g' "${php_conf_path}"/"${domain}".conf
 
         {
             echo "pm.max_children = ${PM_MAX_CHILDREN}"
-            echo "pm.start_servers = ${PM_START_SERVERS}"
-            echo "pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}"
-            echo "pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}"
             echo "pm.max_requests = ${PM_MAX_REQUEST}"
+            echo "pm.process_idle_timeout = 20"
         } >> "${php_conf_path}"/"${domain}".conf
     done
 }
@@ -332,10 +339,18 @@ _run(){
 
     change_php_user
 
-    restart_service
-    systemctl restart mariadb
-    clear
-    printf "%s\n" "${GREEN}Cap nhat lai thong so thanh cong.${NC}"
+    if nginx -t; then
+        systemctl restart nginx
+        systemctl restart php-fpm.service
+        if [ "${php2_release}" == "yes" ]; then
+            systemctl restart "${php2_version}"-php-fpm
+        fi
+        systemctl restart mariadb
+        clear
+        printf "%s\n" "${GREEN}Cap nhat lai thong so thanh cong.${NC}"
+    else
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+    fi
 }
 
 confirm

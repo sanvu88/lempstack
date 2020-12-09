@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 confirm_delete(){
@@ -28,7 +29,7 @@ confirm_delete(){
 }
 
 _delete(){
-    rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql
+    rm -rf /home/backup/"${date}"/"${domain}"/"${domain}".sql.gz
 }
 
 _run(){

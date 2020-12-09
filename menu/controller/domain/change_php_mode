@@ -1,0 +1,204 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+source /var/hostvn/menu/helpers/variable_php
+
+set_var(){
+    php_mode_current=$(grep -w "php_mode" "${USER_DIR}"/."${domain}".conf | cut -f2 -d'=')
+    user=$(grep -w "username" "${USER_DIR}"/."${domain}".conf | cut -f2 -d'=')
+}
+
+select_php_mode(){
+    php1="${php1_version}"
+    php2=${php2_version}
+    if [ "${php_mode_current}" == "1" ]; then
+        php1="${php1_version} ${RED}(Phien ban hien tai)${NC}"
+    fi
+    if [ "${php_mode_current}" == "2" ]; then
+        php2="${php2_version} ${RED}(Phien ban hien tai)${NC}"
+    fi
+    echo "Lua chon phien ban PHP ban muon su dung"
+    PS3='Nhap lua chon cua ban (1-3): '
+    options=("${php1}" "${php2}" "Cancel")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "${php1}") php_mode_new="1"; break;;
+            "${php2}") php_mode_new="2"; break;;
+            "Cancel") php_mode_new="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
+        esac
+    done
+}
+
+set_open_basedir(){
+    if [ "${php_mode_new}" == "1" ]; then
+        open_basedir="/home/${user}/:/dev/urandom:/usr/share/php/:/dev/shm"
+    fi
+    if [ "${php_mode_new}" == "2" ]; then
+        open_basedir="/home/${user}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
+    fi
+}
+
+set_listen(){
+    if [ "${php_mode_new}" == "1" ]; then
+        listen="/var/run/php-fpm/${user}.sock"
+    fi
+    if [ "${php_mode_new}" == "2" ]; then
+        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${user}.sock"
+    fi
+
+    if [[ "${php_mode_new}" == "1" && "${php_mode_current}" == "2" ]]; then
+        sed -i "s|/opt/remi/${php2_version}/root/var/run/php-fpm/${user}.sock|/var/run/php-fpm/${user}.sock|g" "${VHOST_DIR}"/"${domain}".conf
+    fi
+
+    if [[ "${php_mode_new}" == "2" && "${php_mode_current}" == "1" ]]; then
+        sed -i "s|/var/run/php-fpm/${user}.sock|/opt/remi/${php2_version}/root/var/run/php-fpm/${user}.sock|g" "${VHOST_DIR}"/"${domain}".conf
+    fi
+}
+
+set_phpconf_var(){
+    php1_conf_path="/etc/php-fpm.d"
+    php2_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+
+    if [[ "${php2_version}" == "php56" ]]; then
+        php2_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
+    fi
+
+    if [ "${php_mode_new}" == "1" ]; then
+        php_conf_path="${php1_conf_path}"
+    fi
+    if [ "${php_mode_new}" == "2" ]; then
+        php_conf_path="${php2_conf_path}"
+    fi
+}
+
+remove_old_php_conf(){
+    if [[ "${php_mode_new}" == "1" && "${php_mode_current}" == "2" ]]; then
+        rm -rf "${php2_conf_path}"/"${domain}".conf
+    fi
+    if [[ "${php_mode_new}" == "2" && "${php_mode_current}" == "1" ]]; then
+        rm -rf "${php1_conf_path}"/"${domain}".conf
+    fi
+}
+
+create_phpconfig(){
+    if [ -f "${php_conf_path}/${domain}.conf" ]; then
+        if [ -f "${php_conf_path}/${domain}.conf.bak" ]; then
+            rm -rf "${php_conf_path}"/"${domain}".conf.bak
+        fi
+        mv "${php_conf_path}"/"${domain}".conf "${php_conf_path}"/"${domain}".conf.bak
+    fi
+    cat > "${php_conf_path}/${domain}.conf" << END
+[${user}]
+listen = ${listen}
+listen.backlog = -1
+listen.allowed_clients = 127.0.0.1
+listen.owner = ${user}
+listen.group = nginx
+listen.mode = 0660
+user = ${user}
+group = ${user}
+pm = ondemand
+pm.max_children = ${PM_MAX_CHILDREN}
+pm.process_idle_timeout = 20
+pm.max_requests = ${PM_MAX_REQUEST}
+;slowlog = /var/log/php-fpm/${domain}-slow.log
+chdir = /
+env[TMP] = /home/${user}/tmp
+env[TMPDIR] = /home/${user}/tmp
+env[TEMP] = /home/${user}/tmp
+php_admin_value[error_log] = /var/log/php-fpm/${domain}-error.log
+php_admin_flag[log_errors] = on
+php_value[session.save_handler] = files
+php_value[session.save_path]    = /home/${user}/php/session
+php_value[soap.wsdl_cache_dir]  = /home/${user}/php/wsdlcache
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+php_admin_value[upload_tmp_dir] = /home/${user}/tmp
+php_admin_value[open_basedir] = ${open_basedir}
+security.limit_extensions = .php
+END
+}
+
+edit_user_info(){
+    php_ver=${php1_version}
+
+    if [[ "${php_mode_new}" == "2" ]]; then
+        php_ver="${php2_version}"
+    fi
+    sed -i '/php_mode/d' "${USER_DIR}"/."${domain}".conf
+    sed -i '/php_version/d' "${USER_DIR}"/."${domain}".conf
+    {
+        echo "php_mode=${php_mode_new}"
+        echo "php_version=${php_ver}"
+    } >> "${USER_DIR}"/."${domain}".conf
+}
+
+_run(){
+    set_var
+    if [[ "${php2_release}" == "yes" ]]; then
+        select_php_mode
+        if [ "${php_mode_new}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Huy thao tac.${NC}"
+        elif [ "${php_mode_new}" == "${php_mode_current}" ]; then
+            clear
+            printf "%s\n" "${RED}Phien ban PHP ban chon trung voi phien ban dang su dung.${NC}"
+        else
+            set_phpconf_var
+            set_open_basedir
+            set_listen
+            remove_old_php_conf
+            create_phpconfig
+            edit_user_info
+            if nginx -t; then
+                systemctl restart nginx
+                systemctl restart php-fpm.service
+                if [ "${php2_release}" == "yes" ]; then
+                    systemctl restart "${php2_version}"-php-fpm
+                fi
+                clear
+                printf "%s\n" "${GREEN}Thay doi phien ban PHP thanh cong.${NC}"
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban chua cai phien ban PHP thu 2.${NC}"
+    fi
+}
+
+ALERT=""
+domain=""
+php_mode_new=""
+user=""
+php_mode_current=""
+php1=""
+php2=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+menu_domain

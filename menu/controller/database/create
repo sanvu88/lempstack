@@ -11,15 +11,16 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 input(){
     while true
     do
         echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
-        read -r -p "1. Nhap ten database [0 = Thoat]: " db_name
+        read -r -p "Nhap ten database [0 = Thoat]: " db_name
         echo
-        if validate_user "${db_name}"; then
+        if validate_user "${db_name}" || [ "${db_name}" == "0" ]; then
             break
         else
             printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
@@ -32,7 +33,7 @@ input(){
             echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
             read -r -p "Nhap Mysql User [0 = Thoat]: " db_user
             echo
-            if validate_user "${db_user}"; then
+            if validate_user "${db_user}" || [ "${db_user}" == "0" ]; then
                 break
             else
                 printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
@@ -72,9 +73,9 @@ create_db(){
 
 show_info(){
     clear
-    printf "DB_Name    : s%\n" "${RED}${db_name}${NC}"
-    printf "DB_User    : s%\n" "${RED}${db_user}${NC}"
-    printf "DB_Password: s%\n" "${RED}${password}${NC}"
+    printf "DB_Name    : %s\n" "${RED}${db_name}${NC}"
+    printf "DB_User    : %s\n" "${RED}${db_user}${NC}"
+    printf "DB_Password: %s\n" "${RED}${password}${NC}"
     echo ""
     sleep 3
 }

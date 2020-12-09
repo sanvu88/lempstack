@@ -15,6 +15,8 @@
 set_variable(){
     CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
     RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+    SWAP_TOTAL=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+    PHP_MEM=${RAM_TOTAL}+${SWAP_TOTAL}
     RAM_MB=$(echo "scale=0;${RAM_TOTAL}/1024" | bc)
 }
 
@@ -80,7 +82,7 @@ php_parameter(){
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 5))
         PM_MAX_REQUEST=2000
     else
-        PM_MAX_CHILDREN=$(echo "scale=0;${RAM_MB}*0.4/30" | bc)
+        PM_MAX_CHILDREN=$((CPU_CORES * 5))
         PM_START_SERVERS=$((CPU_CORES * 4))
         PM_MIN_SPARE_SERVER=$((CPU_CORES * 2))
         PM_MAX_SPARE_SERVER=$((CPU_CORES * 4))
@@ -101,13 +103,13 @@ memory_calculation(){
         PHP_REAL_PATH_LIMIT='640k'
         PHP_REAL_PATH_TTL='21600'
         MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '524288' ]]; then
+    elif [[ "${PHP_MEM}" -gt '393216' && "${PHP_MEM}" -le '400000' ]]; then
         OPCACHE_MEM='112'
         MAX_MEMORY='128'
         PHP_REAL_PATH_LIMIT='768k'
         PHP_REAL_PATH_TTL='21600'
         MAX_INPUT_VARS="6000"
-    elif [[ "${PHP_MEM}" -gt '524288' && "${PHP_MEM}" -le '1049576' ]]; then
+    elif [[ "${PHP_MEM}" -gt '400000' && "${PHP_MEM}" -le '1049576' ]]; then
         OPCACHE_MEM='144'
         MAX_MEMORY='160'
         PHP_REAL_PATH_LIMIT='768k'

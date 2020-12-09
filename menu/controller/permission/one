@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s\n" "${GREEN}======================${NC}"
@@ -53,11 +54,17 @@ action(){
 _run(){
     select_domain
 
-    if [ -n "${domain}" ]; then
-       action
-    else
+    if [[ -z "${domain}" && -z "${ALERT}" ]]; then
         clear
         printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    else
+        if [ -z "${ALERT}" ]; then
+            echo "Dang tien hanh phan quyen. Vui long doi..."
+            action
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
     fi
 }
 

@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s==========%s\n" "${GREEN}" "${NC}"
@@ -21,7 +22,6 @@ printf "%s==========%s\n" "${GREEN}" "${NC}"
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    pureftpd_status="$(pgrep -f pure-ftpd)"
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -32,7 +32,7 @@ set_var(){
 
 confirm(){
     printf "%s\n" "${RED}Ban thuc su muon xoa ${domain}? ${NC}"
-    PS3="Nhap vao lua chon cua ban [1-2]"
+    PS3="Nhap vao lua chon cua ban [1-2] "
     options=("Yes" "No")
     select opt in "${options[@]}"
     do
@@ -45,7 +45,7 @@ confirm(){
 
     if [[ "${confirm_destroy_domain}" =~ ^([yY])$ ]]; then
         echo "Ban co muon xoa database ${db_name}? (y/n): "
-        PS3="Nhap vao lua chon cua ban [1-2]"
+        PS3="Nhap vao lua chon cua ban [1-2] "
         options=("Yes" "No")
         select opt in "${options[@]}"
         do
@@ -74,9 +74,24 @@ destroy_ftp_user(){
 }
 
 _destroy_db(){
-    mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${db_user}'@'localhost'"
-    mysql -e "DROP USER IF EXISTS '${db_user}'@'localhost'"
-    mysql -e "DROP DATABASE IF EXISTS ${db_name}"
+    mysql -uadmin -p"${mysql_pwd}" -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${db_user}'@'localhost'"
+    mysql -uadmin -p"${mysql_pwd}" -e "DROP USER IF EXISTS '${db_user}'@'localhost'"
+    mysql -uadmin -p"${mysql_pwd}" -e "DROP DATABASE IF EXISTS ${db_name}"
+}
+
+_destroy_other(){
+  if [ -d "/etc/nginx/alias/${domain}" ]; then
+      rm -rf /etc/nginx/alias/"${domain}"
+  fi
+  if [ -d "/etc/nginx/redirect/${domain}" ]; then
+      rm -rf /etc/nginx/redirect/"${domain}"
+  fi
+  if [ -f "/var/hostvn/wpcron/${domain}" ]; then
+      rm -rf /var/hostvn/wpcron/"${domain}"
+  fi
+  if [ -f "/var/hostvn/ggdrive/${domain}" ]; then
+      rm -rf /var/hostvn/ggdrive/"${domain}"
+  fi
 }
 
 remove_path(){
@@ -102,32 +117,35 @@ remove_path(){
 }
 
 _run(){
-    select_domain
-    if [ -z "${domain}" ]; then
-        clear
-        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
-    else
-        confirm
-        if [ -z "${ALERT}" ]; then
-            set_var
-            if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
-                _destroy_db
+    confirm
+    if [[ "${confirm_destroy_domain}"  =~ ^([yY])$ ]]; then
+        set_var
+        if [[ "${confirm_destroy_db}" =~ ^([yY])$ ]]; then
+            _destroy_db
+        fi
+
+        destroy_user "$username"
+
+        if service_running pure-ftpd; then
+            destroy_ftp_user "$username"
+        fi
+
+        remove_path
+        _destroy_other
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
             fi
-
-            destroy_user "$username"
-
-            if [ -n "${pureftpd_status}" ]; then
-                destroy_ftp_user "$username"
-            fi
-
-            remove_path
-            restart_service
             clear
             printf "%s\n" "${GREEN}Xoa Domain thanh cong.${NC}"
         else
-            clear
-            printf "%s\n" "${ALERT}"
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
         fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
     fi
 }
 
@@ -135,5 +153,18 @@ ALERT=""
 domain=""
 confirm_destroy_domain="n"
 confirm_destroy_db="n"
-_run
+
+select_domain
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
 menu_domain

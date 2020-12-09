@@ -11,12 +11,13 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+#    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
@@ -35,16 +36,16 @@ confirm_restore(){
 
 _restore(){
     cd_dir /home/backup/"${date}"/"${domain}"
-    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
+    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql.gz
 }
 
 _run(){
     set_var
-    if if_is_wordpress "${username}" "${domain}"; then
-        clear
-        printf "%s\n" "${RED}Website nay su dung WordPress, vui long dung Menu Quan ly Wordpress.${NC}"
-        return 1
-    fi
+#    if if_is_wordpress "${username}" "${domain}"; then
+#        clear
+#        printf "%s\n" "${RED}Website nay su dung WordPress, vui long dung Menu Quan ly Wordpress.${NC}"
+#        return 1
+#    fi
 
     check_backup_exists "${date}" "${domain}"
 
@@ -52,7 +53,7 @@ _run(){
         ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
     fi
 
-    if [ ! -f "/home/backup/${date}/${domain}/${domain}.sql" ]; then
+    if [ ! -f "/home/backup/${date}/${domain}/${domain}.sql.gz" ]; then
         ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
     fi
 

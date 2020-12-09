@@ -20,11 +20,12 @@ printf "%s===================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "%s1. Tao user FTP%s\n" "${GREEN}" "${NC}"
-    printf "%s2. Doi mat khau FTP%s\n" "${GREEN}" "${NC}"
-    printf "%s3. Xoa User FTP%s\n" "${GREEN}" "${NC}"
-    printf "%s4. Doi Port FTP%s\n" "${GREEN}" "${NC}"
-    printf "%s5. Cai dat PURE-FTPD%s\n" "${GREEN}" "${NC}"
+    printf "%s1. Danh sach user FTP%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Tao user FTP%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Doi mat khau FTP%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Xoa User FTP%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Doi Port FTP%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Cai dat PURE-FTPD%s\n" "${GREEN}" "${NC}"
     printf "%s ==================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -33,11 +34,12 @@ do
         continue
     fi
     case ${CHOICE} in
-        1) clear; ftp_create_user;;
-        2) clear; ftp_change_pwd ;;
-        3) clear; ftp_destroy ;;
-        4) clear; ftp_port ;;
-        5) clear; ftp_install ;;
+        1) clear; pure-pw list; menu_ftp;;
+        2) clear; ftp_create_user;;
+        3) clear; ftp_change_pwd ;;
+        4) clear; ftp_destroy ;;
+        5) clear; ftp_port ;;
+        6) clear; ftp_install ;;
         0) clear; menu_lemp ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

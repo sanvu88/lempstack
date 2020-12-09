@@ -13,6 +13,7 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 # shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_php
@@ -259,15 +260,10 @@ listen.group = nginx
 listen.mode = 0660
 user = nginx
 group = nginx
-pm = dynamic
+pm = ondemand
 pm.max_children = ${PM_MAX_CHILDREN}
-pm.start_servers = ${PM_START_SERVERS}
-pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
-pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.process_idle_timeout = 20
 pm.max_requests = ${PM_MAX_REQUEST}
-request_terminate_timeout = 300
-rlimit_files = 65536
-rlimit_core = 0
 ;slowlog = /opt/remi/${php2_version}/root/var/log/php-fpm/www-slow.log
 chdir = /
 php_admin_value[error_log] = /opt/remi/${php2_version}/root/var/log/php-fpm/www-error.log

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 ######################################################################
 #           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
 #                                                                    #
@@ -11,9 +12,8 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_php
 
 printf "%s===============%s\n" "${GREEN}" "${NC}"
@@ -25,7 +25,7 @@ input(){
     false
     while [ $? -eq 1 ]
     do
-        read -r -p "Nhap domain (Khong có www) [0 = Thoat]: " domain
+        read -r -p "Nhap domain (Khong co www) [0 = Thoat]: " domain
         if [ "${domain}" == "0" ]; then
             domain=0
             break
@@ -50,12 +50,12 @@ input(){
 
 # Set variables
 set_var(){
-    pureftpd_status="$(pgrep -f pure-ftpd)"
-    username=${domain//[-._]/}
-    username="${username}$(< /dev/urandom tr -dc 0-9 | head -c4)"
+    user=${domain//[-._]/}
+    user=$(echo "$user" | cut -c 1-7)
+    user="${user}$(< /dev/urandom tr -dc 0-9 | head -c3)"
     prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-3}";echo;)
-    db_user=$(echo "${username}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
-    db_name=$(echo "${prefix}"_"${username}" | tr '[:upper:]' '[:lower:]')
+    db_user=$(echo "${user}"_"${prefix}" | tr '[:upper:]' '[:lower:]')
+    db_name=$(echo "${prefix}"_"${user}" | tr '[:upper:]' '[:lower:]')
     db_pass=$(gen_pass "$@")
     php_mode="1"
     wp_secure=""
@@ -69,16 +69,12 @@ validate(){
     check_mysql_user "${db_user}"
 }
 
-set_php_version(){
+select_php(){
     php1="${php1_version}"
     php2=${php2_version}
-}
-
-select_php(){
-    set_php_version
 
     echo "Lua chon phien ban PHP ban muon su dung"
-    PS3='Nhap lua chon cua ban (1-2): '
+    PS3='Nhap lua chon cua ban (1-3): '
     options=("${php1}" "${php2}" "Cancel")
     select opt in "${options[@]}"
     do
@@ -108,28 +104,43 @@ wp_auto_install_confirm(){
 
 wp_auto_install(){
     if [[ "${promtp_inst_wp}" =~ ^([yY])$ ]]; then
+        while true
+        do
+            read -r -p "Ban co muon thay doi database prefix khong (Mac dinh la wp_)? (y/n) " promtp_prefix
+            echo
+            if [[ "${promtp_prefix}" =~ ^([yY])$ || "${promtp_prefix}" =~ ^([nN])$ ]]; then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+
+        # Create wp-config.php
+        db_prefix="wp_"
+        if [[ "${promtp_prefix}" =~ ^([yY])$ ]]; then
+            db_prefix="$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)_"
+        fi
+
         wp_auto_install_info
-        cd_dir "/home/${username}/${domain}/public_html"
+        cd_dir "/home/${user}/${domain}/public_html"
 
         # Download WordPress
         wp core download --locale=en_US --allow-root
         rm -rf license.txt readme.html
 
-        # Create wp-config.php
-        db_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
-
-        wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}_" --extra-php <<PHP
+        wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}" --extra-php <<PHP
 define( 'WP_DEBUG', false );
-define( 'WP_DEBUG_LOG', false );
 define( 'FS_METHOD', 'direct');
 define( 'WP_CACHE', true);
+define( 'WP_MEMORY_LIMIT', '128M' );
+define( 'WP_MAX_MEMORY_LIMIT', '128M' );
 PHP
 
         # Install WordPress
         wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
 
         # Create robots.txt
-        cat > "/home/$username/$domain/public_html/robots.txt" <<END
+        cat > "/home/$user/$domain/public_html/robots.txt" <<END
 User-agent: *
 Disallow: /wp-admin/
 Disallow: /wp-includes/
@@ -146,31 +157,30 @@ END
 
 # Create
 create_user(){
-    if ! if_user_exists "${username}";
-    then
-        useradd -r --shell /sbin/nologin "${username}"
+    if ! if_user_exists "${user}"; then
+        useradd --shell /sbin/nologin "${user}"
     fi
 }
 
 create_ftp(){
     user_pass=$(gen_pass "$@")
     if [[ -f "/etc/pure-ftpd/pureftpd.passwd" ]]; then
-        if if_pureftpd_user_exists "${username}";
+        if if_pureftpd_user_exists "${user}";
         then
-            pure-pw passwd "${username}" <<EOF
+            pure-pw passwd "${user}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
             pure-pw mkdb
         else
-            pure-pw useradd "${username}" -u "${username}" -g "${username}" -d /home/"${username}" <<EOF
+            pure-pw useradd "${user}" -u "${user}" -g "${user}" -d /home/"${user}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
             pure-pw mkdb
         fi
     else
-        pure-pw useradd "${username}" -u "${username}" -g "${username}" -d /home/"${username}" <<EOF
+        pure-pw useradd "${user}" -u "${user}" -g "${user}" -d /home/"${user}" <<EOF
 ${user_pass}
 ${user_pass}
 EOF
@@ -179,43 +189,47 @@ EOF
 }
 
 create_db(){
-    Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
-    Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
-    Q3="FLUSH PRIVILEGES;"
-    SQL="${Q1}${Q2}${Q3}"
 
-    mysql -uroot -e "${SQL}"
+    read -r -p "Ban co muon tao san Database va user Mysql khong (y/n)? " promt_create_db
+
+    if [[ "${promt_create_db}" =~ ^([yY])$ ]]; then
+      Q1="CREATE DATABASE IF NOT EXISTS ${db_name};"
+      Q2="GRANT ALL ON ${db_name}.* TO '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
+      Q3="FLUSH PRIVILEGES;"
+      SQL="${Q1}${Q2}${Q3}"
+
+      mysql -uadmin -p"${mysql_pwd}" -e "${SQL}"
+    fi
 }
 
 create_docrot(){
-    mkdir -p /home/"${username}"/"${domain}"/public_html
-    mkdir -p /home/"${username}"/"${domain}"/logs
+    mkdir -p /home/"${user}"/"${domain}"/public_html
+    mkdir -p /home/"${user}"/"${domain}"/logs
     chmod 711 /home
-    chmod 711 /home/"${username}"
-    chmod 711 /home/"${username}"/"${domain}"
-    chmod 711 /home/"${username}"/"${domain}"/logs
-    chmod 755 /home/"${username}"/"${domain}"/public_html
-    chcon -Rt httpd_sys_content_t /home/"${username}"/"${domain}"/public_html
+    chmod 711 /home/"${user}"
+    chmod 711 /home/"${user}"/"${domain}"
+    chmod 711 /home/"${user}"/"${domain}"/logs
+    chmod 755 /home/"${user}"/"${domain}"/public_html
 }
 
 set_owner(){
-    chown -R "${username}":"${username}" /home/"${username}"
+    chown -R "${user}":"${user}" /home/"${user}"
 }
 
 set_phpconf_var(){
     php_conf_file="/etc/php-fpm.d/${domain}.conf"
-    listen="/var/run/php-fpm/${username}.sock;"
+    listen="/var/run/php-fpm/${user}.sock;"
     slowlog="/var/log/php-fpm/${domain}-slow.log"
     error_log="/var/log/php-fpm/${domain}-error.log"
-    tmp_dir="/home/${username}/tmp"
-    session_path="/home/${username}/php/session"
-    wsdl_cache_dir="/home/${username}/php/wsdlcache"
-    open_basedir="/home/${username}/:/dev/urandom:/usr/share/php/:/dev/shm"
+    tmp_dir="/home/${user}/tmp"
+    session_path="/home/${user}/php/session"
+    wsdl_cache_dir="/home/${user}/php/wsdlcache"
+    open_basedir="/home/${user}/:/dev/urandom:/usr/share/php/:/dev/shm"
 
     if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
         php_conf_file="/etc/opt/remi/${php2_version}/php-fpm.d/${domain}.conf"
-        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock"
-        open_basedir="/home/${username}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
+        listen="/opt/remi/${php2_version}/root/var/run/php-fpm/${user}.sock"
+        open_basedir="/home/${user}/:/dev/urandom:/opt/remi/${php2_version}/root/usr/share/php/:/dev/shm"
 
         if [[ "${php2_version}" == "php56" ]]; then
             php_conf_file="/opt/remi/${php2_version}/root/etc/php-fpm.d/${domain}.conf"
@@ -231,26 +245,20 @@ set_phpconf_var(){
 
 create_phpconfig(){
     set_phpconf_var
-    php_parameter
     cat > "${php_conf_file}" << END
-[${username}]
+[${user}]
 listen = ${listen}
 listen.backlog = -1
 listen.allowed_clients = 127.0.0.1
-listen.owner = ${username}
+listen.owner = ${user}
 listen.group = nginx
 listen.mode = 0660
-user = ${username}
-group = ${username}
-pm = dynamic
+user = ${user}
+group = ${user}
+pm = ondemand
 pm.max_children = ${PM_MAX_CHILDREN}
-pm.start_servers = ${PM_START_SERVERS}
-pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
-pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.process_idle_timeout = 20
 pm.max_requests = ${PM_MAX_REQUEST}
-request_terminate_timeout = 300
-rlimit_files = 65536
-rlimit_core = 0
 ;slowlog = ${slowlog}
 chdir = /
 env[TMP] = ${tmp_dir}
@@ -261,39 +269,32 @@ php_admin_flag[log_errors] = on
 php_value[session.save_handler] = files
 php_value[session.save_path]    = ${session_path}
 php_value[soap.wsdl_cache_dir]  = ${wsdl_cache_dir}
-php_admin_value[disable_functions] = exec,system,passthru,shell_exec,dl,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
+php_admin_value[disable_functions] = exec,system,passthru,shell_exec,proc_close,proc_open,dl,popen,show_source,posix_kill,posix_mkfifo,posix_getpwuid,posix_setpgid,posix_setsid,posix_setuid,posix_setgid,posix_seteuid,posix_setegid,posix_uname
 php_admin_value[upload_tmp_dir] = ${tmp_dir}
 php_admin_value[open_basedir] = ${open_basedir}
 security.limit_extensions = .php
 END
 }
 
-set_docroot(){
-    if [[ "${SOURCE}" == "laravel" ]]; then
-        root="root /home/${username}/${domain}/public_html/public;"
-    else
-        root="root /home/${username}/${domain}/public_html;"
-    fi
-}
-
 create_vhost(){
     set_rewrite
     fastcgi
-    set_docroot
+    doc_root "${SOURCE}" "${user}" "${domain}"
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
 server {
     listen 80;
+    #listen [::]:80;
     server_name ${domain} www.${domain};
 
     #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
+    error_log /home/${user}/${domain}/logs/error.log;
     ${root}
     index index.php index.html index.htm;
 
@@ -308,7 +309,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
     ${brute}
@@ -316,6 +317,35 @@ server {
     include /etc/nginx/extra/security.conf;
     ${wp_secure}
     ${xmlrpc}
+}
+END
+}
+
+create_vhost_nodejs(){
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${domain} www.${domain};
+
+    #access_log off;
+    #access_log /home/${user}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${user}/${domain}/logs/error.log;
+    root /home/${user}/${domain}/public_html;
+    #index index.php index.html index.htm;
+
+    location / {
+        proxy_pass http://127.0.0.1:${proxy_port};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
 }
 END
 }
@@ -330,13 +360,13 @@ save_user_config(){
 
     cat > "${USER_DIR}/.${domain}.conf" <<END
 [${domain}]
-username=${username}
+username=${user}
 user_pass=${user_pass}
 domain=${domain}
 db_name=${db_name}
 db_user=${db_user}
 db_password=${db_pass}
-public_html=/home/${username}/${domain}/public_html
+public_html=/home/${user}/${domain}/public_html
 plugin_cache=${plugin_cache}
 php_mode=${php_mode}
 php_version=${php_ver}
@@ -351,16 +381,18 @@ show_info(){
     printf "Ban đa them domain thanh cong. Hay luu lai thong tin de su dung\n"
     echo   "---------------------------------------------------------------"
     printf "* Domain                     : %s\n" "${domain}"
+    if [[ "${promt_create_db}" =~ ^([yY])$ ]]; then
     printf "* DB_Name                    : %s\n" "${db_name}"
     printf "* DB_User                    : %s\n" "${db_user}"
     printf "* DB_Password                : %s\n" "${db_pass}"
-    if [ -n "${pureftpd_status}" ]; then
-    printf "* Username (FTP)             : %s\n" "${username}"
+    fi
+    if service_running pure-ftpd; then
+    printf "* Username (FTP)             : %s\n" "${user}"
     printf "* Password (FTP)             : %s\n" "${user_pass}"
     printf "* FTP Host                   : %s\n" "${IPADDRESS}"
     printf "* FTP Port                   : 21\n"
     fi
-    printf "* Public_html                : %s\n" "/home/${username}/${domain}/public_html"
+    printf "* Public_html                : %s\n" "/home/${user}/${domain}/public_html"
     if [ "${promtp_inst_wp}" = "y" ]; then
     printf "* User dang nhap wp-admin    : %s\n" "${admin_user}"
     printf "* Mat khau dang nhap wp-admin: %s\n" "${admin_pwd}"
@@ -375,28 +407,57 @@ _run(){
         select_source
         create_docrot
         create_db
-        create_phpconfig
+        if [ "${SOURCE}" != "nodejs" ]; then
+            create_phpconfig
+        fi
+
         create_user
 
-        if [ -n "${pureftpd_status}" ]; then
+        if service_running pure-ftpd; then
             create_ftp "$@"
         fi
 
-        if [[ "${SOURCE}" == "wordpress" ]]; then
-            clear
-            wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
-            xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
-            brute_force_wp "${username}"
-            wp_auto_install_confirm
-            wp_auto_install "$@"
+        if [ "${SOURCE}" == "nodejs" ]; then
+            printf "%s\n" "${GREEN}Luu y: IP Server trong config Nodejs can duoc sua thanh${NC} ${RED}127.0.0.1${NC}"
+            while true
+            do
+                read -r -p "Nhap Port Nodejs: " proxy_port
+                if valid_number "${proxy_port}"; then
+                    break
+                else
+                    clear
+                    printf "%s\n" "${RED}Port khong chinh xac, vui long nhap lai.${NC}"
+                fi
+            done
+
+            create_vhost_nodejs
+        else
+            if [[ "${SOURCE}" == "wordpress" ]]; then
+                clear
+                wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
+                xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
+                brute_force_wp "${user}"
+                if [[ "${promt_create_db}" =~ ^([yY])$ ]]; then
+                  wp_auto_install_confirm
+                  wp_auto_install "$@"
+                fi
+            fi
+            create_vhost
         fi
 
-        create_vhost
         set_owner
         save_user_config
-        restart_service
-        clear
-        show_info
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            show_info
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -404,13 +465,26 @@ _run(){
 }
 
 ALERT=""
+SOURCE=""
 domain=""
+promtp_prefix=""
+promtp_inst_wp=""
+promt_create_db=""
 
-check_service
+if ! service_running nginx; then
+    ALERT="${RED}Nginx khong hoat dong.${NC}"
+fi
+
+if ! service_running mariadb; then
+    ALERT="${RED}MariaDB khong hoat dong.${NC}"
+fi
+
+if ! service_running php-fpm; then
+    ALERT="${RED}PHP khong hoat dong.${NC}"
+fi
 
 if [ -z "${ALERT}" ]; then
     input
-    #domain="${domain}" ; echo ${domain//" "/""}
     if [ "${domain}" == "0" ]; then
         clear
     else
@@ -420,7 +494,10 @@ if [ -z "${ALERT}" ]; then
         fi
         if [ "${php_mode}" == "0" ]; then
             clear
+            printf "%s\n" "${RED}Huy thao tac.${NC}"
         else
+            domain=${domain//www.}
+
             _run "$@"
             echo ""
         fi

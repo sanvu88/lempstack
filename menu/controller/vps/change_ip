@@ -1,0 +1,80 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+confirm(){
+    while true
+    do
+        read -r -p "Ban chac chan muon thay doi IP (y/n): " confirm_ip
+        echo
+        if [[ "$confirm_ip" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+            break
+        else
+            clear
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+}
+
+input_ip(){
+    while true
+    do
+        read -r -p "Nhap vao IP moi [0 = Thoat]: " new_ip
+        echo
+        if valid_ip "${new_ip}" || [ "${new_ip}" == "0" ]; then
+            break
+        else
+            clear
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+}
+
+_run(){
+    sed -i "s/${IPADDRESS}/${new_ip}/g" /etc/nginx/web_apps.conf
+    sed -i '/server_ip/d' /var/hostvn/hostvn.conf
+    sed -i '/IPADDRESS/d' /var/hostvn/menu/helpers/variable_common
+    sed -i '/IPADDRESS/d' /var/hostvn/ipaddress
+    cat >> "/var/hostvn/ipaddress" <<EOchange_ip
+
+IPADDRESS="${new_ip}"
+
+EOchange_ip
+    if nginx -t; then
+        systemctl reload nginx
+        clear
+        printf "%s\n" "${GREEN}Doi IP VPS thanh cong.${NC}"
+        printf "%s\n" "${GREEN}Vui long thoat menu va mo lai de thay doi co hieu luc.${NC}"
+    else
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+    fi
+}
+
+new_ip=""
+input_ip
+
+if [ "${new_ip}" == "0" ]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    confirm
+    if [[ "$confirm_ip" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${RED}Huy thao tac.${NC}"
+    fi
+fi
+
+menu_vps

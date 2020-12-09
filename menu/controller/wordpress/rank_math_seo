@@ -12,11 +12,26 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
+
+check_brute(){
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    check_brute=$(grep -w "limit_req" "${VHOST_DIR}/${domain}.conf");
+    if [ -z "${check_brute}" ]; then
+        brute="location = /wp-login.php {
+            limit_req zone=two burst=1 nodelay;
+            include /etc/nginx/fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+            fastcgi_pass php-${user};
+        }"
+        sed -i "/index.html/a ${brute}" "${VHOST_DIR}"/"${domain}".conf
+    fi
+}
 
 _run(){
     check_yoast=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "yoast_seo")
-
+    check_brute
     if [ -n "${check_yoast}" ]; then
         while true
         do
@@ -40,13 +55,31 @@ _run(){
         if [[ -n "${check_mathseo}" ]]; then
             sed -i '/rank_math_seo/d' "${VHOST_DIR}"/"${domain}".conf
             echo "plugins_seo=" >> "${USER_DIR}"/."${domain}".conf
-            restart_service
-            printf "%s\n" "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}"
+            if nginx -t; then
+                systemctl restart nginx
+                systemctl restart php-fpm.service
+                if [ "${php2_release}" == "yes" ]; then
+                    systemctl restart "${php2_version}"-php-fpm
+                fi
+                clear
+                printf "%s\n" "${GREEN}Tat cau hinh Rank Math Seo thanh cong.${NC}"
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
         else
             echo "plugins_seo=rank_math_seo" >> "${USER_DIR}"/."${domain}".conf
             sed -i '/index.html/a include /etc/nginx/wordpress/rank_math_seo.conf;' "${VHOST_DIR}"/"${domain}".conf
-            restart_service
-            printf "%s\n" "${GREEN}Bat cau hinh Rank Math Seo thanh cong.${NC}"
+            if nginx -t; then
+                systemctl restart nginx
+                systemctl restart php-fpm.service
+                if [ "${php2_release}" == "yes" ]; then
+                    systemctl restart "${php2_version}"-php-fpm
+                fi
+                clear
+                printf "%s\n" "${GREEN}Bat cau hinh Rank Math Seo thanh cong.${NC}"
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
         fi
     else
         printf "%s\n" "${ALERT}"
@@ -57,11 +90,16 @@ del_yoast=""
 domain=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+    	clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 
 wp_menu_advanced

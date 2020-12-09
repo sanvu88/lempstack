@@ -39,10 +39,15 @@ do
         4) update_memcached_panel ;;
         5) update_redis_panel ;;
         6)
-            read -r -p "Nhap mat khau moi: " admin_new_pwd
+            admin_new_pwd=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c16)
             htpasswd -b -c /usr/share/nginx/auth/.htpasswd admin "${admin_new_pwd}"
-                  sed -i '/admin_pwd=/d' "${FILE_INFO}"
-                  echo "admin_pwd=${admin_new_pwd}" >> "${FILE_INFO}"
+            sed -i '/admin_pwd=/d' "${FILE_INFO}"
+            echo "admin_pwd=${admin_new_pwd}" >> "${FILE_INFO}"
+            sed -i "s/UI_PASS/#UI_PASS/g" /etc/csf/csf.conf
+            sed -i "/#UI_PASS/a UI_PASS = \"${admin_new_pwd}\"" /etc/csf/csf.conf
+            sed -i '/#UI_PASS/d' /etc/csf/csf.conf
+            csf -x
+            csf -e
             clear
             printf "%s\n" "${GREEN}Doi mat khau Admin Tool thanh cong.${NC}"
             menu_admin

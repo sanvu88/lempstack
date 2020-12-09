@@ -14,17 +14,11 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
-memcached_status="$(pgrep -f memcached)"
-
-if [ -n "${memcached_status}" ]; then
-    status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
-else
-    status=$(printf "%s\n" "${RED}Khong Hoat dong${NC}")
-fi
+memcached_status=$(pgrep memcached >/dev/null && printf "%s\n" "${GREEN}Hoat dong${NC}" || printf "%s\n" "${GREEN}Khong hoat dong${NC}")
 
 printf "%s=====================%s\n" "${GREEN}" "${NC}"
 printf "%sQuan ly Memcached%s\n" "${GREEN}" "${NC}"
-printf "%s\n" "${GREEN}Trang thai:${NC} ${status}"
+printf "%s\n" "${GREEN}Trang thai:${NC} ${memcached_status}"
 printf "%s=====================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]

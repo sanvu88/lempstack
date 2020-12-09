@@ -40,11 +40,11 @@ then
         then
             exit 1
         fi
-        CHECK3=$(echo "${2}" | cut -d"." -f2- | grep -c "-")
-        if [[ ${CHECK3} -eq 1 ]]
-        then
-            exit 1
-        fi
+#        CHECK3=$(echo "${2}" | cut -d"." -f2- | grep -c "-")
+#        if [[ ${CHECK3} -eq 1 ]]
+#        then
+#            exit 1
+#        fi
         CHECK4=$(echo "${2}" | tr -d '[:space:]')
         if [[ "${CHECK4}" != "${2}" ]] || [[ -z "${CHECK4}" ]]
         then

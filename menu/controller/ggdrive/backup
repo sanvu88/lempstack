@@ -12,6 +12,8 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/ipaddress
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -29,40 +31,43 @@ _run(){
     fi
     if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
         cd_dir /home/"${username}"/"${domain}"
-        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html
+        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html \
+                    --exclude "public_html/wp-content/cache" --exclude "public_html/storage/framework/cache" \
+                    --exclude "public_html/storage/framework/view"
     fi
-    if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]; then
+    if [ ! -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql.gz" ]; then
         cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
     fi
     clear
     printf "%s\n" "${GREEN}Dang tien hanh upload du lieu len Google Drive. Vui long doi den khi hoan tat.${NC}"
     printf "%s\n" "${GREEN}Thoi gian upload phu thuoc vao dung luong cua file backup.${NC}"
     rclone copy /home/backup "${remote}":"${IPADDRESS}" >> /var/log/rclone.log 2>&1
-    rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"
+    rm -rf /home/backup/*
     clear
     printf "%s\n" "${GREEN}Sao luu du lieu thanh cong.${NC}"
 }
 
 if [ -f "/root/.config/rclone/rclone.conf" ]; then
-    if [[ $(ls -A "${USER_DIR}") ]]; then
-        remote=""
-        domain=""
-        select_remote
-        if [ -z "${remote}" ]; then
+    remote=""
+    domain=""
+    select_remote
+    if [ -z "${remote}" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
+    else
+        select_domain
+        if [[ -z "${domain}" && -z "${ALERT}" ]]; then
             clear
             printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
         else
-            select_domain
-            if [ -z "${domain}" ]; then
-                clear
-                printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
-            else
+            if [ -z "${ALERT}" ]; then
                 _run
+            else
+                clear
+                printf "%s\n" "${ALERT}"
             fi
         fi
-    else
-        printf "%s\n" "${RED}Khong co ten mien nao tren VPS.${NC}"
     fi
 else
     clear

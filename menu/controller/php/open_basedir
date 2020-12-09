@@ -1,0 +1,84 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+# shellcheck disable=SC2207
+# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+_run(){
+  string=$(grep -w "/etc/php-fpm.d/${domain}.conf" -e "open_basedir")
+  if [ -z "$string" ]; then
+    read -r -p "Ban muon bat open_basedir (y/n) ? " promt_open_basedir
+    printf "Dang bat open_basedir vui long doi...\n"
+
+    if [[ "${promt_open_basedir}" =~ ^([yY])$ ]]; then
+      user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+      php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
+      php_conf_path="/etc/php-fpm.d"
+      if [[ "${php2_release}" == "yes" && "${php_mode}" == "2" ]]; then
+          php_conf_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+          if [[ "${php2_version}" == "php56" ]]; then
+              php_conf_path="/opt/remi/${php2_version}/root/etc/php-fpm.d"
+          fi
+      fi
+
+      cat >> "${php_conf_path}/${domain}.conf" << END
+php_admin_value[open_basedir] = /home/$user/:/dev/urandom:/usr/share/php/:/dev/shm
+END
+      systemctl restart php-fpm.service
+      if [ "${php2_release}" == "yes" ]; then
+          systemctl restart "${php2_version}"-php-fpm
+      fi
+      clear
+      printf "Bat open_basedir thanh cong.\n"
+    else
+      clear
+      printf "Huy thao tac.\n"
+    fi
+  else
+    printf "Viec tat open_basedir se lam giam muc do bao mat cua VPS.\n"
+    read -r -p "Ban thuc su muon tat open_basedir (y/n) ? " promt_open_basedir
+    printf "Dang tat open_basedir vui long doi...\n"
+
+    if [[ "${promt_open_basedir}" =~ ^([yY])$ ]]; then
+      sed -i '/open_basedir/d' /etc/php-fpm.d/"$domain".conf
+      systemctl restart php-fpm.service
+      if [ "${php2_release}" == "yes" ]; then
+          systemctl restart "${php2_version}"-php-fpm
+      fi
+      clear
+      printf "Tat open_basedir thanh cong.\n"
+    else
+      clear
+      printf "Huy thao tac.\n"
+    fi
+  fi
+}
+
+domain=""
+
+select_domain
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_php

@@ -1,0 +1,84 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+input_domain(){
+    echo "Nhap vao domain duoc phep truy cap hinh anh ngoai ten mien chinh. Nhan Enter neu khong muon cho phep domain khac."
+    read -r -p "Nhap vao domain duoc phep truy cap hinh anh ngoai ten mien chinh (Khong co www): " other_domain
+
+    other_domain=${other_domain//www.}
+}
+
+create_hotlink_conf(){
+    if [ ! -d "/etc/nginx/hotlink" ]; then
+        mkdir -p /etc/nginx/hotlink
+    fi
+
+    if [ -f "/etc/nginx/hotlink/${domain}.conf" ]; then
+        rm -rf /etc/nginx/hotlink/"${domain}".conf
+    fi
+
+    if [ -z "${other_domain}" ]; then
+        cat >> "/etc/nginx/hotlink/${domain}.conf" <<EOF
+location ~ .(gif|png|jpe?g|ico)$ {
+     valid_referers none blocked ${domain} *.${domain};
+     if (\$invalid_referer) {
+        return   403;
+    }
+}
+EOF
+    else
+        cat >> "/etc/nginx/hotlink/${domain}.conf" <<EOF
+location ~ .(gif|png|jpe?g|ico)$ {
+     valid_referers none blocked ${domain} *.${domain} ${other_domain} *.${other_domain};
+     if (\$invalid_referer) {
+        return   403;
+    }
+}
+EOF
+    fi
+}
+
+_run(){
+    input_domain
+    create_hotlink_conf
+
+    if nginx -t; then
+        service nginx reload
+        clear
+        printf "%s\n" "${GREEN}Cau hinh hotlink thanh cong.${NC}"
+    else
+        clear
+        printf "%s\n" "${RED}Cau hinh Nginx khong dung. Vui long kiem tra lai vhost cua domain ${domain}.${NC}"
+    fi
+}
+
+ALERT=""
+domain=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_domain

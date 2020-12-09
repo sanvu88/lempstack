@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 find_string(){
@@ -29,20 +30,35 @@ _xmlrpc(){
 }
 
 _run(){
-    domain=""
     select_domain
 
-    if [ -n "${domain}" ]; then
-        find_string
-        _xmlrpc
-        restart_service
+    if [[ -z "${domain}" && -z "${ALERT}" ]]; then
         clear
-        printf "%s\n" "${noti}"
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
     else
-        clear
-        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+        if [ -z "${ALERT}" ]; then
+            find_string
+            _xmlrpc
+            if nginx -t; then
+                systemctl restart nginx
+                systemctl restart php-fpm.service
+                if [ "${php2_release}" == "yes" ]; then
+                    systemctl restart "${php2_version}"-php-fpm
+                fi
+                clear
+                printf "%s\n" "${noti}"
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
     fi
 }
 
+ALERT=""
+domain=""
+string=""
 _run
 wp_menu_advanced

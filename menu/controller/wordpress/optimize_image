@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 backup_confirm(){
@@ -40,10 +41,9 @@ backup(){
 _run(){
     before=$(du -sh /home/"${username}"/"${domain}"/public_html/wp-content/uploads | cut -f1 -d"M")
     clear
-    printf "%s\n" "${GREEN}Chuan bi toi uu anh...${NC}"
-    pngquant /home/"${username}"/"${domain}"/public_html/wp-content/uploads/*/*/*.png --quality=75-80 --ext=.png --force
-    jpegoptim /home/hathanhxyz/hathanh.xyz/public_html/wp-content/uploads/*/*/*.jpg -m 75
-    jpegoptim /home/hathanhxyz/hathanh.xyz/public_html/wp-content/uploads/*/*/*.jpeg -m 75
+    printf "%s\n" "${GREEN}Dang toi uu anh, vui long doi...${NC}"
+    find /home/"${username}"/"${domain}"/public_html/wp-content/uploads -type f -iname "*.png" -exec pngquant --quality=75-80 --ext=.png --force {} \;
+    find /home/"${username}"/"${domain}"/public_html/wp-content/uploads -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) -exec jpegoptim -m 75 -f --strip-all {} \;
     after=$(du -sh /home/"${username}"/"${domain}"/public_html/wp-content/uploads | cut -f1 -d"M")
     clear
     printf "%s\n" "${GREEN}Toi uu hinh anh thanh cong${NC}"
@@ -53,19 +53,26 @@ _run(){
 
 promt_backup=""
 domain=""
+before=""
+after=""
 select_domain
 
-if [ -z "${domain}" ]; then
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy hanh dong.${NC}"
 else
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-    backup_confirm
-    if [[ "${promt_backup}" =~ ^([yY])$ ]];then
-        make_backup_dir "${domain}"
-        backup
+    if [ -z "${ALERT}" ]; then
+        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        backup_confirm
+        if [[ "${promt_backup}" =~ ^([yY])$ ]];then
+            make_backup_dir "${domain}"
+            backup
+        fi
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
     fi
-    _run
 fi
 
 wp_menu_advanced

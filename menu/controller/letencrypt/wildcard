@@ -10,17 +10,36 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-# shellcheck disable=SC2154
-# shellcheck disable=SC2002
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s========================%s\n" "${GREEN}" "${NC}"
 printf "%s Let's Encrypt Wildcard %s\n" "${GREEN}" "${NC}"
 printf "%s========================%s\n" "${GREEN}" "${NC}"
 
+check_subdomain(){
+    md=
+    p2='^(.*\.)?([^.]+\.[a-z]+\.[a-z][a-z])$'
+    p3='^(.*\.)?([^.]+\.(design|party|live|red|pink|school|blog|email|vip|pro|studio|art|info|com|org|net|int|edu|gov|mil|xyz|vn|website|store|biz|me|mobi|name|ws|co|cc|tv|xxx|pro|pw|us|ca|bz|asia|in|hk|sg|eu|fr|de|au|tw|nz|media|news|photography|top|tips|uk|link|site|club|online|fun|men|space|io|trade|host|best|press|gift|zone|es|tech|company|kr))$'
+    px='^(.*\.)([a-z]+)$'
+
+    if [[ "$domain" =~ $p2 ]] ; then
+        md=${BASH_REMATCH[2]};
+    elif [[ "$domain" =~ $p3 ]] ; then
+        md=${BASH_REMATCH[2]};
+    elif [[ "$domain" =~ $px ]] ; then
+        md=${BASH_REMATCH[2]};
+    fi ;
+
+    if [ "$domain" != "$md" ]; then
+        ALERT=$(printf "%s\n" "${RED}SSL Wildcard chi su dung voi ten mien chinh.${NC}")
+    fi
+}
+
 validate(){
     check_nginx_status
     check_a_record "${domain}"
+    check_subdomain
 }
 
 remove_old_ssl(){
@@ -36,31 +55,73 @@ remove_old_ssl(){
     done
     
     if [[ ${promt_remove_oldssl} =~ ^([yY])$ ]]; then
-        certbot-auto revoke --cert-path /etc/letsencrypt/live/"${domain}"/cert.pem
-        certbot-auto delete --cert-name "${domain}"
+        rm -rf /root/.acme.sh/"${domain}"
     fi
 }
 
 sign_ssl(){
-    admin_email=$(grep -w "admin_email" "${FILE_INFO}" | cut -f2 -d'=');
-    if [ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]; then
+    if [ -d "/root/.acme.sh/${domain}" ]; then
+        string=$(grep -w "/root/.acme.sh/${domain}/${domain}.conf" -e "nginx:,dns")
+    fi
+
+    if [[ -z "${string}" ]]; then
         remove_old_ssl
-        certbot certonly --preferred-challenges=dns --email "${admin_email}" --agree-tos \
-                --no-bootstrap --manual-public-ip-logging-ok -d "${domain}" -d "*.${domain}"
+    fi
+
+    if [ -n "${string}" ]; then
+        /root/.acme.sh/acme.sh --issue --nginx -d "${domain}" -d "*.${domain}" --dns --yes-I-know-dns-manual-mode-enough-go-ahead-please --renew
+        if [[ -f "/root/.acme.sh/${domain}/${domain}.key" && -f "/root/.acme.sh/${domain}/fullchain.cer" ]]; then
+            edit_vhost
+            sleep 2
+
+            if nginx -t; then
+                systemctl reload nginx
+                clear
+                printf "%s\n" "${GREEN}Cau hinh SSL thanh cong.${NC}"
+                printf "%s\n" "${RED}Luu y: SSL Wildcard se khong tu dong gia han.${NC}"
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
+
+        else
+            printf "%s\n" "${RED}Cau hinh SSL that bai. Co the DNS chua cap nhat. Vui long doi DNS cap nhat.${NC}"
+        fi
     else
-        certbot certonly --nginx --preferred-challenges=dns --email "${admin_email}" --agree-tos \
-                --no-bootstrap --manual-public-ip-logging-ok -d "${domain}" -d "*.${domain}"
+        /root/.acme.sh/acme.sh --issue --nginx -d "${domain}" -d "*.${domain}" --dns --yes-I-know-dns-manual-mode-enough-go-ahead-please
+        echo
+        printf "%s\n" "${RED}Tao ban ghi TXT theo noi dung o tren va doi 5-10 phut de DNS cap nhat.${NC}"
+        printf "%s\n" "${RED}Sau khi DNS cap nhat chay lai Menu SSL Wildcard mot lan nua de xac thuc SSL.${NC}"
     fi
 }
 
-auto_renew(){
-    cron_exists=$(crontab -l | grep -w 'certbot-auto')
-    if [ -z "${cron_exists}" ]; then
-        crontab -l > certbot
-        echo "0 3 * * * /usr/local/bin/certbot-auto renew && service nginx restart >/dev/null 2>&1" >> certbot
-        crontab certbot
-        rm -rf certbot
+edit_vhost(){
+    server_name="server_name ${domain} www.${domain};"
+    check_sub=$(grep -w "${VHOST_DIR}/${domain}.conf" -e "*.${domain}")
+
+    if [ -n "${check_sub}" ]; then
+        server_name="server_name ${domain} *.${domain};"
     fi
+
+    check_old_ssl_conf=$(grep -w "${VHOST_DIR}/${domain}.conf" -e "ssl_certificate")
+    if [ -z "${check_old_ssl_conf}" ]; then
+        sed -i 's/listen 80/listen 443 ssl http2/g' "${VHOST_DIR}"/"${domain}".conf
+        cat >> "${VHOST_DIR}/${domain}.conf" << EOvhost
+
+server {
+    listen 80;
+    ${server_name}
+    location / {
+        return 301 https://${domain}\$request_uri;
+    }
+}
+EOvhost
+    else
+        sed -i '/ssl_certificate_key/d' "${VHOST_DIR}"/"${domain}".conf
+        sed -i '/ssl_certificate/d' "${VHOST_DIR}"/"${domain}".conf
+    fi
+
+    sed -i "/index.html/a ssl_certificate_key     /root/.acme.sh/${domain}/${domain}.key;" "${VHOST_DIR}"/"${domain}".conf
+    sed -i "/index.html/a ssl_certificate     /root/.acme.sh/${domain}/fullchain.cer;" "${VHOST_DIR}"/"${domain}".conf
 }
 
 _run(){
@@ -68,10 +129,6 @@ _run(){
 
     if [ -z "${ALERT}" ]; then
         sign_ssl
-        auto_renew
-        #sed -i "s/listen 443 ssl;/listen 443 ssl http2;/g" "${VHOST_DIR}"/"${domain}".conf
-        sleep 2
-        systemctl restart nginx.service
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -81,13 +138,19 @@ _run(){
 ALERT=""
 promt_remove_oldssl=""
 domain=""
+string=""
 
 select_domain
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 
 menu_letencrypt

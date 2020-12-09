@@ -22,7 +22,7 @@ MENU_NAME="hostvn"
 AUTHOR="HOSTVN.VN"
 AUTHOR_WEB="HOSTVN.VN"
 UPDATE_LINK="https://scripts.hostvn.net/update"
-IPADDRESS=$(dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
+#IPADDRESS=$(dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
 CURRENT_DATE=$(date +%Y-%m-%d)
 
 # Set directory variables
@@ -30,7 +30,9 @@ BASH_DIR="/var/hostvn"
 USER_DIR="/var/hostvn/users"
 VHOST_DIR="/etc/nginx/conf.d"
 MYSQL_DIR="/var/lib/mysql"
+BACKUP_VHOST_DIR="/etc/nginx/backup_vhost"
 FILE_INFO="${BASH_DIR}/hostvn.conf"
 DEFAULT_DIR_WEB="/usr/share/nginx/html"
 DEFAULT_DIR_TOOL="/usr/share/nginx/private"
 WORDPRESS_CRON_DIR="/var/hostvn/wpcron"
+RULE_FILE="${BASH_DIR}/validate/rule"

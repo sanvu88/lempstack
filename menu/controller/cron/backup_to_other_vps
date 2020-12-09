@@ -1,0 +1,150 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+create_sftp_connect(){
+    while true
+    do
+        read -r -p "Nhap vao IP VPS moi [0 = Thoat]: " new_vps_ip
+        echo
+        if valid_ip "${new_vps_ip}" || [ "${new_vps_ip}" == "0" ]; then
+            break
+        else
+            clear
+            printf "%s\n"  "${RED}IP khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    if [ "${new_vps_ip}" != "0" ]; then
+        while true
+        do
+            read -r -p "Nhap vao Port SSH cua VPS moi [0 = Thoat]: " ssh_port
+            echo
+            if [[ "${ssh_port}" =~ ^[0-9]+$ ]]; then
+                break
+            else
+                clear
+                printf "%s\n"  "${RED}Port SSH khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+
+        if [ "${ssh_port}" != 0 ]; then
+            while true
+            do
+                read -r -p "Nhap vao Mat khau SSH cua VPS moi [0 = Thoat]: " ssh_pwd
+                echo
+                if [[ -n "${ssh_pwd}" ]]; then
+                    break
+                else
+                    clear
+                    printf "%s\n"  "${RED}Mat khau SSH la bat buoc.${NC}"
+                fi
+            done
+
+            if [ "${ssh_pwd}" != 0 ]; then
+#                remote_name=${new_vps_ip//[.]/}
+                remote_name=${new_vps_ip}
+                encrypt_pwd=$(rclone obscure "${ssh_pwd}" --crypt-password string)
+
+                if [[ -n "${new_vps_ip}" && -n "${ssh_port}" && -n "${ssh_pwd}" ]]; then
+                    rclone config create "${remote_name}" sftp host "${new_vps_ip}" user root port "${ssh_port}" pass "${encrypt_pwd}"
+                fi
+            fi
+        fi
+    fi
+}
+
+select_remote(){
+    sftp_remotes=()
+    # shellcheck disable=SC2207
+    list_remote=( $(rclone listremotes) )
+    for entry in "${list_remote[@]}"; do
+        rt=${entry//:}
+        if valid_ip "${rt}"; then
+            sftp_remotes+=("${rt}")
+        fi
+    done
+
+    if [ ${#sftp_remotes[@]} -ne 0 ]; then
+        echo "Lua chon VPS chua backup"
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+
+        select opt_sftp in "${sftp_remotes[@]}"
+        do
+            case $opt_sftp in
+                $opt) remote_name=${opt_sftp}; break ;;
+            esac
+        done
+    else
+        create_sftp_connect
+    fi
+}
+
+select_time(){
+    echo "Lua chon thoi gian ?"
+    PS3='Nhap lua chon cua ban (1-4): '
+    options=("Backup 1 lan/ngay" "Backup 1 lan/tuan" "Backup 1 lan/thang" "Backup 1 lan/nam" "Huy tao cronjob")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Backup 1 lan/ngay") time="@midnight"; break;;
+            "Backup 1 lan/tuan") time="@weekly"; break;;
+            "Backup 1 lan/thang") time="@monthly"; break;;
+            "Backup 1 lan/nam") time="@yearly"; break;;
+            "Huy tao cronjob") time="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
+        esac
+    done
+}
+
+create_cron(){
+    crontab -l > backupvps
+    echo "${time} sh /var/hostvn/menu/cronjob/backup_to_other_vps.sh >/dev/null 2>&1" >> backupvps
+    crontab backupvps
+    rm -rf backupvps
+    clear
+    printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
+}
+
+_run(){
+    select_remote
+    if [ -z "${remote_name}" ]; then
+        clear
+        printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+    else
+        select_time
+        if [ "${time}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+        else
+            sed -i '/sftp_remote/d' "${FILE_INFO}"
+            {
+                echo ""
+                echo "sftp_remote=${remote_name}"
+            } >> "${FILE_INFO}"
+            create_cron
+        fi
+    fi
+}
+
+time=""
+cron_exists=$(crontab -l | grep -w 'backup_to_other_vps')
+
+if [ -z "${cron_exists}" ]; then
+    _run
+else
+    clear
+    printf "%s\n" "${RED}Cronjob da ton tai.${NC}"
+fi
+menu_cronjob

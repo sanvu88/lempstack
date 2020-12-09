@@ -13,7 +13,7 @@
 CHOICE=1
 
 printf "%s=============================%s\n" "${GREEN}" "${NC}"
-printf "    %sPhan quyen Chown/Chmod%s\n   " "${GREEN}" "${NC}"
+printf "    %sPhan quyen Chown/Chmod%s   \n" "${GREEN}" "${NC}"
 printf "%s=============================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]

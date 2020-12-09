@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -40,10 +41,15 @@ backup(){
     if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
         rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
     fi
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql.gz" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql.gz
+    fi
     if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
         mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+
+    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
 }
 
 _repair_db(){
@@ -76,11 +82,16 @@ promt_backup=""
 domain=""
 
 select_domain
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
-    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+    	clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 echo ""
 wp_menu_database

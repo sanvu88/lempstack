@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 ALERT=""
 domain=""
@@ -30,7 +31,7 @@ input(){
     false
     while [ $? -eq 1 ]
     do
-        read -r -p "Nhap domain (Khong có www) [0 = Thoat]: " new_domain
+        read -r -p "Nhap domain (Khong co www) [0 = Thoat]: " new_domain
         if [ "${new_domain}" == "0" ]; then
             new_domain=0
             break
@@ -71,11 +72,16 @@ _backup(){
     if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
         rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
     fi
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql.gz" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql.gz
+    fi
 
     if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
         mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
     fi
-    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
+
 }
 
 change_path(){
@@ -126,9 +132,17 @@ _run(){
             rm -rf "${WORDPRESS_CRON_DIR}"/"${domain:?}"
             touch "${WORDPRESS_CRON_DIR}"/"${new_domain}"
         fi
-        restart_service
-        clear
-        printf "%s\n" "${GREEN}Doi ten mien thanh cong.${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Doi ten mien thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -141,21 +155,27 @@ new_domain=""
 promt_backup=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    set_var
-    input
-    if [ "${new_domain}" == "0" ]; then
-        menu_wp
-    else
-        backup_confirm
-        if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
-            _backup
-        fi
-        _run
-        menu_wp
-    fi
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
-    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
-    menu_wp
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        set_var
+        input
+        if [ "${new_domain}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+        else
+            backup_confirm
+            if [[ "${promt_backup}" =~ ^([yY])$ ]]; then
+                _backup
+            fi
+            _run
+        fi
+    else
+    	clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
+
+menu_wp

@@ -10,7 +10,8 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-# shellcheck disable=SC1091
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -55,7 +56,7 @@ ${declare}
 \$cfg['blowfish_secret'] = '${blowfish_secret}';
 \$i = 0;
 \$i++;
-\$cfg['Servers'][\$i]['auth_type'] = 'http';
+\$cfg['Servers'][\$i]['auth_type'] = 'cookie';
 \$cfg['Servers'][\$i]['host'] = 'localhost';
 \$cfg['Servers'][\$i]['connect_type'] = 'tcp';
 \$cfg['Servers'][\$i]['compress'] = false;
@@ -80,9 +81,17 @@ run(){
     check_dir
     update
     config_phpmyadmin
-    restart_service
-    clear
-    printf "%s\n" "${GREEN}Update phpMyAdmin thanh cong.${NC}"
+    if nginx -t; then
+        systemctl reload nginx
+        systemctl restart php-fpm.service
+        if [ "${php2_release}" == "yes" ]; then
+            systemctl restart "${php2_version}"-php-fpm
+        fi
+        clear
+        printf "%s\n" "${GREEN}Update phpMyAdmin thanh cong.${NC}"
+    else
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+    fi
 }
 
 run

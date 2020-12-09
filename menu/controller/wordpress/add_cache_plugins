@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -50,6 +51,19 @@ browser_cache(){
     fi
 }
 
+check_brute(){
+    check_brute=$(grep -w "limit_req" "${VHOST_DIR}/${domain}.conf");
+    if [ -z "${check_brute}" ]; then
+        brute="location = /wp-login.php {
+            limit_req zone=two burst=1 nodelay;
+            include /etc/nginx/fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+            fastcgi_pass php-${user};
+        }"
+        sed -i "/index.html/a ${brute}" "${VHOST_DIR}"/"${domain}".conf
+    fi
+}
+
 action(){
     if [[ "${plugin_cache}" != "other" ]]; then
         sed -i "/index.html/a ${set_cache}" "${VHOST_DIR}"/"${domain}".conf
@@ -61,6 +75,7 @@ action(){
 
     if [ -z "${rewrite}" ]; then
         sed -i '/wordpress.conf/d' "${VHOST_DIR}"/"${domain}".conf
+        sed -i '/default.conf/d' "${VHOST_DIR}"/"${domain}".conf
     else
         rewrite=$(grep -rnw "${VHOST_DIR}"/"${domain}".conf -e "wordpress.conf")
         if [ -z "${rewrite}" ]; then
@@ -84,7 +99,7 @@ action(){
             rm -rf wpcron
         fi
     fi
-
+    check_brute
     sed -i '/plugin_cache=/d' "${USER_DIR}"/."${domain}".conf
     echo "plugin_cache=${plugin_cache}" >> "${USER_DIR}"/."${domain}".conf
 }
@@ -130,9 +145,17 @@ _run(){
             php rocket-parser.php
         fi
 
-        restart_service
-        clear
-        printf "%s\n" "${GREEN}Cau hinh Nginx voi plugin cache ${plugin_cache} thanh cong.${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Cau hinh Nginx voi plugin cache ${plugin_cache} thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -141,11 +164,19 @@ _run(){
 
 ALERT=""
 domain=""
+plugins_cache=""
+set_cache=""
+string=""
 select_domain
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 wp_plugin_cache

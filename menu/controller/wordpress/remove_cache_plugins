@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 _run(){
@@ -19,7 +20,7 @@ _run(){
     if [ "${plugins_cache}" == "wprocket" ]; then
         sed -i "/rocket-nginx/d" "${VHOST_DIR}"/"${domain}".conf
     else
-        sed -i "/${plugin_cache}/d" "${VHOST_DIR}"/"${domain}".conf
+        sed -i "/${plugins_cache}.conf/d" "${VHOST_DIR}"/"${domain}".conf
     fi
     staticfiles=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "staticfiles.conf")
     if [ -z "${staticfiles}" ]; then
@@ -34,13 +35,20 @@ _run(){
     printf "%s\n" "${GREEN}Xoa cau hinh plugins cache ${plugin_cache} thanh cong${NC}"
 }
 
+ALERT=""
 domain=""
+plugins_cache=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 wp_plugin_cache

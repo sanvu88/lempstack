@@ -13,13 +13,12 @@
 select_cron(){
     echo "Lua chon Cronjob muon xoa ?"
     PS3='Nhap lua chon cua ban (1-4): '
-    options=("Cronjob Auto Renew Let's Encrypt" "Cronjob auto backup local" "Cronjob auto backup Google Drive" "Cancel" )
+    options=("Cronjob auto backup local" "Cronjob auto backup Google Drive" "Cancel" )
     select opt in "${options[@]}"
     do
         case $opt in
-            "Cronjob Auto Renew Let's Encrypt") cron="certbot-auto renew"; break;;
             "Cronjob auto backup local") cron="backup_local"; break;;
-            "Cronjob auto backup Google Drive") cron="backup_ggdrive"; break;;
+            "Cronjob auto backup Google Drive") cron="ggdrive"; break;;
             "Cancel") cron="0"; break;;
             *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
         esac

@@ -30,33 +30,16 @@ valid_date(){
     fi
 }
 
-check_service(){
-    nginx="$(pgrep -f nginx)"
-    phpfpm="$(pgrep -f php-fpm)"
-    mariadb="$(pgrep -f mariadb)"
-
-    if [ -z "${nginx}" ]; then
-        nginx_status="${RED}Khong hoat dong${NC}"
-    fi
-
-    if [ -z "${phpfpm}" ]; then
-        phpfpm_status="${RED}Khong hoat dong${NC}"
-    fi
-
-    if [ -z "${mariadb}" ]; then
-        mariadb_status="${RED}Khong hoat dong${NC}"
-    fi
-
-    if [[  -z "${nginx}" || -z "${phpfpm}" || -z "${mariadb}" ]]; then
-        ALERT=$(
-            printf "%s%s%s\n" "${RED}" "${ERROR_OCCURRED}" "${NC}"
-            printf "%s%s%s\n" "${RED}" "${CHECK_SERVICES}" "${NC}"
-            echo "-------------------------------------------------"
-            printf "Nginx: %s\n" "${nginx_status}";
-            printf "PHP-FPM: %s\n" "${phpfpm_status}";
-            printf "MariaDB: %s\n" "${mariadb_status}";
-            echo "-------------------------------------------------"
-        )
+valid_ip(){
+#    if [[ ${1} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+#        return 0
+#    else
+#        return 1
+#    fi
+    if [[ "$(ipcalc -c "${1}" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -133,7 +116,7 @@ if_db_exists(){
     fi
 }
 
-if_db_not_empty(){
+if_db_empty(){
     COUNT_TABLE=$(mysql -e "SELECT CASE COUNT(*) WHEN '0' THEN 'empty' ELSE 'not empty' END AS contents FROM information_schema.tables
                                 WHERE table_type = 'BASE TABLE' AND table_schema = '${1}';" | grep "empty")
     if [ "${COUNT_TABLE}" == "empty" ]; then
@@ -162,14 +145,6 @@ if_mysql_user_exists(){
     fi
 }
 
-check_nginx_status(){
-    nginx="$(pgrep -f nginx)"
-
-    if [ -z "${nginx}" ]; then
-        ALERT=$(printf "%s\n" "${RED}${NGINX_NO_WORK}${NC}")
-    fi
-}
-
 check_a_record(){
     a_record=$(dig -4 +nocomments @8.8.8.8 +short A "${1}")
 
@@ -192,7 +167,7 @@ check_www_record(){
 }
 
 check_le_exists(){
-    if [ ! -d "/etc/letsencrypt/live/${1}" ]; then
+    if [ ! -d "/root/.acme.sh/${1}" ]; then
         ALERT=$(printf "%s\n" "${RED}${LE_NO_EXISTS}${NC}")
     fi
 }
@@ -228,7 +203,7 @@ check_backup_empty(){
     fi
 }
 
-check_docroot_empty(){
+docroot_empty_or_not(){
     #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
     if [ "$(ls -A /home/"${1}"/"${2}"/public_html)" ]; then
         return 0
@@ -243,9 +218,8 @@ check_wpconfig(){
     fi
 }
 
-service_exists() {
-    local n=$1
-    if [[ $(systemctl list-units --all -t service --full --no-legend "$n.service" | cut -f1 -d' ') == $n.service ]]; then
+service_running() {
+    if pgrep "$1" >/dev/null; then
         return 0
     else
         return 1
@@ -258,5 +232,11 @@ check_port_exists(){
         return 0
     else
         return  1
+    fi
+}
+
+check_nginx_status(){
+    if ! service_running nginx; then
+        ALERT=$(printf "%s\n" "${RED}${NGINX_NO_WORK}${NC}")
     fi
 }

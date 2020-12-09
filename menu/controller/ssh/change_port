@@ -10,6 +10,9 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
 printf "%s=================%s\n" "${GREEN}" "${NC}"
 printf "%sThay đoi port SSH%s\n" "${GREEN}" "${NC}"
 printf "%s=================%s\n" "${GREEN}" "${NC}"
@@ -56,7 +59,7 @@ check_port(){
     fi
 
     if check_port_exists "${port_new}"; then
-        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}")
+        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung hoac dang duoc ket noi boi phan mem SSH, SFTP. Vui long chon port khac.${NC}")
     fi
 }
 
@@ -68,7 +71,10 @@ _change_port(){
         cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
     fi
 
-    sed -i "s/Port ${current_port}/Port ${port_new}/g" /etc/ssh/sshd_config
+    sed -i "s/Port ${current_port}/#Port ${current_port}/g" /etc/ssh/sshd_config
+    sed -i "/Port ${current_port}/a Port ${port_new}" /etc/ssh/sshd_config
+    sed -i "/#Port ${current_port}/d" /etc/ssh/sshd_config
+
     sed -i "s/,${current_port}/,${port_new}/g" /etc/csf/csf.conf
     sed -i "s/22, ${current_port}/22, ${port_new}/g" /etc/csf/csf.conf
     sed -i '/ssh_port=/d' "${FILE_INFO}"
@@ -81,7 +87,7 @@ _change_port(){
     csf -x
     csf -e
     clear
-    printf "%s\n" "${GREEN}Da thay đoi Port SSH sang ${port_new} thanh cong.${NC}"
+    printf "%s%s%s\n" "${GREEN}" "Da thay đoi Port SSH sang ${port_new} thanh cong." "${NC}"
 }
 
 _run(){

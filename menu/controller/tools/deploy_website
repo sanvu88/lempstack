@@ -1,0 +1,158 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+select_resource(){
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    cd_dir /home/"${user}"/"${domain}"/public_html
+    compress_files=()
+    for file_entry in *.{zip,rar,tar.gz,tgz}; do
+        if [ -f "${file_entry}" ]; then
+            compress_files+=("${file_entry}")
+        fi
+    done
+
+    if [ ${#compress_files[@]} -ne 0 ]; then
+        clear
+        echo "Chon file  muon giai nen"
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt_file in "${compress_files[@]}"
+        do
+            file=$opt_file
+            break
+        done
+
+        if [ -z "${file}" ]; then
+            ALERT=$(printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}")
+        else
+            cd_dir /home/"${user}"/"${domain}"/public_html
+            sql_files=()
+            for entry_sql in *.{sql,sql.gz}; do
+                if [ -f "${entry_sql}" ]; then
+                    sql_files+=("${entry_sql}")
+                fi
+            done
+
+            if [ ${#sql_files[@]} -ne 0 ]; then
+                echo "Chon file database muon khoi phuc"
+                PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+                select opt_sql in "${sql_files[@]}"
+                do
+                    sql=$opt_sql
+                    break
+                done
+
+                if [ -z "${sql}" ]; then
+                    ALERT=$(printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}")
+                fi
+            else
+                ALERT=$(printf "%s\n" "${RED}Khong tim thay file sql nao trong Public_html.${NC}")
+            fi
+        fi
+    else
+        ALERT=$(printf "%s\n" "${RED}Khong tim thay file nen nao trong Public_html.${NC}")
+    fi
+}
+
+deploy_source(){
+    file_type=$(file --mime-type -b "${file}")
+    if [ "${file_type}" == "application/zip" ]; then
+        if [ ! -f "/usr/bin/unzip" ]; then
+            yum -y install unzip
+        fi
+        unzip "${file}"
+    elif [[ "${file_type}" == "application/x-gzip" || "${file_type}" == "application/x-tar" || "${file_type}" == "application/gzip" || "${file_type}" == "application/x-gtar" ]]; then
+        tar -xvf "${file}"
+    elif [ "${file_type}" == "application/x-rar" ]; then
+        if [ ! -f "/usr/bin/unar" ]; then
+            yum -y install unar
+        fi
+        unar "${file}"
+    fi
+
+    chown -R "${user}":"${user}" /home/"${user}"/"${domain}"/public_html
+}
+
+deploy_db(){
+    empty_db
+    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
+}
+
+edit_wp_config(){
+    cd_dir /home/"${user}"/"${domain}"/public_html
+    db_prefix=$(wp config get table_prefix --allow-root)
+
+    rm -rf wp-config.php
+    rm -rf license.txt readme.html
+
+    wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_password}" --dbprefix="${db_prefix}" --extra-php <<PHP
+define( 'WP_DEBUG', false );
+define( 'FS_METHOD', 'direct');
+define( 'WP_CACHE', true);
+define( 'WP_MEMORY_LIMIT', '128M' );
+define( 'WP_MAX_MEMORY_LIMIT', '128M' );
+PHP
+}
+
+change_wordpress_domain(){
+    old_domain=$(wp option get siteurl --allow-root | cut -f2 -d':')
+    old_domain=${old_domain//[\/]/}
+    if [ "${old_domain}" != "${domain}" ]; then
+        cd_dir /home/"${user}"/"${domain}"/public_html
+        wp search-replace --allow-root "${old_domain}" "${domain}"
+    fi
+}
+
+_run(){
+    select_resource
+
+    if [ -n "${ALERT}" ]; then
+        printf "%s\n" "${ALERT}"
+    else
+        clear
+        db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+        db_user=$(grep -w "db_user" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+        db_password=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+        deploy_source
+        deploy_db
+        if [ -f "/home/${user}/${domain}/public_html/wp-config.php" ]; then
+            edit_wp_config
+            change_wordpress_domain
+        fi
+        clear
+        printf "%s\n" "${GREEN}Deploy website thanh cong.${NC}"
+    fi
+}
+
+ALERT=""
+domain=""
+db_prefix=""
+
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_tools

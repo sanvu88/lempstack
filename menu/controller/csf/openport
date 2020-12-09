@@ -10,6 +10,9 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
@@ -69,6 +72,7 @@ _run(){
     fi
 }
 
+string=""
 new_port=""
 _run
 menu_csf

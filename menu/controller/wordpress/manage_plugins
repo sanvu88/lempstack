@@ -20,7 +20,7 @@ echo
 while [ "${CHOICE}" != "0" ]
 do
     printf "%s1. Cap nhat plugins (Tru plugins tra phi)%s\n" "${GREEN}" "${NC}"
-    printf "%s2. Huy kich hoat toan bo plugins%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Huy kich hoat toan bo plugins %s\n" "${GREEN}" "${NC}"
     printf "%s ========================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]

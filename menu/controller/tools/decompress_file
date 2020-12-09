@@ -1,0 +1,88 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    cd_dir /home/"${user}"/"${domain}"/public_html
+    compress_files=()
+    for file_entry in *.{zip,rar,tar.gz,tgz}; do
+        if [ -f "${file_entry}" ]; then
+            compress_files+=("${file_entry}")
+        fi
+    done
+
+    if [ ${#compress_files[@]} -ne 0 ]; then
+        clear
+        echo -e "Chon file  muon giai nen. ${RED}Luu y${NC}: ${GREEN}File nen can duoc dat trong thu muc public_html.${NC}"
+        echo -e "Chi ho tro giai nen cac dinh dang: ${RED}zip, rar, tar.gz, tgz.${NC}"
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt in "${compress_files[@]}"
+        do
+            file=$opt
+            break
+        done
+
+        if [ -z "${file}" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+        else
+            file_type=$(file --mime-type -b "${file}")
+            if [ "${file_type}" == "application/zip" ]; then
+                if [ ! -f "/usr/bin/unzip" ]; then
+                    yum -y install unzip
+                fi
+                cd_dir /home/"${user}"/"${domain}"/public_html
+                unzip "${file}"
+            elif [[ "${file_type}" == "application/x-gzip" || "${file_type}" == "application/x-tar" || "${file_type}" == "application/gzip" || "${file_type}" == "application/x-gtar" ]]; then
+                cd_dir /home/"${user}"/"${domain}"/public_html
+                tar -xvf "${file}"
+            elif [ "${file_type}" == "application/x-rar" ]; then
+                if [ ! -f "/usr/bin/unar" ]; then
+                    yum -y install unar
+                fi
+                cd_dir /home/"${user}"/"${domain}"/public_html
+                unar "${file}"
+            fi
+
+            chown -R "${user}":"${user}" /home/"${user}"/"${domain}"/public_html
+            clear
+            printf "%s\n" "${GREEN}Giai nen file thanh cong.${NC}"
+            printf "%s\n" "${RED}Nen xoa file nen sau khi su dung xong.${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Khong tim thay file nen nao trong Public_html.${NC}"
+    fi
+}
+
+ALERT=""
+domain=""
+file=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_tools

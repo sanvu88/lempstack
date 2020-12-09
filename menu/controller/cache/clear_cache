@@ -11,17 +11,14 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-
-set_var(){
-    redis_status="$(pgrep -f redis)"
-    memcached_status="$(pgrep -f memcached)"
-}
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
 
 clear_cache(){
-    if [ -n "${redis_status}" ]; then
+    if service_running redis; then
         systemctl restart redis
     fi
-    if [ -n "${memcached_status}" ]; then
+    if service_running memcached; then
         systemctl restart memcached
     fi
 
@@ -35,11 +32,8 @@ clear_cache(){
 }
 
 _run(){
-    set_var
     clear_cache
 }
 
-redis_status=""
-memcached_status=""
 _run
 menu_cache

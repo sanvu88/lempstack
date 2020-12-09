@@ -12,17 +12,8 @@
 
 CHOICE=1
 
-nginx_status=$(pgrep -f nginx)
 nginx_v=$(nginx -v 2>&1 | grep -o '[0-9.]*$'; echo)
-set_cl(){
-    if [[ -n ${nginx_status} ]]; then
-        nginx_status=$(printf "%sHoat dong%s" "${GREEN}" "${NC}")
-    else
-        nginx_status=$(printf "%sKhong hoat dong%s" "${RED}" "${NC}")
-    fi
-}
-
-set_cl
+nginx_status=$(pgrep -x nginx >/dev/null && printf "%s\n" "${GREEN}Hoat dong${NC}" || printf "%s\n" "${GREEN}khong hoat dong${NC}")
 
 printf "%s=============================%s\n" "${GREEN}" "${NC}"
 printf "%s        Quan ly Nginx        %s\n" "${GREEN}" "${NC}"
@@ -50,11 +41,16 @@ do
             clear
             printf "%s\n" "${RED}Dang khoi đong lai...${NC}"
             sleep 1
-            systemctl restart nginx
-            clear
-            printf "%s\n" "${GREEN}Khoi đong lai Nginx thanh cong.${NC}"
-            sleep 1
-            echo
+            if nginx -t; then
+                systemctl restart nginx
+                clear
+                printf "%s\n" "${GREEN}Khoi đong lai Nginx thanh cong.${NC}"
+                sleep 1
+                echo
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
+
             menu_nginx
             ;;
         2)

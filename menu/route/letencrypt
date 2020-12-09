@@ -20,8 +20,9 @@ while [ "${CHOICE}" != "0" ]
 do
     printf "%s1. Them Let's Encrypt%s\n" "${GREEN}" "${NC}"
     printf "%s2. Let's Encrypt Wildcard%s\n" "${GREEN}" "${NC}"
-    printf "%s3. Kiem tra thoi han%s\n" "${GREEN}" "${NC}"
-    printf "%s4. Go bo Let's Encrypt%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Cau hinh Wildcard cho Subdomain%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Kiem tra thoi han%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Go bo Let's Encrypt%s\n" "${GREEN}" "${NC}"
     printf "%s ========================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -32,8 +33,9 @@ do
     case ${CHOICE} in
         1) clear; le_create ;;
         2) clear; le_wildcard ;;
-        3) clear; le_check_expired ;;
-        4) clear; le_remove ;;
+        3) clear; le_wildcard_subdomain ;;
+        4) clear; le_check_expired ;;
+        5) clear; le_remove ;;
         0) clear; menu_ssl ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

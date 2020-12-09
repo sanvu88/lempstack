@@ -98,6 +98,7 @@ do
         7)
             read -r -p "Nhap vao IP muon cap quyen truy cap CSF GUI: " ip
             cat >> "/etc/csf/ui/ui.allow" << EOcsfui
+
 ${ip}
 EOcsfui
             csf -a "${ip}"

@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -39,6 +40,7 @@ update(){
     rm -rf update
     clear
     printf "%s\n" "${GREEN}Update ${AUTHOR} Script thanh cong.${NC}"
+    printf "%s\n" "${RED}Vui long thoat SSH va login lai de thay doi co hieu luc.${NC}"
 }
 
 _run(){
@@ -62,4 +64,4 @@ _run(){
 }
 
 _run
-menu_vps
+menu_primary

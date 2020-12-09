@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 input(){
@@ -56,12 +57,8 @@ _run(){
 
 ALERT=""
 ftp_user=""
-pureftpd_status="$(pgrep -f pure-ftpd)"
 
-if [ -z "${pureftpd_status}" ]; then
-    clear
-    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
-else
+if service_running pure-ftpd; then
     input
     if [ "${ftp_user}" == "0" ]; then
         clear
@@ -69,6 +66,9 @@ else
     else
         _run
     fi
+else
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 fi
 
 menu_ftp

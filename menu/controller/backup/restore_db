@@ -11,13 +11,12 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
@@ -36,34 +35,50 @@ confirm_restore(){
 
 _restore(){
     cd_dir /home/backup/"${date}"/"${domain}"
-    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
+#    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql.gz
+    sql_files=()
+    for entry in *.{sql,sql.gz}; do
+        if [ -f "${entry}" ]; then
+            sql_files+=("${entry}")
+        fi
+    done
+
+    echo "Chon file database muon khoi phuc"
+    PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+    select opt in "${sql_files[@]}"
+    do
+        sql=$opt
+        break
+    done
+
+    if [[ ${sql} == *"sql.gz"* ]]; then
+        gzip < "${sql}" | mysql -uadmin -p"${mysql_pwd}" "${db_name}"
+    else
+        mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
+    fi
 }
 
 _run(){
     set_var
-    if if_is_wordpress "${username}" "${domain}"; then
-        printf "%s\n" "${RED}Website su dung WordPress. Vui long dung Menu quan ly Wordpress de restore.${NC}"
+    check_backup_exists "${date}" "${domain}"
+
+    if ! check_backup_empty "${date}" "${domain}";
+    then
+        ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
+    fi
+
+    if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql.gz" ]; then
+        ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
+    fi
+
+    if [[ -z "${ALERT}" ]]; then
+        empty_db
+        _restore
+        clear
+        printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
     else
-        check_backup_exists "${date}" "${domain}"
-
-        if ! check_backup_empty "${date}" "${domain}";
-        then
-            ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
-        fi
-
-        if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
-            ALERT="%s\n" "${RED}Ten mien nay khong co backup.${NC}"
-        fi
-
-        if [[ -z "${ALERT}" ]]; then
-            empty_db
-            _restore
-            clear
-            printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
-        else
-            clear
-            printf "%s\n" "${ALERT}"
-        fi
+        clear
+        printf "%s\n" "${ALERT}"
     fi
 }
 

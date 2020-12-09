@@ -52,13 +52,20 @@ install(){
     fi
 }
 
-prompt_clamav=""
-confirm
-if [[ "${prompt_clamav}" =~ ^([yY])$ ]];then
-    install
-else
+RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+
+if [[ ${RAM_TOTAL} -lt 1049576 ]]; then
     clear
-    printf "%s\n" "${GREEN}Ban da huy cai dat ClamAV.${NC}"
+    printf "%s\n" "${RED}RAM cua VPS qua thap khong dam bao de ClamAV co the hoat dong tot. Huy cai dat.${NC}"
+else
+    prompt_clamav=""
+    confirm
+    if [[ "${prompt_clamav}" =~ ^([yY])$ ]];then
+        install
+    else
+        clear
+        printf "%s\n" "${GREEN}Ban da huy cai dat ClamAV.${NC}"
+    fi
 fi
 
 menu_security

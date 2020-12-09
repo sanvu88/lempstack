@@ -11,7 +11,23 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
+
+select_type(){
+    echo "Lua chon kieu backup ?"
+    PS3='Nhap lua chon cua ban (1-3): '
+    options=("Backup theo ten mien" "Backup toan bo ten mien" "Huy tao cronjob")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Backup theo ten mien") type="one"; break;;
+            "Backup toan bo ten mien") type="all"; break;;
+            "Huy tao cronjob") type="0"; break;;
+            *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}";;
+        esac
+    done
+}
 
 select_time(){
     echo "Lua chon thoi gian ?"
@@ -33,7 +49,7 @@ select_time(){
 input_backup_num(){
     echo "Nhap so ban backup ban muon luu tru: "
     echo "VD: Backup hang ngay va nhap 14 - Se luu backup 14 ngay gan nhat - Cac ban cu hon se bi xoa"
-    echo "VD: Backup hang tuan va nhap 14 - Se luu backup 14*7=98 ngay gan nhat - Cac ban cu hon se bi xoa"
+    echo "VD: Backup hang tuan va nhap 3 - Se luu backup 3 tuan gan nhat - Cac ban cu hon se bi xoa"
     while true
     do
         read -r -p "Nhap vao lua chon cua ban [0 = Thoat]:" backup_num
@@ -46,7 +62,7 @@ input_backup_num(){
     done
 }
 
-set_backup_num(){
+set_backup_time(){
     input_backup_num
     if [[ "${time}" == "@weekly" ]]; then
         backup_num=$((backup_num*7))
@@ -62,50 +78,117 @@ set_backup_num(){
     echo "backup_num=${backup_num}" >> "${FILE_INFO}"
 }
 
-create_cron(){
-    crontab -l > backupgg
-    echo "${time} /var/hostvn/menu/cronjob/backup_ggdrive.sh >/dev/null 2>&1" >> backupgg
-    crontab backupgg
-    rm -rf backupgg
+create_cron_backup_all(){
+    cron_all_exists=$(crontab -l | grep -w 'ggdrive_all')
+    if [ -z "${cron_all_exists}" ]; then
+        crontab -l > backupgg
+        echo "${time} sh /var/hostvn/menu/cronjob/ggdrive_all.sh >/dev/null 2>&1" >> backupgg
+        crontab backupgg
+        rm -rf backupgg
+    fi
 }
 
-_run(){
-    select_remote
-    if [[ -z "${ALERT}" ]]; then
-        select_time
-        if [ "${time}" == "0" ]; then
-            clear
-            printf "%s\n" "${RED}Huy tao cronjob.${NC}"
-        else
-            set_backup_num
-            if [ "${backup_num}" == "0" ]; then
+create_cron_backup_one(){
+    cron_one_exists=$(crontab -l | grep -w 'ggdrive_one')
+    if [ -z "${cron_one_exists}" ]; then
+        crontab -l > backupgg
+        echo "${time} sh /var/hostvn/menu/cronjob/ggdrive_one.sh >/dev/null 2>&1" >> backupgg
+        crontab backupgg
+        rm -rf backupgg
+    fi
+}
+
+backup_one(){
+    select_domain
+    if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+    else
+        if [ -z "${ALERT}" ]; then
+            select_time
+            if [ "${time}" == "0" ]; then
                 clear
                 printf "%s\n" "${RED}Huy tao cronjob.${NC}"
             else
-                sed -i '/remote/d' "${FILE_INFO}"
-                echo "remote=${remote}" >> "${FILE_INFO}"
-                create_cron
-                clear
-                printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
-                echo ""
+                set_backup_time
+                if [ "${backup_num}" == "0" ]; then
+                    clear
+                    printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+                else
+                    sed -i '/remote/d' "${FILE_INFO}"
+                    echo "remote=${remote}" >> "${FILE_INFO}"
+                    if [ ! -d "${BASH_DIR}/ggdrive" ]; then
+                        mkdir -p "${BASH_DIR}/ggdrive"
+                    fi
+                    if [ ! -f "${BASH_DIR}/ggdrive/${domain}" ]; then
+                        touch "${BASH_DIR}"/ggdrive/"${domain}"
+                    fi
+                    create_cron_backup_one
+                    clear
+                    printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
+                    echo ""
+                fi
             fi
+        else
+            clear
+            printf "%s\n" "${ALERT}"
         fi
-    else
+    fi
+}
+
+backup_all(){
+    select_time
+    if [ "${time}" == "0" ]; then
         clear
-        printf "%s\n" "${ALERT}"
+        printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+    else
+        set_backup_time
+        if [ "${backup_num}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+        else
+            sed -i '/remote/d' "${FILE_INFO}"
+            echo "remote=${remote}" >> "${FILE_INFO}"
+            create_cron_backup_all
+            clear
+            printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
+            echo ""
+        fi
+    fi
+}
+
+_run(){
+    select_type
+    if [ "${type}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Huy tao cronjob.${NC}"
+    else
+        if [ "${type}" == "one" ]; then
+            backup_one
+        else
+            backup_all
+        fi
     fi
 }
 
 ALERT=""
 time=""
 backup_num=""
-cron_exists=$(crontab -l | grep -w 'backup_ggdrive')
+domain=""
+type=""
+#cron_exists=$(crontab -l | grep -w 'backup_ggdrive')
 
-if [ -z "${cron_exists}" ]; then
-    _run
+if [ -f "/root/.config/rclone/rclone.conf" ]; then
+    select_remote
+    if [[ -z "${remote}" ]]; then
+        clear
+        printf "%s\n" "${RED}Ban da huy thao tac.${NC}"
+    else
+        _run
+    fi
 else
     clear
-    printf "%s\n" "${RED}Cronjob da ton tai.${NC}"
+    printf "%s\n" "${RED}Ban chua cau hinh ket noi voi Google Drive.${NC}"
 fi
 
 menu_cronjob

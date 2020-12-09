@@ -1,0 +1,314 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+set_var(){
+    user_source=$(grep -w "username" "${USER_DIR}/.${source_domain}.conf" | cut -f2 -d'=')
+    db_source=$(grep -w "db_name" "${USER_DIR}/.${source_domain}.conf" | cut -f2 -d'=')
+    user_clone=$(grep -w "username" "${USER_DIR}/.${clone_domain}.conf" | cut -f2 -d'=')
+    db_user_clone=$(grep -w "db_user" "${USER_DIR}/.${clone_domain}.conf" | cut -f2 -d'=')
+    db_clone=$(grep -w "db_name" "${USER_DIR}/.${clone_domain}.conf" | cut -f2 -d'=')
+    db_clone_password=$(grep -w "db_password" "${USER_DIR}/.${clone_domain}.conf" | cut -f2 -d'=')
+    promtp_clone="n"
+}
+
+select_source_domain(){
+    source_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    if [[ "$(ls -A "${USER_DIR}")" ]]; then
+        echo "Lua chon website nguon"
+        source_domains=()
+        cd_dir "${USER_DIR}"
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry in .*.conf; do
+            source_domain=${entry/.}
+            source_domain=${source_domain//.conf}
+            source_domains+=("${source_domain}")
+        done
+        PS3="${INPUT_SELECT} [0 = Thoat] "
+        select opt in "${source_domains[@]}"
+        do
+            source_domain=$opt
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}${EMPTY_DOMAIN}${NC}")
+    fi
+}
+
+select_clone_domain(){
+    clone_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    echo "Lua chon website clone"
+    clone_domains=()
+    cd_dir "${USER_DIR}"
+    #https://stackoverflow.com/a/2437466
+    #https://stackoverflow.com/a/1951523
+    #https://stackoverflow.com/a/46882842
+    for entry in .*.conf; do
+        clone_domain=${entry/.}
+        clone_domain=${clone_domain//.conf}
+        clone_domains+=("${clone_domain}")
+    done
+
+    index=0
+    for keyword in "${clone_domains[@]}"; do
+        if [[ "$keyword" = "${source_domain}" ]]; then
+            unset "clone_domains[$index]"
+        fi
+        (( index++ ))
+    done
+
+    if [ ${#clone_domains[@]} -ne 0 ]; then
+        PS3="${INPUT_SELECT} [0 = Thoat] "
+        select opt in "${clone_domains[@]}"
+        do
+            clone_domain=$opt
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}Ban chua tao ten mien Clone. Vui long kiem tra lai.${NC}")
+    fi
+
+}
+
+check_docroot_empty(){
+    if docroot_empty_or_not "$user_clone" "$clone_domain";
+    then
+        while true
+        do
+            read -r -p "Thu muc public_html webiste ${clone_domain} dang co du lieu. Ban co muon xoa du lieu khong ? (y/n) " promtp_clone
+            echo
+            if [[ "${promtp_clone}" =~ ^([yY])$  || "${promtp_clone}" =~ ^([nN])$ ]];
+            then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    else
+        promtp_clone="y"
+    fi
+}
+
+check_database_empty(){
+    if if_db_empty "${db_clone}"; then
+        promtp_clone="y"
+    else
+        while true
+        do
+            read -r -p "Database webiste ${clone_domain} dang co du lieu. Ban co muon xoa du lieu hien co khong ? (y/n) " promtp_clone
+            echo
+            if [[ "${promtp_clone}" =~ ^([yY])$ || "${promtp_clone}" =~ ^([nN])$ ]];
+            then
+                break
+            else
+                printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+            fi
+        done
+    fi
+}
+
+copy_source(){
+    cp -r /home/"${user_source}"/"${source_domain}"/public_html/* /home/"${user_clone}"/"${clone_domain}"/public_html/
+
+    cd_dir /home/"${user_clone}"/"${clone_domain}"/public_html
+
+    db_prefix=$(wp config get table_prefix --allow-root)
+
+    rm -rf wp-config.php
+    rm -rf license.txt readme.html
+
+    # Create wp-config.php
+    wp config create --allow-root --dbname="${db_clone}" --dbuser="${db_user_clone}" --dbpass="${db_clone_password}" --dbprefix="${db_prefix}" --extra-php <<PHP
+define( 'WP_DEBUG', false );
+define( 'FS_METHOD', 'direct');
+define( 'WP_CACHE', true);
+define( 'WP_MEMORY_LIMIT', '128M' );
+define( 'WP_MAX_MEMORY_LIMIT', '128M' );
+PHP
+
+    if [ -f "${BASH_DIR}/wpcron/${clone_domain}" ]; then
+        sed -i "/WP_MAX_MEMORY_LIMIT/a define('DISABLE_WP_CRON', true);" /home/"${user_clone}"/"${clone_domain}"/public_html/wp-config.php
+    fi
+    
+    if [ -f "/home/${user_clone}/${clone_domain}/public_html/robots.txt" ]; then
+        cat >> "/home/${user_clone}/${clone_domain}/public_html/robots.txt" << EOrobots_txt
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /search?q=*
+Disallow: *?replytocom
+Disallow: */attachment/*
+Disallow: /images/
+Allow: /wp-admin/admin-ajax.php
+Allow: /*.js$
+Allow: /*.css$
+EOrobots_txt
+    fi
+
+    chown -R "${user_clone}":"${user_clone}" /home/"${user_clone}"/"${clone_domain}"/public_html
+}
+
+copy_db(){
+    cd_dir /home/"${user_source}"
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_source}" > "${db_source}".sql
+
+    #Empty DB
+    tables=$(mysql -uadmin -p"${mysql_pwd}" "${db_clone}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
+    for t in ${tables}
+    do
+        mysql -uadmin -p"${mysql_pwd}" "${db_clone}" -e "drop table ${t}"
+    done
+
+    mysql -uadmin -p"${mysql_pwd}" "${db_clone}" < "${db_source}".sql
+    rm -rf "${db_source}".sql
+}
+
+change_url_if_is_wordpress(){
+    if [ -f "/home/${user_clone}/${clone_domain}/public_html/wp-config.php" ]; then
+        cd_dir /home/"${user_clone}"/"${clone_domain}"/public_html
+        wp search-replace --allow-root "${source_domain}" "${clone_domain}"
+    fi
+}
+
+check_plugins(){
+    if [ -f "/home/${user_clone}/${clone_domain}/public_html/wp-config.php" ]; then
+        plugins_seo=$(grep -w "plugins_seo" "${USER_DIR}/.${source_domain}.conf" | cut -f2 -d'=')
+        plugin_cache=$(grep -w "plugins_seo" "${USER_DIR}/.${source_domain}.conf" | cut -f2 -d'=')
+        check_config_plugin_cache=$(grep -rnw "${VHOST_DIR}/${clone_domain}.conf" -e "${plugin_cache}")
+        check_config_plugin_seo=$(grep -rnw "${VHOST_DIR}/${clone_domain}.conf" -e "${plugins_seo}")
+
+        if [[ "${plugins_seo}" == "yoast_seo" && -z "${check_config_plugin_seo}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/yoast_seo.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugins_seo}" == "rank_math_seo" && -z "${check_config_plugin_seo}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/rank_math_seo.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugins_seo=yoast_seo" >> "${USER_DIR}"/."${clone_domain}".conf
+        else
+            sed -i '/plugins_seo=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugins_seo=" >> "${USER_DIR}"/."${clone_domain}".conf
+        fi
+
+        if [[ "${plugin_cache}" == "w3c" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/w3c.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=w3c" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugin_cache}" == "wpfc" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/wpfc.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=wpfc" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugin_cache}" == "wprocket" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/rocket-nginx/default.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=wprocket" >> "${USER_DIR}"/."${clone_domain}".conf
+            if [[ ! -d "/etc/nginx/rocket-nginx" ]]; then
+                cd_dir /etc/nginx
+                git clone https://github.com/satellitewp/rocket-nginx.git
+                cd_dir /etc/nginx/rocket-nginx
+                cp rocket-nginx.ini.disabled rocket-nginx.ini
+                php rocket-parser.php
+            fi
+
+            if [[ ! -f "/etc/nginx/rocket-nginx/default.conf" ]]; then
+                cd_dir /etc/nginx/rocket-nginx
+                php rocket-parser.php
+            fi
+        elif [[ "${plugin_cache}" == "wpsc" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/wpsc.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=wpsc" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugin_cache}" == "enabler" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/enabler.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=enabler" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugin_cache}" == "swift1" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/swift1.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=swift1" >> "${USER_DIR}"/."${clone_domain}".conf
+        elif [[ "${plugin_cache}" == "swift2" && -z "${check_config_plugin_cache}" ]]; then
+            sed -i '/index.html/a include /etc/nginx/wordpress/swift2.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=swift2" >> "${USER_DIR}"/."${clone_domain}".conf
+        else
+            check_config_staticfiles=$(grep -rnw "${VHOST_DIR}/${clone_domain}.conf" -e "staticfiles")
+            if [ -z "${check_config_staticfiles}" ]; then
+                sed -i '/index.html/a include /etc/nginx/extra/staticfiles.conf;' "${VHOST_DIR}"/"${clone_domain}".conf
+            fi
+            sed -i '/plugin_cache=/d' "${USER_DIR}"/."${clone_domain}".conf
+            echo "plugin_cache=other" >> "${USER_DIR}"/."${clone_domain}".conf
+        fi
+    fi
+}
+
+_run(){
+    set_var
+    check_docroot_empty
+    check_database_empty
+    if [[ "${promtp_clone}" =~ ^([yY])$ ]]; then
+        copy_source "$@"
+        copy_db
+        change_url_if_is_wordpress
+        check_plugins
+        clear
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Clone website thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    fi
+}
+
+ALERT=""
+db_prefix=""
+
+select_source_domain
+if [[ -z "${source_domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        select_clone_domain
+        if [[ -z "${source_domain}" && -z "${ALERT}" ]]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+        else
+            if [ -z "${ALERT}" ]; then
+                _run "$@"
+            else
+                clear
+                printf "%s\n" "${ALERT}"
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_domain

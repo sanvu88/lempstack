@@ -10,8 +10,7 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
-#shellcheck disable=SC2154
-#shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){

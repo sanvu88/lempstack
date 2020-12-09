@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s=================%s\n" "${GREEN}" "${NC}"
@@ -21,7 +22,7 @@ echo
 
 edit_vhost(){
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
@@ -30,9 +31,9 @@ server {
     server_name ${domain} www.${domain};
 
     #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
+    error_log /home/${user}/${domain}/logs/error.log;
     ${root}
     index index.php index.html index.htm;
 
@@ -47,7 +48,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
     ${brute}
@@ -59,36 +60,83 @@ server {
 END
 }
 
+edit_vhost_nodejs(){
+    cat >> "${VHOST_DIR}/${domain}.conf" << END
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${domain} www.${domain};
+
+    #access_log off;
+    #access_log /home/${user}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${user}/${domain}/logs/error.log;
+    root /home/${user}/${domain}/public_html;
+    #index index.php index.html index.htm;
+
+    location / {
+        proxy_pass http://127.0.0.1:${proxy_port};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+}
+END
+}
+
 _run(){
     check_nginx_status
 
     if [ -z "${ALERT}" ]; then
-        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
         php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
         select_source
 
-        root="root /home/${username}/${domain}/public_html;"
-        if [ "${SOURCE}" == "laravel" ]; then
-            root="root /home/${username}/${domain}/public_html/public;"
-        fi
-
+        doc_root "${SOURCE}" "${user}" "${domain}"
         if [[ "${SOURCE}" == "wordpress" ]]; then
             wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
             xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
-            brute_force_wp "${username}"
+            brute_force_wp "${user}"
         fi
         rm -rf /etc/nginx/conf.d/"${domain}".conf
 
         set_rewrite
         fastcgi
-        edit_vhost
-        systemctl restart nginx.service
-        clear
-        printf "%sGo bo SSL thanh cong.%s\n" "${GREEN}" "${NC}"
-        if [[ "${SOURCE}" == "wordpress" ]]; then
-            printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+
+        if [ "${SOURCE}" == "nodejs" ]; then
+            while true
+            do
+                read -r -p "Nhap Port Nodejs: " proxy_port
+                if valid_number "${proxy_port}"; then
+                    break
+                else
+                    clear
+                    printf "%s\n" "${RED}Port khong chinh xac, vui long nhap lai.${NC}"
+                fi
+            done
+
+            edit_vhost_nodejs
+        else
+            edit_vhost
         fi
-        echo ""
+
+        if nginx -t; then
+            systemctl reload nginx
+            clear
+            printf "%sGo bo SSL thanh cong.%s\n" "${GREEN}" "${NC}"
+            if [[ "${SOURCE}" == "wordpress" ]]; then
+                printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+            fi
+            echo ""
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
+
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -99,11 +147,16 @@ ALERT=""
 domain=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 
 menu_sslpaid

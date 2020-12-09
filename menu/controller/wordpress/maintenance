@@ -12,34 +12,58 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 _run(){
-    domain=""
-    select_domain
-    if [[ -n "${domain}" ]]; then
-        username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
-        cd_dir /home/"${username}"/"${domain}"/public_html
-        wp maintenance-mode is-active --allow-root
+    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    cd_dir /home/"${username}"/"${domain}"/public_html
+    wp maintenance-mode is-active --allow-root
 
-        if [[ $? == 1 ]]; then
-            wp maintenance-mode activate --allow-root
-            restart_service
+    if [[ $? == 1 ]]; then
+        wp maintenance-mode activate --allow-root
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
             clear
             printf "%s\n" "${GREEN}Bat che do bao tri thanh cong.${NC}"
             echo ""
         else
-            wp maintenance-mode deactivate --allow-root
-            restart_service
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
+    else
+        wp maintenance-mode deactivate --allow-root
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
             clear
             printf "%s\n" "${GREEN}Tat che do bao tri thanh cong.${NC}"
             echo ""
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
         fi
-    else
-        clear
-        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
     fi
 }
 
-_run
+domain=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+    	clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
 wp_menu_advanced

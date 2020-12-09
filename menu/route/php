@@ -26,8 +26,10 @@ do
     printf "%s4. Khoi đong lai PHP              %s\n" "${GREEN}" "${NC}"
     printf "%s5. Cau hinh thong so PHP          %s\n" "${GREEN}" "${NC}"
     printf "%s6. Thay doi phien ban PHP mac dinh%s\n" "${GREEN}" "${NC}"
-    #printf "%s7. Thay doi phien ban PHP 2       %s\n"
-    printf "%s7. Cai dat phien ban PHP thu 2    %s\n" "${GREEN}" "${NC}"
+    printf "%s7. Thay doi phien ban PHP 2       %s\n" "${GREEN}" "${NC}"
+    printf "%s8. Cai dat phien ban PHP thu 2    %s\n" "${GREEN}" "${NC}"
+    printf "%s9. Cai dat ionCube    %s\n" "${GREEN}" "${NC}"
+    printf "%s10. Bat/Tat Open Basedir    %s\n" "${GREEN}" "${NC}"
     printf "%s =================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -74,8 +76,10 @@ do
             ;;
         5) clear; php_setting ;;
         6) clear; php1_change ;;
-        #7) clear; php2_change ;;
-        7) clear; php_inst_ver_2 ;;
+        7) clear; php2_change ;;
+        8) clear; php_inst_ver_2 ;;
+        9) clear; php_inst_ioncube ;;
+        10) clear; php_open_basedir ;;
         0) clear; menu_lemp ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

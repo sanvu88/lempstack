@@ -11,12 +11,13 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+#    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
 
     if [[ -z "${db_name}" ]]; then
@@ -25,43 +26,43 @@ set_var(){
 }
 
 _backup(){
-    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
-        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql.gz" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql.gz
     fi
 
     cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
-    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
     clear
     printf "%s\n" "${GREEN}Sao luu du lieu thanh cong.${NC}"
 }
 
 _run(){
     set_var
-    if if_is_wordpress "$username" "$domain"; then
-        printf "%s\n" "${RED}Website su dung WordPress. Vui long su dung Menu quan ly Wordpress de backup.${NC}"
-    else
-        if ! if_db_exists "${db_name}" ;
-        then
-            ALERT=$(printf "%s\n" "${RED}Database khong ton tai.${NC}")
-        fi
+    if ! if_db_exists "${db_name}" ; then
+        ALERT=$(printf "%s\n" "${RED}Database khong ton tai.${NC}")
+    fi
 
-        if [ -z "${ALERT}" ]; then
-            make_backup_dir "$domain"
-            _backup
-        else
-            clear
-            printf "%s\n" "${ALERT}"
-        fi
+    if [ -z "${ALERT}" ]; then
+        make_backup_dir "$domain"
+        _backup
+    else
+        clear
+        printf "%s\n" "${ALERT}"
     fi
 }
 
 ALERT=""
 select_domain
 
-if [ -z "${domain}" ]; then
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
 else
-    _run
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 menu_database

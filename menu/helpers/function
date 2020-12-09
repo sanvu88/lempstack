@@ -13,7 +13,6 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2207
 # shellcheck disable=SC2034
-
 source /var/hostvn/menu/validate/rule
 
 cd_dir(){
@@ -33,7 +32,17 @@ bytes_for_humans(){
 }
 
 gen_pass(){
-    < /dev/urandom tr -dc A-Za-z0-9 | head -c16
+#    < /dev/urandom tr -dc A-Za-z0-9 | head -c16
+    PASS_LEN=$(perl -le 'print int(rand(6))+9')
+    START_LEN=$(perl -le 'print int(rand(8))+1')
+    END_LEN=$((PASS_LEN - START_LEN))
+#    SPECIAL_CHAR=$(perl -le 'print map { (qw{@ ^ _ - /})[rand 6] } 1');
+    NUMERIC_CHAR=$(perl -le 'print int(rand(10))');
+    PASS_START=$(perl -le "print map+(A..Z,a..z,0..9)[rand 62],0..$START_LEN");
+    PASS_END=$(perl -le "print map+(A..Z,a..z,0..9)[rand 62],0..$END_LEN");
+#    PASS=${PASS_START}${SPECIAL_CHAR}${NUMERIC_CHAR}${PASS_END}
+    PASS=${PASS_START}${NUMERIC_CHAR}${PASS_END}
+    echo "$PASS"
 }
 
 select_domain(){
@@ -51,7 +60,7 @@ select_domain(){
             domain=${domain//.conf}
             domains+=("${domain}")
         done
-        PS3="${INPUT_SELECT} [0 = Thoat] "
+        PS3="${INPUT_SELECT} [0 = Thoat]: "
         select opt in "${domains[@]}"
         do
             domain=$opt
@@ -67,7 +76,23 @@ select_source(){
     SOURCE="Other"
     echo "${SELECT_SOURCE}"
     PS3="${INPUT_SELECT}"
-    options=("WordPress" "Laravel" "CodeIgniter" "Xenforo" "Joomla" "Drupal" "OpenCart" "WHMCS" "PrestaShop" "Yii" "Discuz" "Ecshop" "Other")
+    options=(
+        "WordPress"
+        "Laravel"
+        "CodeIgniter"
+        "Xenforo"
+        "Joomla"
+        "Drupal"
+        "OpenCart"
+        "Nodejs"
+        "WHMCS"
+        "PrestaShop"
+        "Yii"
+        "CakePHP"
+        "Discuz"
+        "Ecshop"
+        "Other"
+    )
     select opt in "${options[@]}"
     do
         case $opt in
@@ -78,9 +103,11 @@ select_source(){
             "Joomla") SOURCE="joomla"; break;;
             "Drupal") SOURCE="drupal"; break;;
             "OpenCart") SOURCE="opencart"; break;;
+            "Nodejs") SOURCE="nodejs"; break;;
             "WHMCS") SOURCE="whmcs"; break;;
             "PrestaShop") SOURCE="prestashop"; break;;
             "Yii") SOURCE="yii"; break;;
+            "CakePHP") SOURCE="cakephp"; break;;
             "Discuz") SOURCE="discuz"; break;;
             "Ecshop") SOURCE="ecshop"; break;;
             "Other") SOURCE="default"; break;;
@@ -111,28 +138,24 @@ set_rewrite(){
         rewrite="include /etc/nginx/rewrite/prestashop.conf;"
     elif [ "${SOURCE}" == "yii" ]; then
         rewrite="include /etc/nginx/rewrite/yii.conf;"
+    elif [ "${SOURCE}" == "cakephp" ]; then
+        rewrite="include /etc/nginx/rewrite/cakephp.conf;"
     elif [ "${SOURCE}" == "discuz" ]; then
         rewrite="include /etc/nginx/rewrite/discuz.conf;"
     elif [ "${SOURCE}" == "ecshop" ]; then
         rewrite="include /etc/nginx/rewrite/ecshop.conf;"
+    elif [ "${SOURCE}" == "nodejs" ]; then
+        rewrite=""
     else
         rewrite="include /etc/nginx/rewrite/default.conf;"
     fi
 }
 
 fastcgi(){
-    fastcgi_pass="unix:/var/run/php-fpm/${username}.sock;"
+    fastcgi_pass="unix:/var/run/php-fpm/${user}.sock;"
 
     if [[ "${php_mode}" == "2" ]]; then
-        fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${username}.sock;"
-    fi
-}
-
-restart_service(){
-    systemctl restart nginx.service
-    systemctl restart php-fpm.service
-    if [ "${php2_release}" == "yes" ]; then
-        systemctl restart "${php2_version}"-php-fpm
+        fastcgi_pass="unix:/opt/remi/${php2_version}/root/var/run/php-fpm/${user}.sock;"
     fi
 }
 
@@ -186,10 +209,10 @@ list_backup(){
 }
 
 empty_db(){
-    tables=$(mysql "${db_name}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
+    tables=$(mysql -uadmin -p"${mysql_pwd}" "${db_name}" -e 'show tables' | awk '{ print $1}' | grep -v '^Tables')
     for t in ${tables}
     do
-        mysql "${db_name}" -e "drop table ${t}"
+        mysql -uadmin -p"${mysql_pwd}" "${db_name}" -e "drop table ${t}"
     done
 }
 
@@ -197,7 +220,16 @@ select_plugin_cache(){
     plugins_cache="other"
     echo "${SELECT_PLUGINS_CACHE}"
     PS3="${INPUT_SELECT}"
-    options=("W3 Total Cache" "WP Fastest Cache" "WP Rocket" "WP Super Cache" "Cache Enabler" "Swift Performance - PHP Caching Mode" "Swift Performance - Rewrite Caching Mode" "Other")
+    options=(
+        "W3 Total Cache"
+        "WP Fastest Cache"
+        "WP Rocket"
+        "WP Super Cache"
+        "Cache Enabler"
+        "Swift Performance - PHP Caching Mode"
+        "Swift Performance - Rewrite Caching Mode"
+        "Other"
+    )
     select opt in "${options[@]}"
     do
         case $opt in
@@ -285,7 +317,9 @@ select_remote(){
     list_remote=( $(rclone listremotes) )
     for entry in "${list_remote[@]}"; do
         rt=${entry//:}
-        remotes+=("${rt}")
+        if ! valid_ip "${rt}"; then
+            remotes+=("${rt}")
+        fi
     done
 
     PS3="${SELECT_OPTION}"
@@ -301,6 +335,8 @@ select_remote(){
 doc_root(){
     if [[ "${1}" == "laravel" ]]; then
         root="root /home/${2}/${3}/public_html/public;"
+    elif [ "${1}" == "cakephp" ]; then
+        root="root /home/${2}/${3}/public_html/webroot;"
     else
         root="root /home/${2}/${3}/public_html;"
     fi

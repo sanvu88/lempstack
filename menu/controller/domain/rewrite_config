@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_ssl(){
@@ -29,7 +30,7 @@ set_ssl(){
         esac
     done
 
-    if [[ "${ssl}" == "le" && ! -f "/etc/letsencrypt/live/${domain}/fullchain.pem" ]]; then
+    if [[ "${ssl}" == "le" && ! -d "/root/.acme.sh/${domain}" ]]; then
         printf "%s\n" "${RED}Khong tim thay chung chi Let's Encrypt.${NC}"
         printf "%s\n" "${RED}He thong se Rewirte vhost khong co SSL.${NC}"
         ssl="no_ssl"
@@ -50,7 +51,7 @@ vhost_nossl(){
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
@@ -59,9 +60,9 @@ server {
     server_name ${domain} www.${domain};
 
     #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
+    error_log /home/${user}/${domain}/logs/error.log;
     ${root}
     index index.php index.html index.htm;
 
@@ -76,7 +77,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
     ${brute}
@@ -93,23 +94,22 @@ vhost_sslle(){
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
 server {
-    listen 443 ssl http2; # managed by Certbot
+    listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name ${domain} www.${domain};
 
-    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    ssl_certificate /root/.acme.sh/${domain}/fullchain.cer;
+    ssl_certificate_key /root/.acme.sh/${domain}/${domain}.key;
 
     #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
+    error_log /home/${user}/${domain}/logs/error.log;
     ${root}
     index index.php index.html index.htm;
 
@@ -124,7 +124,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
     ${brute}
@@ -135,13 +135,11 @@ server {
 }
 
 server {
-    if (\$host = ${domain}) {
-        return 301 https://\$host\$request_uri;
-    } # managed by Certbot
-
     listen 80;
     server_name ${domain} www.${domain};
-    return 404; # managed by Certbot
+    location / {
+        return 301 https://${domain}\$request_uri;
+    }
 }
 END
 }
@@ -151,7 +149,7 @@ vhost_sslpaid(){
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
@@ -160,21 +158,21 @@ server {
     #listen [::]:80;
     server_name ${domain} www.${domain};
 
-    ${root}
-    if (\$http_x_forwarded_proto != 'https') {
-        return 301 https://\$host\$request_uri;
+    location / {
+        return 301 https://${domain}\$request_uri;
     }
 }
 
 server {
     listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name ${domain} www.${domain};
 
     access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     log_not_found off;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
+    error_log /home/${user}/${domain}/logs/error.log;
 
     ${root}
     index index.php index.html index.htm;
@@ -194,7 +192,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
 
@@ -208,7 +206,7 @@ END
 }
 
 _run(){
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     select_source
     set_ssl
@@ -216,15 +214,12 @@ _run(){
         clear
         printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
     else
-        root="root /home/${username}/${domain}/public_html;"
-        if [ "${SOURCE}" == "laravel" ]; then
-            root="root /home/${username}/${domain}/public_html/public;"
-        fi
+        doc_root "${SOURCE}" "${user}" "${domain}"
 
         if [[ "${SOURCE}" == "wordpress" ]]; then
             wp_secure="include /etc/nginx/wordpress/wordpress_secure.conf;"
             xmlrpc="include /etc/nginx/wordpress/disable_xmlrpc.conf;"
-            brute_force_wp "${username}"
+            brute_force_wp "${user}"
         fi
 
         rm -rf /etc/nginx/conf.d/"${domain}".conf
@@ -237,14 +232,22 @@ _run(){
             vhost_nossl
         fi
 
-        restart_service
-        clear
-        echo ""
-        printf "%sRewrite Vhost thanh cong.%s\n" "${GREEN}" "${NC}"
-        if [[ "${SOURCE}" == "wordpress" ]]; then
-            printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            echo ""
+            printf "%sRewrite Vhost thanh cong.%s\n" "${GREEN}" "${NC}"
+            if [[ "${SOURCE}" == "wordpress" ]]; then
+                printf "%s\n" "${GREEN}Luu y: Ban can cau hinh lai Plugins cache va Plugins Seo tai menu 7-7${NC}"
+            fi
+            echo ""
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
         fi
-        echo ""
     fi
 }
 
@@ -254,11 +257,16 @@ ssl=""
 
 select_domain
 
-if [ -z "${domain}" ]; then
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
 else
-    _run
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 
 menu_domain

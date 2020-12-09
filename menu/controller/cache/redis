@@ -14,17 +14,11 @@
 source /var/hostvn/menu/helpers/menu
 
 CHOICE=1
-redis_status="$(pgrep -f redis)"
-
-if [ -n "${redis_status}" ]; then
-    status=$(printf "%s\n" "${GREEN}Hoat dong${NC}")
-else
-    status=$(printf "%s\n" "${RED}Khong Hoat dong${NC}")
-fi
+redis_status=$(pgrep redis >/dev/null && printf "%s\n" "${GREEN}Hoat dong${NC}" || printf "%s\n" "${GREEN}Khong hoat dong${NC}")
 
 printf "%s=====================%s\n" "${GREEN}" "${NC}"
 printf "%sQuan ly Redis Cache%s\n" "${GREEN}" "${NC}"
-printf "%s\n" "${GREEN}Trang thai:${NC} ${status}"
+printf "%s\n" "${GREEN}Trang thai:${NC} ${redis_status}"
 printf "%s=====================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]

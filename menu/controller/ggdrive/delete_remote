@@ -12,12 +12,14 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/ipaddress
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 confirm_destroy(){
     while true
     do
-        read -r -p "Ban muon xoa backup ? (y/n) " promt_destroy
+        read -r -p "Ban muon xoa remote ? (y/n) " promt_destroy
         echo
         if [[ "${promt_destroy}" =~ ^([yY])$ || "${promt_destroy}" =~ ^([nN])$ ]]; then
             break

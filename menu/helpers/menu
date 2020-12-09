@@ -102,6 +102,10 @@ menu_security(){
     . /var/hostvn/menu/route/security
 }
 
+menu_tools(){
+    . /var/hostvn/menu/route/tools
+}
+
 domain_list(){
     . /var/hostvn/menu/controller/domain/list
 }
@@ -116,6 +120,34 @@ domain_destroy(){
 
 domain_change(){
     . /var/hostvn/menu/controller/domain/change_domain
+}
+
+domain_alias(){
+    . /var/hostvn/menu/controller/domain/alias_domain
+}
+
+destroy_domain_alias(){
+    . /var/hostvn/menu/controller/domain/delete_alias
+}
+
+domain_redirect(){
+    . /var/hostvn/menu/controller/domain/redirect_domain
+}
+
+destroy_domain_redirect(){
+    . /var/hostvn/menu/controller/domain/delete_redirect
+}
+
+domain_clone_website(){
+    . /var/hostvn/menu/controller/domain/clone_website
+}
+
+domain_change_php_mode(){
+    . /var/hostvn/menu/controller/domain/change_php_mode
+}
+
+domain_change_mysql_info(){
+    . /var/hostvn/menu/controller/domain/change_mysql_info
 }
 
 rewrite_config(){
@@ -140,6 +172,10 @@ le_create(){
 
 le_wildcard(){
     . /var/hostvn/menu/controller/letencrypt/wildcard
+}
+
+le_wildcard_subdomain(){
+    . /var/hostvn/menu/controller/letencrypt/ssl_wildcard_subdomain
 }
 
 le_remove(){
@@ -178,8 +214,16 @@ php_inst_ver_2(){
     . /var/hostvn/menu/controller/php/install_php2
 }
 
+php_inst_ioncube(){
+    . /var/hostvn/menu/controller/php/install_ioncube
+}
+
 php1_change(){
     . /var/hostvn/menu/controller/php/change_php1
+}
+
+php_open_basedir(){
+    . /var/hostvn/menu/controller/php/open_basedir
 }
 
 php2_change(){
@@ -194,8 +238,28 @@ info_vps(){
     . /var/hostvn/menu/controller/vps/vps_info
 }
 
+change_ip_vps(){
+    . /var/hostvn/menu/controller/vps/change_ip
+}
+
+change_vps(){
+    . /var/hostvn/menu/controller/vps/move_vps
+}
+
 info_other(){
     . /var/hostvn/menu/controller/vps/other
+}
+
+move_wp_config(){
+    . /var/hostvn/menu/controller/wordpress/move_config
+}
+
+htpasswd_wp_admin(){
+  . /var/hostvn/menu/controller/wordpress/htpasswd
+}
+
+destroy_htpasswd_wp_admin(){
+  . /var/hostvn/menu/controller/wordpress/destroy_htpasswd
 }
 
 wp_menu_plugins(){
@@ -334,6 +398,10 @@ db_restore(){
     . /var/hostvn/menu/controller/database/restore
 }
 
+db_import_database(){
+    . /var/hostvn/menu/controller/database/import_database
+}
+
 update_phpmyadmin(){
     . /var/hostvn/menu/controller/admin/phpmyadmin
 }
@@ -438,6 +506,10 @@ domain_log(){
     . /var/hostvn/menu/controller/log/domain_log
 }
 
+domain_open_basedir(){
+    . /var/hostvn/menu/controller/domain/open_basedir
+}
+
 ggdrive_connect(){
     . /var/hostvn/menu/controller/ggdrive/connect
 }
@@ -516,4 +588,24 @@ scan_malware(){
 
 csf_open_port(){
     . /var/hostvn/menu/controller/csf/openport
+}
+
+tools_compress_image(){
+    . /var/hostvn/menu/controller/tools/compress_image
+}
+
+tools_decompress_file(){
+    . /var/hostvn/menu/controller/tools/decompress_file
+}
+
+tools_deploy_website(){
+    . /var/hostvn/menu/controller/tools/deploy_website
+}
+
+website_disk_usage(){
+    . /var/hostvn/menu/controller/tools/check_disk_usage
+}
+
+find_large_file_folder(){
+    . /var/hostvn/menu/controller/tools/large_file_folder
 }

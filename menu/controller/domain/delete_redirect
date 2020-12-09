@@ -1,0 +1,111 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+select_primary_domain(){
+    primary_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    if [[ "$(ls -A "/etc/nginx/redirect")" ]]; then
+        echo "Chon ten mien chinh"
+        primary_domains=()
+        cd_dir /etc/nginx/redirect
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry_domain in *; do
+            if [ -d "${entry_domain}" ]; then
+                primary_domain=${entry_domain}
+                primary_domains+=("${primary_domain}")
+            fi
+        done
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt_domain in "${primary_domains[@]}"
+        do
+            primary_domain=$opt_domain
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}Ban chua tao Redirect Domain.${NC}")
+    fi
+}
+
+select_redirect_domain(){
+    redirect_domain=""
+    #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
+    if [[ -d "/etc/nginx/redirect/${primary_domain}" && "$(ls -A "/etc/nginx/redirect/${primary_domain}")" ]]; then
+        echo "Chon Redirect Domain ban muon xoa"
+        redirect_domains=()
+        cd_dir /etc/nginx/redirect/"${primary_domain}"
+        #https://stackoverflow.com/a/2437466
+        #https://stackoverflow.com/a/1951523
+        #https://stackoverflow.com/a/46882842
+        for entry_redirect in *.conf; do
+            redirect_domain=${entry_redirect//.conf}
+            redirect_domains+=("${redirect_domain}")
+        done
+        PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+        select opt_redirect in "${redirect_domains[@]}"
+        do
+            redirect_domain=$opt_redirect
+            break
+        done
+    else
+        ALERT=$(printf "%s\n" "${RED}Ban chua tao Redirect Domain cho ten mien${NC} ${GREEN}${primary_domain}.${NC}")
+    fi
+}
+
+_run(){
+    rm -rf /etc/nginx/redirect/"${primary_domain}"/"${redirect_domain}".conf
+    if [ -d "/root/.acme.sh/${redirect_domain}" ]; then
+        rm -rf "/root/.acme.sh/${redirect_domain}"
+    fi
+
+    if nginx -t; then
+        systemctl restart nginx
+        clear
+        printf "%s\n" "${GREEN}Xoa Redirect domain thanh cong.${NC}"
+    else
+        clear
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai vhost.${NC}"
+    fi
+}
+
+ALERT=""
+
+printf "%s\n" "${RED}Chon ten mien chinh${NC}"
+select_primary_domain
+
+if [[ -z "${primary_domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        select_redirect_domain
+        if [[ -z "${redirect_domain}" && -z "${ALERT}" ]]; then
+            clear
+            printf "%s\n" "${RED}Huy thao tac.${NC}"
+        else
+             if [ -z "${ALERT}" ]; then
+                _run
+            else
+                clear
+                printf "%s\n" "${ALERT}"
+            fi
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+menu_domain

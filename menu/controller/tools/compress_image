@@ -1,0 +1,101 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+backup_confirm(){
+    while true
+    do
+        read -r -p "Ban co muon backup du lieu truoc khi toi uu khong? (y/n) " promt_backup
+        echo
+        if [[ "${promt_backup}" =~ ^([yY])$ || "${promt_backup}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+}
+
+backup(){
+    if [[ ! -d "/home/backup/${CURRENT_DATE}/${domain}" ]]; then
+        mkdir -p /home/backup/"${CURRENT_DATE}"/"${domain}"
+    fi
+    cd_dir /home/"${user}"/"${domain}"
+    if [ -f "/home/backup/${CURRENT_DATE}/${domain}/${domain}.tar.gz" ]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz
+    fi
+    tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz public_html --exclude "public_html/wp-content/cache" --exclude "public_html/storage/framework/*" --exclude "public_html/storage/logs/*"
+}
+
+_run(){
+    while true
+    do
+        echo "Nhap vao duong dan thu muc chua anh. Vi du: Voi Laravel co the nhap: public/uploads"
+        read -r -p "Nhap duong dan toi thu muc chua anh [0 = Thoat]: " uploads_path
+        echo
+        if [[ -d "/home/${user}/${domain}/public_html/${uploads_path}" || "${uploads_path}" == "0" ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Duong dan khong ton tai. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    if [ "${uploads_path}" == "0" ]; then
+        clear
+        printf "%s\n" "${RED}Ban da chon huy hanh dong.${NC}"
+    else
+        if [ -f "/home/${user}/${domain}/public_htm//wp-includes" ]; then
+            clear
+            printf "%s\n" "${RED}Website cua ban dang su dung WordPress. Vui long su dung chuc nang nen anh cho WordPress tai Menu 7-7-9."
+        else
+            before_compress=$(du -sh /home/"${user}"/"${domain}"/public_html/"${uploads_path}" | cut -f1 -d"M")
+            clear
+            printf "%s\n" "${GREEN}Dang toi uu anh, vui long doi...${NC}"
+            find /home/"${user}"/"${domain}"/public_html/"${uploads_path}" -type f -iname "*.png" -exec pngquant --quality=75-80 --ext=.png --force {} \;
+            find /home/"${user}"/"${domain}"/public_html/"${uploads_path}" -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) -exec jpegoptim -m 75 -f --strip-all {} \;
+            after_compress=$(du -sh /home/"${user}"/"${domain}"/public_html/"${uploads_path}" | cut -f1 -d"M")
+            clear
+            printf "%s\n" "${GREEN}Toi uu hinh anh thanh cong${NC}"
+            printf "%s\n" "${GREEN}Dung luong truoc khi toi uu:${NC} ${RED}${before_compress}M${NC}"
+            printf "%s\n" "${GREEN}Dung luong sau khi toi uu:${NC} ${RED}${after_compress}M${NC}"
+        fi
+    fi
+}
+
+domain=""
+promt_backup=""
+uploads_path=""
+before_compress=""
+after_compress=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy hanh dong.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+        backup_confirm
+        if [[ "${promt_backup}" =~ ^([yY])$ ]];then
+            make_backup_dir "${domain}"
+            backup
+        fi
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_tools

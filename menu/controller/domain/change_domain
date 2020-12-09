@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -24,7 +25,7 @@ input(){
     false
     while [ $? -eq 1 ]
     do
-        read -r -p "Nhap domain moi (Khong có www) [0 = Thoat]: " newdomain
+        read -r -p "Nhap domain moi (Khong co www) [0 = Thoat]: " newdomain
         if [ "${newdomain}" == "0" ]; then
             break
         else
@@ -78,6 +79,11 @@ _run(){
         change_user_config
         change_vhost
         change_phpconfig
+        systemctl reload nginx
+        systemctl restart php-fpm.service
+        if [ "${php2_release}" == "yes" ]; then
+            systemctl restart "${php2_version}"-php-fpm
+        fi
         clear
         printf "%s\n" "${GREEN}Doi domain thanh cong.${NC}"
     else
@@ -86,22 +92,28 @@ _run(){
     fi
 }
 
+ALERT=""
 domain=""
 newdomain=""
 
 select_domain
 
-if [ -z "${domain}" ]; then
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 else
-    set_var
-    input
-    if [ "${newdomain}" == "0" ]; then
-        clear
-        printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    if [ -z "${ALERT}" ]; then
+        set_var
+        input
+        if [ "${newdomain}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+        else
+            _run
+        fi
     else
-        _run
+        clear
+        printf "%s\n" "${ALERT}"
     fi
 fi
 

@@ -1,0 +1,133 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+input_domain(){
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap Redirect Domain (Khong co www) [0 = Thoat]: " redirect_domain
+        if [ "${redirect_domain}" == "0" ]; then
+            break
+        else
+            redirect_domain=$(echo "${redirect_domain}" | tr '[:upper:]' '[:lower:]')
+            echo "${redirect_domain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${redirect_domain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
+}
+
+validate(){
+    if [ "${domain}" == "${redirect_domain}" ]; then
+        ALERT=$(printf "%s\n" "${RED}Alias Domain khong duoc trung voi domain chinh.${NC}")
+    fi
+
+    if if_domain_exists "${redirect_domain}"; then
+        ALERT=$(printf "%s\n" "${RED}Ten mien ${redirect_domain} da duoc su dung lam ten mien chinh. Vui long kiem tra lai.${NC}")
+    fi
+
+    if [ -d "/etc/nginx/alias" ]; then
+        check_alias_exists=$(find /etc/nginx/alias -name "${redirect_domain}.conf" | cut -f5 -d'/')
+        if [ -n "${check_alias_exists}" ]; then
+            ALERT=$(
+                    printf "%s\n" "${RED}Ten mien${NC} ${GREEN}${redirect_domain}${NC} ${RED}da duoc su dung lam Parked/Alias Domain cho domain${NC} ${GREEN}${check_alias_exists}${NC}."
+                    printf "%s\n" "${RED}Vui long su dung ten mien khac hoac xoa Alias domain truoc.${NC}"
+                )
+        fi
+    fi
+
+    if [ -d "/etc/nginx/redirect" ]; then
+        check_redirect_exists=$(find /etc/nginx/redirect -name "${redirect_domain}.conf")
+        if [ -n "${check_redirect_exists}" ]; then
+            ALERT=$(
+                    printf "%s\n" "${RED}Ten mien${NC} ${GREEN}${redirect_domain}${NC} ${RED}da duoc su dung lam Redirect Domain cho domain${NC} ${GREEN}${check_redirect_exists}${NC}."
+                    printf "%s\n" "${RED}Vui long su dung ten mien khac hoac xoa Redirect domain truoc.${NC}"
+                )
+        fi
+    fi
+}
+
+_run(){
+    input_domain
+    redirect_domain=${redirect_domain//www.}
+    validate
+
+    if [ -z "${ALERT}" ]; then
+        if [ ! -d "/etc/nginx/redirect/${domain}" ]; then
+            mkdir -p /etc/nginx/redirect/"${domain}"
+        fi
+
+        check_ssl_primary_domain=$(grep -w "ssl_certificate" "${VHOST_DIR}/${domain}.conf")
+
+        if [ -z "${check_ssl_primary_domain}" ]; then
+            protocol="http://"
+        else
+            protocol="https://"
+        fi
+
+        cat >> "/etc/nginx/redirect/${domain}/${redirect_domain}.conf" <<EOF
+server {
+    server_name ${redirect_domain} www.${redirect_domain};
+    return       301 ${protocol}${domain}\$request_uri;
+}
+EOF
+        check_include_redirect=$(grep -w "/etc/nginx/redirect/${domain}" "${VHOST_DIR}/${domain}.conf")
+        if [ -z "${check_include_redirect}" ]; then
+            echo "" >> "${VHOST_DIR}"/"${domain}".conf
+            echo "include /etc/nginx/redirect/${domain}/*.conf;" >> "${VHOST_DIR}"/"${domain}".conf
+        fi
+
+        if nginx -t; then
+            systemctl restart nginx
+            clear
+            printf "%s\n" "${GREEN}Tao Redirect domain thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai vhost.${NC}"
+        fi
+    else
+        printf "%s\n" "${ALERT}"
+    fi
+}
+
+ALERT=""
+domain=""
+redirect_domain=""
+
+printf "%s\n" "${RED}Lua chon ten mien chinh.${NC}"
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+menu_domain

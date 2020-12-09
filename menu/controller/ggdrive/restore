@@ -12,6 +12,8 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/ipaddress
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 confirm_restore(){
@@ -105,7 +107,11 @@ select_db(){
 }
 
 _restore_db(){
-    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
+    if [[ ${sql} == *"sql.gz"* ]]; then
+      gzip < "${sql}" | mysql -uadmin -p"${mysql_pwd}" "${db_name}"
+    else
+      mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
+    fi
 }
 
 _run(){

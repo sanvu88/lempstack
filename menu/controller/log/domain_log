@@ -11,35 +11,37 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
-set_var(){
-    # shellcheck disable=SC2154
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+view_log() {
+  clear
+  printf "%s\n" "${RED}Hien thi 10 dong log moi nhat..."
+  echo ""
+  tail /home/"${username}"/"${domain}"/logs/error.log
+  printf "%s\n" "${RED}Vi tri file log: /home/${username}/${domain}/logs/error.log${NC}"
 }
 
-view_log(){
-    clear
-    printf "%s\n" "${RED}Hien thi 10 dong log moi nhat..."
-    echo ""
-    tail /home/"${username}"/"${domain}"/logs/error.log
-    printf "%s\n" "${RED}Vi tri file log: /home/${username}/${domain}/logs/error.log${NC}"
-}
-
-_run(){
-    set_var
-    view_log
-    menu_log
+_run() {
+  username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+  clear
+  view_log
 }
 
 domain=""
 select_domain
 
-if [ -z "${domain}" ]; then
-    clear
-    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
-    menu_log
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+  clear
+  printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+
 else
+  if [ -z "${ALERT}" ]; then
     _run
+  else
+    clear
+    printf "%s\n" "${ALERT}"
+  fi
 fi
 
+menu_log

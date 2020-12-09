@@ -19,11 +19,11 @@ printf "%s====================%s\n" "${GREEN}" "${NC}"
 while [ "${CHOICE}" != "0" ]
 do
     printf "%s1. Memcached%s\n" "${GREEN}" "${NC}"
-    printf "%s2. Redis%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Redis %s\n" "${GREEN}" "${NC}"
     printf "%s3. Quan ly Opcache%s\n" "${GREEN}" "${NC}"
     printf "%s4. Xoa Cache%s\n" "${GREEN}" "${NC}"
     printf "%s5. Cai dat Memcached%s\n" "${GREEN}" "${NC}"
-    printf "%s6. Cai dat Redis%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Cai dat Redis %s\n" "${GREEN}" "${NC}"
     printf "%s =================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]

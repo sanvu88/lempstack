@@ -18,12 +18,11 @@ printf "%s==============================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
-    printf "%s1. Kiem tra cac Cronjob tren VPS%s\n" "${GREEN}" "${NC}"
-    printf "%s2. Tao Cronjob auto renew Let's Encrypt%s\n" "${GREEN}" "${NC}"
-    printf "%s3. Tao Cronjob tu dong backup tai VPS%s\n" "${GREEN}" "${NC}"
-    printf "%s4. Tao Cronjob tu dong backup len Google Drive%s\n" "${GREEN}" "${NC}"
-    printf "%s5. Tao cronjob tuy chinh%s\n" "${GREEN}" "${NC}"
-    printf "%s6. Xóa cronjob%s\n" "${GREEN}" "${NC}"
+    printf "%s1. Kiem tra cac Cronjob tren VPS %s\n" "${GREEN}" "${NC}"
+    printf "%s2. Tao Cronjob tu dong backup tai VPS %s\n" "${GREEN}" "${NC}"
+    printf "%s3. Tao Cronjob tu dong backup len Google Drive%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Tao cronjob tuy chinh%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Xóa cronjob%s\n" "${GREEN}" "${NC}"
     printf "%s =============================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -38,75 +37,16 @@ do
             printf "${RED}${cron}%s\n"
             echo ""
             ;;
-        2)
-            cron_exists=$(crontab -l | grep -w 'certbot-auto')
-            if [ -z "${cron_exists}" ]; then
-                crontab -l > le
-                echo "0 3 * * * /usr/local/bin/certbot-auto renew >/dev/null 2>&1" >> le
-                crontab le
-                rm -rf le
-                clear
-                printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
-                echo ""
-            else
-                clear
-                printf "${RED}Cronjob da ton tai.%s\n"
-                echo ""
-            fi
-
-            menu_cronjob
-            ;;
-        3) clear; cron_backup_local ;;
-        4) clear; cron_backup_gg ;;
-        5)
+        2) clear; cron_backup_local ;;
+        3) clear; cron_backup_gg ;;
+        4)
             clear
-            printf "${RED}Bam Ctrl + C de huy tao cronjob%s\n"
-            echo ""
-            read -r -p "Nhap vao phut (Bo trong neu chay hang moi phut): " minutes
-            read -r -p "Nhap vao gio (Bo trong neu chay moi gio): " hours
-            read -r -p "Nhap vao ngay (Bo trong neu chay hang ngay): " days
-            read -r -p "Nhap vao thang (Bo trong neu chay hang thang): " months
-            read -r -p "Nhap vao tuan (Bo trong neu chay hang tuan): " weekday
-            read -r -p "Nhap vao lenh: " command
-
-            if [[ -z "${minutes}" ]]; then
-                minutes="*"
-            fi
-
-            if [[ -z "${hours}" ]]; then
-                hours="*"
-            fi
-
-            if [[ -z "${days}" ]]; then
-                days="*"
-            fi
-
-            if [[ -z "${months}" ]]; then
-                months="*"
-            fi
-
-            if [[ -z "${weekday}" ]]; then
-                weekday="*"
-            fi
-
-            cron_exists=$(crontab -l | grep -w "${command}")
-            if [ -z "${cron_exists}" ]; then
-                crontab -l > cu_cron
-                echo "${minutes} ${hours} ${days} ${months} ${weekday} ${command} >/dev/null 2>&1" >> cu_cron
-                crontab cu_cron
-                rm -rf cu_cron
-                clear
-                printf "%s\n" "${GREEN}Tao cronjob thanh cong.${NC}"
-                echo ""
-            else
-                clear
-                printf "%s\n" "${GREEN}Cronjob da ton tai.${RED}"
-                echo ""
-            fi
-
+            printf "Dang mo trinh soan thao nano\n"
+            sleep 2
+            EDITOR=nano crontab -e
             menu_cronjob
             ;;
-        6) clear; cron_destroy ;;
+        5) clear; cron_destroy ;;
         0) clear; menu_primary ;;
         *) clear; printf "%s\n" "${GREEN}Lua chon cua ban khong chinh xac. Vui long chon lai.${RED}";;
     esac

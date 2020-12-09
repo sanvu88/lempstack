@@ -11,9 +11,19 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
-restart_service
-printf "%s\n" "${GREEN}Xoa cache Opcache thanh cong.${NC}"
+if nginx -t; then
+  systemctl restart nginx
+  systemctl restart php-fpm.service
+  if [ "${php2_release}" == "yes" ]; then
+    systemctl restart "${php2_version}"-php-fpm
+  fi
+  clear
+  printf "%s\n" "${GREEN}Xoa cache Opcache thanh cong.${NC}"
+else
+  printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+fi
 
 manage_opcache

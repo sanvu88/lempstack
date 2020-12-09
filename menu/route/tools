@@ -1,0 +1,42 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+CHOICE=1
+
+printf "%s========================================%s\n" "${GREEN}" "${NC}"
+printf "%s                   Cong cu              %s\n" "${GREEN}" "${NC}"
+printf "%s========================================%s\n" "${GREEN}" "${NC}"
+
+while [ "${CHOICE}" != "0" ]
+do
+    printf "%s1. Nen hinh anh%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Deploy website%s\n" "${GREEN}" "${NC}"
+    printf "%s3. Giai nen file (zip, rar, tar.gz, tgz)%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Kiem tra dung luong tung website%s\n" "${GREEN}" "${NC}"
+    printf "%s5. Tim file/Thu muc dung luong lon%s\n" "${GREEN}" "${NC}"
+    printf "%s========================================%s\n" "${GREEN}" "${NC}"
+    read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
+    if [ -z "${CHOICE}" ]
+    then
+        CHOICE=1
+        continue
+    fi
+    case ${CHOICE} in
+        1) clear; tools_compress_image;;
+        2) clear; tools_deploy_website ;;
+        3) clear; tools_decompress_file ;;
+        4) clear; website_disk_usage ;;
+        5) clear; find_large_file_folder ;;
+        0) clear; menu_primary ;;
+        *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
+    esac
+done

@@ -19,14 +19,16 @@ printf "%s===============================================%s\n" "${GREEN}" "${NC}
 while [ "${CHOICE}" != "0" ]
 do
     printf "%s1. Trang thai Webserver%s\n" "${GREEN}" "${NC}"
-    printf "%s2. Thong tin VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s2. Thong tin VPS %s\n" "${GREEN}" "${NC}"
     printf "%s3. Thong tin khac%s\n" "${GREEN}" "${NC}"
-    printf "%s4. Xem cac tien trinh tren VPS%s\n" "${GREEN}" "${NC}"
-    printf "%s5. Kiem tra dung luong VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s4. Xem cac tien trinh tren VPS %s\n" "${GREEN}" "${NC}"
+    printf "%s5. Kiem tra dung luong VPS %s\n" "${GREEN}" "${NC}"
     printf "%s6. Thay doi thong tin SSH%s\n" "${GREEN}" "${NC}"
-    printf "%s7. Cap nhat VPS%s\n" "${GREEN}" "${NC}"
-    printf "%s8. Cap nhat lai cau hinh (Sau khi nang cap VPS)%s\n" "${GREEN}" "${NC}"
-    printf "%s9. Bao mat VPS (Scan Malware, Naxsi Firewall)%s\n" "${GREEN}" "${NC}"
+    #printf "%s7. Cap nhat VPS %s\n" "${GREEN}" "${NC}"
+    printf "%s7. Cap nhat lai cau hinh (Sau khi nang cap VPS)%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Bao mat VPS (Scan Malware, Naxsi Firewall)%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Thay doi IP VPS %s\n" "${GREEN}" "${NC}"
+    printf "%s10. Chuyen du lieu sang VPS HOSTVN Scripts khac %s\n" "${GREEN}" "${NC}"
     printf "%s =============================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
 
@@ -57,24 +59,26 @@ do
             menu_vps
             ;;
         6) clear; menu_ssh ;;
-        7)
-            printf "%s\n" "${RED}}Lưu y: Viec cap nhat he thong co the se gay ra ca loi khong mong muon.${NC}"
-            read -r -p "Ban chac chan muon cap nhat ? (y/N)" confirm_update
-            if [[ ${confirm_update} =~ ^([yY])$ ]]; then
-                echo "Chuan bi cap nhat VPS..."
-                sleep 2
-                yum -y update
-                clear
-                printf "%s\n" "${GREEN}Qua trinh cap nhat da hoan tat.${NC}"
-            else
-                clear
-                printf "%s\n" "${RED}Ban da chon huy cap nhat.${NC}"
-            fi
-
-            menu_vps
-            ;;
-        8) change_all_parameter ;;
-        9) clear; menu_security ;;
+#        7)
+#            printf "%s\n" "${RED}}Lưu y: Viec cap nhat he thong co the se gay ra ca loi khong mong muon.${NC}"
+#            read -r -p "Ban chac chan muon cap nhat ? (y/N)" confirm_update
+#            if [[ ${confirm_update} =~ ^([yY])$ ]]; then
+#                echo "Chuan bi cap nhat VPS..."
+#                sleep 2
+#                yum -y update
+#                clear
+#                printf "%s\n" "${GREEN}Qua trinh cap nhat da hoan tat.${NC}"
+#            else
+#                clear
+#                printf "%s\n" "${RED}Ban da chon huy cap nhat.${NC}"
+#            fi
+#
+#            menu_vps
+#            ;;
+        7) change_all_parameter ;;
+        8) clear; menu_security ;;
+        9) clear; change_ip_vps ;;
+        10) clear; change_vps ;;
         0) clear; menu_primary ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

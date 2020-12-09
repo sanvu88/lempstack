@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s========================%s\n" "${GREEN}" "${NC}"
@@ -24,37 +25,141 @@ validate(){
     check_a_record "${domain}"
 }
 
-sign_ssl(){
-    /usr/local/bin/certbot-auto --nginx --no-bootstrap -d "${domain}" -d www."${domain}"
+#check_subdomain(){
+#    md=
+#    p2='^(.*\.)?([^.]+\.[a-z]+\.[a-z][a-z])$'
+#    p3='^(.*\.)?([^.]+\.(design|party|live|red|pink|school|blog|email|vip|pro|jp|studio|art|info|com|org|net|int|edu|gov|mil|xyz|vn|website|store|biz|me|mobi|name|ws|co|cc|tv|xxx|pro|pw|us|ca|bz|asia|in|hk|sg|eu|fr|de|au|tw|nz|media|news|photography|top|tips|uk|link|site|club|online|fun|men|space|io|trade|host|best|press|gift|zone|es|tech|company|kr))$'
+#    px='^(.*\.)([a-z]+)$'
+#
+#    if [[ "$domain" =~ $p2 ]] ; then
+#        md=${BASH_REMATCH[2]};
+#    elif [[ "$domain" =~ $p3 ]] ; then
+#        md=${BASH_REMATCH[2]};
+#    elif [[ "$domain" =~ $px ]] ; then
+#        md=${BASH_REMATCH[2]};
+#    fi ;
+#}
+
+confirm_sign_ssl(){
+    printf "%s\n" "${RED}Luu y: Let's Encrypt gioi han so request SSL vi vay viec tao qua nhieu request SSL se bi chan ko tao duoc SSL."
+    while true
+    do
+        read -r -p "Ban muon cai dat SSL cho Domain ${domain} ? (y/n) " promt_sign_ssl
+        sleep 3
+        echo
+        if [[ "${promt_sign_ssl}" =~ ^([yY])$ || "${promt_sign_ssl}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    echo "Ten mien cua ban la ten mien chinh hay sub-domain ?"
+    PS3="Nhap vao cau tra loi cua ban: "
+    options=(
+        "Ten mien chinh"
+        "Sub-domain"
+    )
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Ten mien chinh") domain_type="1"; break;;
+            "Sub-domain") domain_type="2"; break;;
+            *) printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai${NC}";;
+        esac
+    done
 }
 
-auto_renew(){
-    cron_exists=$(crontab -l | grep -w 'certbot-auto')
-    if [ -z "${cron_exists}" ]; then
-        crontab -l > certbot
-        echo "0 3 * * * /usr/local/bin/certbot-auto renew && service nginx restart >/dev/null 2>&1" >> certbot
-        crontab certbot
-        rm -rf certbot
+sign_ssl(){
+#    check_subdomain
+    if [ -d "/root/.acme.sh/${domain}" ]; then
+        rm -rf /root/.acme.sh/"${domain}"
+    fi
+    /root/.acme.sh/acme.sh --upgrade
+    clear
+
+    if [ "${domain_type}" != "2" ]; then
+        /root/.acme.sh/acme.sh --issue --nginx /etc/nginx/conf.d/"${domain}".conf -d "${domain}" --force
+    else
+        /root/.acme.sh/acme.sh --issue --nginx /etc/nginx/conf.d/"${domain}".conf -d "${domain}" -d "www.${domain}" --force
     fi
 }
 
-restart_nginx(){
-    systemctl restart nginx.service
+edit_vhost(){
+    server_name="server_name ${domain} www.${domain};"
+    check_sub=$(grep -w "${VHOST_DIR}/${domain}.conf" -e "*.${domain}")
+
+    if [ -n "${check_sub}" ]; then
+        server_name="server_name ${domain} *.${domain};"
+    fi
+
+    check_old_ssl_conf=$(grep -w "${VHOST_DIR}/${domain}.conf" -e "ssl_certificate")
+    if [ -z "${check_old_ssl_conf}" ]; then
+        sed -i 's/listen 80/listen 443 ssl http2/g' "${VHOST_DIR}"/"${domain}".conf
+        cat >> "${VHOST_DIR}/${domain}.conf" << EOvhost
+
+server {
+    listen 80;
+    ${server_name}
+    location / {
+        return 301 https://${domain}\$request_uri;
+    }
+}
+EOvhost
+    else
+        sed -i '/ssl_certificate_key/d' "${VHOST_DIR}"/"${domain}".conf
+        sed -i '/ssl_certificate/d' "${VHOST_DIR}"/"${domain}".conf
+    fi
+
+    check_index_html=$(grep -rnw "${VHOST_DIR}/${domain}.conf" -e "index.html")
+    
+    if [ -n "${check_index_html}" ]; then
+        sed -i "/index.html/a ssl_certificate_key     /root/.acme.sh/${domain}/${domain}.key;" "${VHOST_DIR}"/"${domain}".conf
+        sed -i "/index.html/a ssl_certificate     /root/.acme.sh/${domain}/fullchain.cer;" "${VHOST_DIR}"/"${domain}".conf
+    else
+        sed -i "/server_name/a ssl_certificate_key     /root/.acme.sh/${domain}/${domain}.key;" "${VHOST_DIR}"/"${domain}".conf
+        sed -i "/server_name/a ssl_certificate     /root/.acme.sh/${domain}/fullchain.cer;" "${VHOST_DIR}"/"${domain}".conf
+    fi
+
 }
 
 _run(){
     validate
 
     if [ -z "${ALERT}" ]; then
-        sign_ssl
-        sed -i "s/listen 443 ssl;/listen 443 ssl http2;/g" "${VHOST_DIR}"/"${domain}".conf
-        sleep 2
-        restart_nginx
-        clear
-        printf "%s\n" "${GREEN}Cau hinh SSL thanh cong.${NC}"
+        confirm_sign_ssl
+        if [[ "${promt_sign_ssl}" =~ ^([yY])$ ]]; then
+            sign_ssl
+            if [[ -f "/root/.acme.sh/${domain}/${domain}.key" && -f "/root/.acme.sh/${domain}/fullchain.cer" ]]; then
+                edit_vhost
+                sleep 2
+                if nginx -t; then
+                    systemctl reload nginx
+                    clear
+                    echo
+                    printf "%s\n" "${GREEN}Cau hinh SSL thanh cong.${NC}"
+                    echo
+                else
+                    echo
+                    printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+                    echo
+                fi
+            else
+                echo
+                printf "%s\n" "${RED}Cau hinh SSL that bai.${NC}"
+                echo
+            fi
+        else
+            clear
+            echo
+            printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+            echo
+        fi
     else
         clear
+        echo
         printf "%s\n" "${ALERT}"
+        echo
     fi
 }
 
@@ -62,12 +167,20 @@ ALERT=""
 domain=""
 
 select_domain
-if [ -n "${domain}" ]; then
-    _run
-    menu_letencrypt
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
+    echo
     printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
-    menu_letencrypt
+    echo
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        echo
+        printf "%s\n" "${ALERT}"
+        echo
+    fi
 fi
 
+menu_letencrypt

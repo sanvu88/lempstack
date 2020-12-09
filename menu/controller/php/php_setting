@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s======================%s\n" "${GREEN}" "${NC}"
@@ -28,6 +29,12 @@ set_variable(){
     if [[ ${php2_version} == "php56" ]]; then
         ini_2="/opt/remi/${php2_version}/root/etc/php.d/00-hostvn-custom.ini"
     fi
+
+    max_execution_time_old=$(grep -w "max_execution_time" "${ini_1}" | cut -f2 -d'=')
+    max_input_time_old=$(grep -w "max_input_time" "${ini_1}" | cut -f2 -d'=')
+    post_max_size_old=$(grep -w "post_max_size" "${ini_1}" | cut -f2 -d'=')
+    upload_max_filesize_old=$(grep -w "upload_max_filesize" "${ini_1}" | cut -f2 -d'=')
+    memory_limit_old=$(grep -w "memory_limit" "${ini_1}" | cut -f2 -d'=')
 }
 
 select_parameter(){
@@ -37,11 +44,11 @@ select_parameter(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "post_max_size") parameter="post_max_size"; break;;
-            "upload_max_filesize") parameter="upload_max_filesize"; break;;
-            "memory_limit") parameter="memory_limit"; break;;
-            "max_input_time") parameter="max_input_time"; break;;
-            "max_execution_time") parameter="max_execution_time"; break;;
+            "post_max_size") parameter="post_max_size"; current_parameter="${post_max_size_old}"; break;;
+            "upload_max_filesize") parameter="upload_max_filesize"; current_parameter="${upload_max_filesize_old}"; break;;
+            "memory_limit") parameter="memory_limit"; current_parameter="${memory_limit_old}"; break;;
+            "max_input_time") parameter="max_input_time"; current_parameter="${max_input_time_old}"; break;;
+            "max_execution_time") parameter="max_execution_time"; current_parameter="${max_execution_time_old}"; break;;
             "Cancel") parameter="0"; break;;
             *) printf "%s\n" "${RED}Ban nhap sai, vui long nhap lai.${NC}" ;;
         esac
@@ -49,8 +56,10 @@ select_parameter(){
 }
 
 input_parameter(){
+    clear
     while true
     do
+        printf "%s\n" "Thong so ${parameter} hien tai la: ${RED}${current_parameter}${NC}"
         read -r -p "Nhap vao thong so moi (Ex: 120) [0 = Thoat]: " num
         echo
         if [[ "${num}" =~ ^[0-9]+$ ]]; then

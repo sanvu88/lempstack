@@ -1,0 +1,160 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+input_subdomain(){
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap Subdomain (Khong co www) [0 = Thoat]: " sub_domain
+        if [ "${sub_domain}" == "0" ]; then
+            break
+        else
+            sub_domain=$(echo "${sub_domain}" | tr '[:upper:]' '[:lower:]')
+            echo "${sub_domain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${sub_domain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Subdomain ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Subdomain ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
+}
+
+check_primary_domain(){
+    if [[ -d "/root/.acme.sh/${sub_domain}" ]]; then
+        string2=$(grep -w "/root/.acme.sh/${sub_domain}/${sub_domain}.conf" -e "nginx:,dns")
+        if [[ -n "${string2}" ]]; then
+            ALERT=$(printf "%s\n" "${RED}Chuc nang nay chi hoat dong voi Subdomain.${NC}")
+        fi
+    fi
+}
+
+check_ssl_wildcard(){
+    string=$(grep -w "/root/.acme.sh/${domain}/${domain}.conf" -e "nginx:,dns")
+    if [[ -z "${string}" ]]; then
+        ALERT=$( printf "%s\n" "${RED}Ten mien ${domain} chua duoc cau hinh SSL Wildcard.${NC}")
+    fi
+}
+
+validate(){
+    check_nginx_status
+    check_a_record "${sub_domain}"
+    check_primary_domain
+    check_ssl_wildcard
+}
+
+remove_old_ssl(){
+    while true
+    do
+        read -r -p "Ban co muon go bo chung chi SSL Let's Encrypt cu khong (y/n) ? " promt_remove_oldssl
+        echo
+        if [[ "${promt_remove_oldssl}" =~ ^([yY])$ || "${promt_remove_oldssl}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    if [[ ${promt_remove_oldssl} =~ ^([yY])$ ]]; then
+        rm -rf /root/.acme.sh/"${sub_domain}"
+    fi
+}
+
+edit_vhost(){
+    check_old_ssl_conf=$(grep -w "${VHOST_DIR}/${sub_domain}.conf" -e "ssl_certificate")
+    if [ -z "${check_old_ssl_conf}" ]; then
+        sed -i 's/listen 80/listen 443 ssl http2/g'  "${VHOST_DIR}"/"${sub_domain}".conf
+        cat >> "${VHOST_DIR}/${sub_domain}.conf" << EOvhost
+
+server {
+    listen 80;
+    server_name ${sub_domain} www.${sub_domain};
+    location / {
+        return 301 https://${sub_domain}\$request_uri;
+    }
+}
+EOvhost
+    else
+        sed -i '/ssl_certificate_key/d' "${VHOST_DIR}"/"${sub_domain}".conf
+        sed -i '/ssl_certificate/d' "${VHOST_DIR}"/"${sub_domain}".conf
+    fi
+
+    sed -i "/index.html/a ssl_certificate_key     /root/.acme.sh/${domain}/${domain}.key;" "${VHOST_DIR}"/"${sub_domain}".conf
+    sed -i "/index.html/a ssl_certificate     /root/.acme.sh/${domain}/fullchain.cer;" "${VHOST_DIR}"/"${sub_domain}".conf
+}
+
+_run(){
+    if [ ! -f "${VHOST_DIR}/${sub_domain}.conf" ]; then
+        ALERT=$(
+            printf "%s\n" "${RED}Subdomain ${sub_domain} chua duoc cau hinh tren VPS.${NC}"
+            printf "%s\n" "${RED}Luu y: Subdomain phai duoc them nhu mot ten mien chinh de su dung chuc nang nay.${NC}"
+        )
+    fi
+    validate
+
+    if [ -z "${ALERT}" ]; then
+        if [[ -d "/root/.acme.sh/${sub_domain}" ]]; then
+            remove_old_ssl
+        fi
+        edit_vhost
+
+        if nginx -t; then
+            systemctl reload nginx
+            clear
+            printf "%s\n" "${GREEN}Cau hinh SSL thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+}
+
+
+ALERT=""
+promt_remove_oldssl=""
+domain=""
+string=""
+sub_domain=""
+
+printf "%s\n" "${RED}Lua chon ten mien chinh da duoc cau hinh SSL Wildcard.${NC}"
+select_domain
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        input_subdomain
+        if [ "${sub_domain}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+        else
+            _run
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_letencrypt

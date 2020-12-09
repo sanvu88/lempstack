@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s===================%s\n" "${GREEN}" "${NC}"
@@ -56,13 +57,13 @@ check_port(){
         ALERT=$(printf "%s\n" "${RED}Port ban chon da duoc su dung. Vui long chon port khac.${NC}")
     fi
 
-    if check_port_exists "${ftp_port}"; then
-        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}")
+    if check_port_exists "${new_port}"; then
+        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Vui long chon port khac.${NC}")
     fi
 }
 
 _change_port(){
-    echo "Dang tien hanh thay đoi port SSH..."
+    echo "Dang tien hanh thay đoi port Admin Tool..."
    	echo ""
    	sleep 1
     sed -i "s/,${current_port}/,${new_port}/g" /etc/csf/csf.conf

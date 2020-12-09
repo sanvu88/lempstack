@@ -12,54 +12,61 @@
 
 # shellcheck disable=SC2034
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
-set_var(){
-    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+set_var() {
+  user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
-_run(){
-    set_var
-    if [ -f "/home/${user}/${domain}/public_html/wp-config.php" ]; then
-        string=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
+_run() {
+  set_var
+  if [ -f "/home/${user}/${domain}/public_html/wp-config.php" ]; then
+    string=$(grep -rnw "/home/${user}/${domain}/public_html/wp-config.php" -e "DISABLE_WP_CRON")
 
-        if [ -z "${string}" ]; then
-            sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${user}"/"${domain}"/public_html/wp-config.php
-            noti="Vo hieu hoa WP_CRON va chuyen sang Cronjob thanh cong."
-            if [ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
-                touch "${WORDPRESS_CRON_DIR}"/"${domain}"
-            fi
+    if [ -z "${string}" ]; then
+      sed -i "/WP_DEBUG/a define('DISABLE_WP_CRON', true);" /home/"${user}"/"${domain}"/public_html/wp-config.php
+      noti="Vo hieu hoa WP_CRON va chuyen sang Cronjob thanh cong."
+      if [ ! -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+        touch "${WORDPRESS_CRON_DIR}"/"${domain}"
+      fi
 
-            cron_exists=$(crontab -l | grep -w 'wpcron.sh')
-            if [ -z "${cron_exists}" ]; then
-                crontab -l > wpcron
-                echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >> wpcron
-                crontab wpcron
-                rm -rf wpcron
-            fi
-        else
-            sed -i '/DISABLE_WP_CRON/d' /home/"${user}"/"${domain}"/public_html/wp-config.php
-            noti="Bat WP_CRON va tat Cronjob thanh cong."
-            # shellcheck disable=SC2115
-            if [ -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
-                rm -rf "${WORDPRESS_CRON_DIR}"/"${domain}"
-            fi
-        fi
-        printf "%s\n" "${GREEN}${noti}${NC}"
+      cron_exists=$(crontab -l | grep -w 'wpcron.sh')
+      if [ -z "${cron_exists}" ]; then
+        crontab -l >wpcron
+        echo "* * * * * /var/hostvn/menu/cronjob/wpcron.sh >/dev/null 2>&1" >>wpcron
+        crontab wpcron
+        rm -rf wpcron
+      fi
     else
-        clear
-        printf "%s\n" "${RED}File wp-config.php khong ton tai.${NC}"
+      sed -i '/DISABLE_WP_CRON/d' /home/"${user}"/"${domain}"/public_html/wp-config.php
+      noti="Bat WP_CRON va tat Cronjob thanh cong."
+      # shellcheck disable=SC2115
+      if [ -f "${WORDPRESS_CRON_DIR}/${domain}" ]; then
+        rm -rf "${WORDPRESS_CRON_DIR}"/"${domain}"
+      fi
     fi
+    printf "%s\n" "${GREEN}${noti}${NC}"
+  else
+    clear
+    printf "%s\n" "${RED}File wp-config.php khong ton tai.${NC}"
+  fi
 }
 
 ALERT=""
 domain=""
+string=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    _run
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+  clear
+  printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
 else
+  if [ -z "${ALERT}" ]; then
+    _run
+  else
     clear
-    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    printf "%s\n" "${ALERT}"
+  fi
 fi
 wp_menu_advanced

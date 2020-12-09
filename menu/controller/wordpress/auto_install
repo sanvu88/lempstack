@@ -12,13 +12,14 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
     promtp_install="n"
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     php_mode="$(grep "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')"
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
     db_pass=$(grep -w "db_password" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=');
@@ -26,7 +27,7 @@ set_var(){
 }
 
 docroot_empty(){
-    if check_docroot_empty "$username" "$domain";
+    if docroot_empty_or_not "$user" "$domain";
     then
         while true
         do
@@ -55,7 +56,7 @@ docroot_empty(){
 }
 
 database_empty(){
-    if if_db_not_empty "${db_name}"; then
+    if if_db_empty "${db_name}"; then
         promtp_install="y"
     else
         while true
@@ -72,22 +73,41 @@ database_empty(){
     fi
 }
 
+change_prefix(){
+    while true
+    do
+        read -r -p "Ban co muon thay doi database prefix khong (Mac dinh la wp_)? (y/n) " promtp_prefix
+        echo
+        if [[ "${promtp_prefix}" =~ ^([yY])$ || "${promtp_prefix}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+
+    db_prefix="wp_"
+    if [[ "${promtp_prefix}" =~ ^([yY])$ ]]; then
+        db_prefix="$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)_"
+    fi
+}
+
 auto_install(){
-    cd_dir "/home/${username}/${domain}/public_html"
+    cd_dir "/home/${user}/${domain}/public_html"
     # Download WordPress
     wp core download --locale=en_US --allow-root
     rm -rf license.txt readme.html
     # Create wp-config.php
-    db_prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-4}";echo;)
-    wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}_" --extra-php <<PHP
+    wp config create --allow-root --dbname="${db_name}" --dbuser="${db_user}" --dbpass="${db_pass}" --dbprefix="${db_prefix}" --extra-php <<PHP
 define( 'WP_DEBUG', false );
-define( 'WP_DEBUG_LOG', false );
+define( 'FS_METHOD', 'direct');
 define( 'WP_CACHE', true);
+define( 'WP_MEMORY_LIMIT', '128M' );
+define( 'WP_MAX_MEMORY_LIMIT', '128M' );
 PHP
     # Install WordPress
     wp core install --url="${domain}" --title="${site_name}" --admin_user="${admin_user}" --admin_password="${admin_pwd}" --admin_email="${admin_email}" --allow-root
     # Create robots.txt
-    cat > "/home/$username/$domain/public_html/robots.txt" <<END
+    cat > "/home/$user/$domain/public_html/robots.txt" <<END
 User-agent: *
 Disallow: /wp-admin/
 Disallow: /wp-includes/
@@ -99,7 +119,7 @@ Allow: /wp-admin/admin-ajax.php
 Allow: /*.js$
 Allow: /*.css$
 END
-    chown -R "${username}":"${username}" ./*
+    chown -R "${user}":"${user}" ./*
 }
 
 update_user_info(){
@@ -108,21 +128,21 @@ update_user_info(){
     sed -i '/db_name=/d' "${USER_DIR}"/."${domain}".conf
     {
         echo "plugin_cache=${plugin_cache}"
-        echo "username=${username}"
+        echo "username=${user}"
         echo "db_name=${db_name}"
     } >>  "${USER_DIR}"/."${domain}".conf
 }
 
 create_vhost(){
-    if [[ -f "/etc/nginx/backup_vhost/${domain}.conf.orig" ]]; then
-        rm -rf /etc/nginx/backup_vhost/"${domain}".conf.orig
+    if [[ -f "${BACKUP_VHOST_DIR}/${domain}.conf.bak" ]]; then
+        rm -rf "${BACKUP_VHOST_DIR}"/"${domain}".conf.bak
     fi
 
-    mv "/etc/nginx/conf.d/$domain.conf" "/etc/nginx/backup_vhost/${domain}.conf.orig"
+    mv "${VHOST_DIR}/$domain.conf" "${BACKUP_VHOST_DIR}/${domain}.conf.bak"
     fastcgi
 
     cat >> "${VHOST_DIR}/${domain}.conf" << END
-upstream php-${username} {
+upstream php-${user} {
     server ${fastcgi_pass}
 }
 
@@ -131,10 +151,10 @@ server {
     server_name ${domain} www.${domain};
 
     #access_log off;
-    #access_log /home/${username}/${domain}/logs/access.log;
+    #access_log /home/${user}/${domain}/logs/access.log;
     #error_log off;
-    error_log /home/${username}/${domain}/logs/error.log;
-    root /home/${username}/${domain}/public_html;
+    error_log /home/${user}/${domain}/logs/error.log;
+    root /home/${user}/${domain}/public_html;
     index index.php index.html index.htm;
 
     include /etc/nginx/rewrite/wordpress.conf;
@@ -148,7 +168,7 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         if (-f \$request_filename)
         {
-            fastcgi_pass php-${username};
+            fastcgi_pass php-${user};
         }
     }
 
@@ -156,7 +176,7 @@ server {
         limit_req zone=two burst=1 nodelay;
         include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_pass php-${username};
+        fastcgi_pass php-${user};
     }
     include /etc/nginx/extra/staticfiles.conf;
     include /etc/nginx/wordpress/wordpress_secure.conf;
@@ -191,17 +211,26 @@ _run(){
         fi
 
         if [ -z "${ALERT}" ]; then
+            change_prefix "$@"
             wp_auto_install_info
-            rm -rf /home/"$username"/"$domain"/public_html/*
+            rm -rf /home/"$user"/"$domain"/public_html/*
             empty_db
-            auto_install "$@"
+            auto_install
             clear
 
             create_vhost
-            restart_service
-            clear
-            printf "%s\n" "${GREEN}Cai dat WordPress thanh cong.${NC}"
-            show_info
+            if nginx -t; then
+                systemctl restart nginx
+                systemctl restart php-fpm.service
+                if [ "${php2_release}" == "yes" ]; then
+                    systemctl restart "${php2_version}"-php-fpm
+                fi
+                clear
+                printf "%s\n" "${GREEN}Cai dat WordPress thanh cong.${NC}"
+                show_info
+            else
+                printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+            fi
         else
             clear
             printf "%s\n" "${ALERT}"
@@ -215,13 +244,19 @@ _run(){
 ALERT=""
 domain=""
 promtp_install=""
+promtp_prefix=""
 select_domain
 
-if [ -n "${domain}" ]; then
-    _run "$@"
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run "$@"
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 
 menu_wp

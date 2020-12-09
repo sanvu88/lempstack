@@ -11,13 +11,14 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 check_expired(){
-    if [[ -f "/etc/letsencrypt/live/${domain}/cert.pem" ]]; then
+    if [[ -f "/root/.acme.sh/${domain}/${domain}.conf" ]]; then
         clear
-        openssl x509 -noout -dates -in /etc/letsencrypt/live/"${domain}"/cert.pem
+        expired=$(grep -w "/root/.acme.sh/${domain}/${domain}.conf" -e "Le_NextRenewTimeStr" | cut -f2 -d'=')
+        printf "%s\n" "${GREEN}Ngay het han:${NC} ${RED}${expired}${NC}"
     else
         clear
         printf "%s\n" "${RED}Ten mien nay chua đuoc cai dat Let's Encrypt.${NC}"
@@ -28,12 +29,17 @@ _run(){
     domain=""
     select_domain
 
-    if [ -z "${domain}" ]; then
+    if [[ -z "${domain}" && -z "${ALERT}" ]]; then
         clear
         printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
     else
-        clear
-        check_expired
+        if [ -z "${ALERT}" ]; then
+            clear
+            check_expired
+        else
+            clear
+            printf "%s\n" "${ALERT}"
+        fi
     fi
 }
 

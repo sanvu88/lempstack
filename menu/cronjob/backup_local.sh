@@ -37,10 +37,12 @@ for users in /home/*; do
                         fi
                         rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/*
                         cd /home/backup/"${CURRENT_DATE}"/"${domain}" || exit
-                        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" > "${db_name}".sql
+                        mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
 
                         cd /home/"${user}"/"${domain}" || exit
-                        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}"
+                        tar -cpzvf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${domain}".tar.gz "${public}" \
+                            --exclude "public_html/wp-content/cache" --exclude "public_html/storage/framework/cache" \
+                            --exclude "public_html/storage/framework/view"
                     fi
                 done
             fi

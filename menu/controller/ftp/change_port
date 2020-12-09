@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -56,7 +57,7 @@ check_port(){
     fi
 
     if check_port_exists "${ftp_port}"; then
-        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Huy thay doi port SSH.${NC}")
+        ALERT=$(printf "%s\n" "${RED}Port da duoc su dung. Vui long chon port khac.${NC}")
     fi
 }
 
@@ -90,12 +91,9 @@ _run(){
 }
 
 ALERT=""
-pureftpd_status="$(pgrep -f pure-ftpd)"
 ftp_port=""
 
-if [ -z "${pureftpd_status}" ]; then
-    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
-else
+if service_running pure-ftpd; then
     input
     if [[ "${ftp_port}" == "0" ]]; then
         clear
@@ -103,6 +101,9 @@ else
     else
         _run
     fi
+else
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 fi
 
 menu_ftp

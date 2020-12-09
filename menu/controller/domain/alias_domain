@@ -1,0 +1,272 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+# shellcheck disable=SC2034
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+set_var(){
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    php_mode=$(grep -w "php_mode" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+
+    if [ -d "/home/${user}/${domain}/public_html/public" ]; then
+        root="root /home/${user}/${domain}/public_html/public;"
+    elif [ -d "/home/${user}/${domain}/public_html/webroot" ]; then
+        root="root /home/${user}/${domain}/public_html/webroot;"
+    else
+        root="root /home/${user}/${domain}/public_html;"
+    fi
+
+    fastcgi
+}
+
+validate(){
+    if [ "${domain}" == "${alias_domain}" ]; then
+        ALERT=$(printf "%s\n" "${RED}Alias Domain khong duoc trung voi domain chinh.${NC}")
+    fi
+
+    if if_domain_exists "${alias_domain}"; then
+        ALERT=$(printf "%s\n" "${RED}Ten mien ${alias_domain} da duoc su dung lam ten mien chinh. Vui long kiem tra lai.${NC}")
+    fi
+
+    if [ -d "/etc/nginx/alias" ]; then
+        check_alias_exists=$(find /etc/nginx/alias -name "${alias_domain}.conf" | cut -f5 -d'/')
+        if [ -n "${check_alias_exists}" ]; then
+            ALERT=$(
+                    printf "%s\n" "${RED}Ten mien ${alias_domain} da duoc su dung lam Parked/Alias Domain cho domain ${check_alias_exists}.${NC}"
+                    printf "%s\n" "${RED}Vui long su dung ten mien khac hoac xoa Alias domain truoc.${NC}"
+                )
+        fi
+    fi
+
+    if [ -d "/etc/nginx/redirect" ]; then
+        check_redirect_exists=$(find /etc/nginx/redirect -name "${alias_domain}.conf" | cut -f5 -d'/')
+        if [ -n "${check_redirect_exists}" ]; then
+            ALERT=$(
+                printf "%s\n" "${RED}Ten mien ${alias_domain} da duoc su dung lam Redirect Domain cho domain ${check_redirect_exists}.${NC}"
+                printf "%s\n" "${RED}Vui long su dung ten mien khac hoac xoa Redirect domain truoc.${NC}"
+            )
+        fi
+    fi
+}
+
+confirm_ssl_alias(){
+    while true
+    do
+        printf "%s\n" "${RED}Let's Encrypt gioi han so request SSL vi vay viec tao qua nhieu request SSL se bi chan ko tao duoc SSL.${NC}"
+        read -r -p "Ban muon cai dat SSL cho Alias Domain khong ? (y/n) " promt_ssl_alias_domain
+        sleep 3
+        echo
+        if [[ "${promt_ssl_alias_domain}" =~ ^([yY])$ || "${promt_ssl_alias_domain}" =~ ^([nN])$ ]]; then
+            break
+        else
+            printf "%s\n"  "${RED}Gia tri khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
+}
+
+input_domain(){
+    false
+    while [ $? -eq 1 ]
+    do
+        read -r -p "Nhap domain Parked/Alias (Khong co www) [0 = Thoat]: " alias_domain
+        if [ "${alias_domain}" == "0" ]; then
+            break
+        else
+            alias_domain=$(echo "${alias_domain}" | tr '[:upper:]' '[:lower:]')
+            echo "${alias_domain}" | grep -q "\."
+            if [ $? -eq 0 ]; then
+                "${BASH_DIR}"/menu/validate/check_value domain "${alias_domain}"
+                if [[ $? -eq 1 ]]; then
+                    clear
+                    printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                    false
+                fi
+            else
+                clear
+                printf "%s\n" "${RED}Ten mien ban nhap khong chinh xac vui long nhap lai.${NC}"
+                false
+            fi
+        fi
+    done
+}
+
+vhost_no_ssl(){
+    cat >> "/etc/nginx/alias/${domain}/${alias_domain}.conf" << END
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${alias_domain} www.${alias_domain};
+    #access_log off;
+    #access_log /home/${user}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${user}/${domain}/logs/error.log;
+    ${root}
+    index index.php index.html index.htm;
+
+    include /etc/nginx/rewrite/default.conf;
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass ${fastcgi_pass}
+        }
+    }
+    location = /wp-login.php {
+        limit_req zone=two burst=1 nodelay;
+        include /etc/nginx/fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_pass ${fastcgi_pass}
+    }
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+    include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/wordpress/disable_xmlrpc.conf;
+}
+END
+}
+
+vhost_ssl(){
+    cat >> "/etc/nginx/alias/${domain}/${alias_domain}.conf" << END
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ${alias_domain} www.${alias_domain};
+    location / {
+        return 301 https://${alias_domain}\$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
+    server_name ${alias_domain} www.${alias_domain};
+
+    ssl_certificate /root/.acme.sh/${alias_domain}/fullchain.cer;
+    ssl_certificate_key /root/.acme.sh/${alias_domain}/${alias_domain}.key;
+
+    #access_log off;
+    #access_log /home/${user}/${domain}/logs/access.log;
+    #error_log off;
+    error_log /home/${user}/${domain}/logs/error.log;
+    ${root}
+    index index.php index.html index.htm;
+
+    include /etc/nginx/rewrite/default.conf;
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+        include /etc/nginx/extra/nginx_limits.conf;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        if (-f \$request_filename)
+        {
+            fastcgi_pass ${fastcgi_pass}
+        }
+    }
+    location = /wp-login.php {
+        limit_req zone=two burst=1 nodelay;
+        include /etc/nginx/fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_pass ${fastcgi_pass}
+    }
+    include /etc/nginx/extra/staticfiles.conf;
+    include /etc/nginx/extra/security.conf;
+    include /etc/nginx/wordpress/wordpress_secure.conf;
+    include /etc/nginx/wordpress/disable_xmlrpc.conf;
+}
+END
+}
+
+_run(){
+    set_var
+    alias_domain=${alias_domain//www.}
+
+    validate
+
+    if [ -z "${ALERT}" ]; then
+        confirm_ssl_alias
+        if [ ! -d "/etc/nginx/alias/${domain}" ]; then
+            mkdir -p /etc/nginx/alias/"${domain}"
+        fi
+
+        check_include_alias=$(grep -w "/etc/nginx/alias/${domain}" "${VHOST_DIR}/${domain}.conf")
+        if [ -z "${check_include_alias}" ]; then
+            echo "" >> "${VHOST_DIR}"/"${domain}".conf
+            echo "include /etc/nginx/alias/${domain}/*.conf;" >> "${VHOST_DIR}"/"${domain}".conf
+        fi
+
+        if [[ "${promt_ssl_alias_domain}" =~ ^([yY])$ ]]; then
+            printf "%s\n" "${GREEN}Dang ky SSL Let's Encrypt cho Alias Domain ${alias_domain}${NC}"
+            sleep 2
+            if [ -d "/root/.acme.sh/${alias_domain}" ]; then
+                rm -rf /root/.acme.sh/"${alias_domain}"
+            fi
+             /root/.acme.sh/acme.sh --upgrade
+            clear
+            /root/.acme.sh/acme.sh --issue --nginx /etc/nginx/conf.d/alias/"${alias_domain}".conf -d "${alias_domain}" -d "www.${alias_domain}" --force
+            vhost_ssl
+        else
+            vhost_no_ssl
+        fi
+
+        if nginx -t; then
+            systemctl restart nginx
+            clear
+            printf "%s\n" "${GREEN}Tao Parked/Alias thanh cong.${NC}"
+        else
+            clear
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai vhost.${NC}"
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+
+}
+
+ALERT=""
+domain=""
+alias_domain=""
+promt_ssl_alias_domain=""
+fastcgi_pass=""
+root=""
+
+printf "%s\n" "${RED}Lua chon ten mien chinh.${NC}"
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        input_domain
+        if [ "${alias_domain}" == "0" ]; then
+            clear
+            printf "%s\n" "${RED}Huy thao tac.${NC}"
+        else
+            _run
+        fi
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+menu_domain

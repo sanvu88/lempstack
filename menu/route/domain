@@ -12,9 +12,9 @@
 
 CHOICE=1
 
-printf "%s===================%s\n" "${GREEN}" "${NC}"
-printf "%s   Quan ly Domain  %s\n" "${GREEN}" "${NC}"
-printf "%s===================%s\n" "${GREEN}" "${NC}"
+printf "%s=====================================%s\n" "${GREEN}" "${NC}"
+printf "%s          Quan ly Domain             %s\n" "${GREEN}" "${NC}"
+printf "%s=====================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
 do
@@ -23,7 +23,15 @@ do
     printf "%s3. Xoa ten mien%s\n" "${GREEN}" "${NC}"
     printf "%s4. Thay doi ten mien%s\n" "${GREEN}" "${NC}"
     printf "%s5. Rewrite Vhost Config%s\n" "${GREEN}" "${NC}"
-    printf "%s ==================%s\n" "${GREEN}" "${NC}"
+    printf "%s6. Cau hinh Parked/Alias domain%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Xoa Parked/Alias domain%s\n" "${GREEN}" "${NC}"
+    printf "%s8. Redirect domain%s\n" "${GREEN}" "${NC}"
+    printf "%s9. Xoa Redirect domain%s\n" "${GREEN}" "${NC}"
+    printf "%s10. Thay doi phien ban PHP cho website%s\n" "${GREEN}" "${NC}"
+    printf "%s11. Clone website%s\n" "${GREEN}" "${NC}"
+    printf "%s12. Doi thong tin Database cho website%s\n" "${GREEN}" "${NC}"
+#    printf "%s13. Bat/Tat open_basedir%s\n" "${GREEN}" "${NC}"
+    printf "%s ====================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
     then
@@ -36,6 +44,14 @@ do
         3) clear; domain_destroy ;;
         4) clear; domain_change ;;
         5) clear; rewrite_config ;;
+        6) clear; domain_alias ;;
+        7) clear; destroy_domain_alias ;;
+        8) clear; domain_redirect ;;
+        9) clear; destroy_domain_redirect ;;
+        10) clear; domain_change_php_mode ;;
+        11) clear; domain_clone_website ;;
+        12) clear; domain_change_mysql_info ;;
+#        13) clear; domain_open_basedir ;;
         0) clear; menu_primary ;;
         *) clear; printf "%s\n" "${RED}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

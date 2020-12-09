@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -48,7 +49,12 @@ backup(){
     if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql" ]]; then
         rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
     fi
-    wp db export --allow-root /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql
+    if [[ -f "/home/backup/${CURRENT_DATE}/${domain}/${db_name}.sql.gz" ]]; then
+        rm -rf /home/backup/"${CURRENT_DATE}"/"${domain}"/"${db_name}".sql,gz
+    fi
+
+    cd_dir /home/backup/"${CURRENT_DATE}"/"${domain}"
+    mysqldump -uadmin -p"${mysql_pwd}" "${db_name}" | gzip > "${db_name}".sql.gz
 }
 
 _update_plugins(){
@@ -68,9 +74,17 @@ _run(){
             backup
         fi
         _update_plugins
-        restart_service
-        clear
-        printf "%s\n" "${GREEN}Update plugins thanh cong.${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Update plugins thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${ALERT}"
@@ -81,10 +95,15 @@ ALERT=""
 promt_backup=""
 domain=""
 select_domain
-if [ -n "${domain}" ]; then
-    _run
-else
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
-    printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+    	clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 wp_menu_plugins

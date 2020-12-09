@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 input(){
@@ -19,7 +20,7 @@ input(){
         echo "Username khong chua ky tu dac biet va dai 5 ky tu tro len."
         read -r -p "Nhap vao user muon doi mat khau [0 = Thoat]: " ftp_user
         echo
-        if validate_user "${ftp_user}"; then
+        if validate_user "${ftp_user}" || [ "${ftp_user}" == "0" ]; then
             break
         else
             clear
@@ -69,12 +70,9 @@ _run(){
 
 ALERT=""
 ftp_user=""
-pureftpd_status="$(pgrep -f pure-ftpd)"
+string=""
 
-if [ -z "${pureftpd_status}" ]; then
-    clear
-    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
-else
+if service_running pure-ftpd; then
     input "$@"
     if [ "${ftp_user}" == "0" ]; then
         clear
@@ -82,6 +80,9 @@ else
     else
         _run
     fi
+else
+    clear
+    printf "%s\n" "${RED}PURE-FTP khong hoat dong hoac chua duoc cai dat. Vui long kiem tra lai.${NC}"
 fi
 
 menu_ftp

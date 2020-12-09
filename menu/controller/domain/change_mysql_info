@@ -1,0 +1,48 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    read -r -p "Nhap ten Database moi: " new_db_name
+    read -r -p "Nhap User Mysql moi: " new_mysql_user
+    read -r -p "Nhap mat khau Mysql moi: " new_mysql_pwd
+    sed -i '/db_name/d' "${USER_DIR}"/."${domain}".conf
+    sed -i '/db_user/d' "${USER_DIR}"/."${domain}".conf
+    sed -i '/db_password/d' "${USER_DIR}"/."${domain}".conf
+    {
+        echo "db_name=${new_db_name}"
+        echo "db_user=${new_mysql_user}"
+        echo "db_password=${new_mysql_pwd}"
+    } >> "${USER_DIR}"/."${domain}".conf
+    clear
+    printf "%s\n" "${GREEN}Doi thong tin Database thanh cong.${NC}"
+}
+
+ALERT=""
+domain=""
+select_domain
+
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
+    clear
+    printf "%s\n" "${RED}Ban da chon huy thao tac.${NC}"
+else
+    if [ -z "${ALERT}" ]; then
+        _run
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
+fi
+
+menu_domain

@@ -11,13 +11,13 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
     #https://www.howtoforge.com/tutorial/linux-grep-command/
     #https://stackoverflow.com/a/6284370
-    username=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
+    user=$(grep -w "username" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
     db_name=$(grep -w "db_name" "${USER_DIR}/.${domain}.conf" | cut -f2 -d'=')
 }
 
@@ -37,25 +37,50 @@ confirm_restore(){
 
 _restore_source(){
   if [ -f "/home/backup/${date}/${domain}/${domain}.tar.gz" ]; then
-      if [[ ! -d "/home/${username}/${domain}/public_html" ]]; then
-            mkdir -p /home/"${username}"/"${domain}"/public_html
+      if [[ ! -d "/home/${user}/${domain}/public_html" ]]; then
+            mkdir -p /home/"${user}"/"${domain}"/public_html
       fi
-      rm -rf /home/"${username}"/"${domain}"/public_html/*
-      tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${username}"/"${domain}"/
-      chown -R "${username}":"${username}" /home/"${username}"
+      rm -rf /home/"${user}"/"${domain}"/public_html/*
+      tar xvzf /home/backup/"${date}"/"${domain}"/"${domain}".tar.gz -C /home/"${user}"/"${domain}"/
+      chown -R "${user}":"${user}" /home/"${user}"
   fi
 }
 
 restore_db(){
-    cd_dir /home/"${username}"/"${domain}"/public_html
-    if [ -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
-        wp db import --allow-root /home/backup/"${date}"/"${domain}"/"${db_name}".sql
+    cd_dir /home/"${user}"/"${domain}"/public_html
+    db_name=$(wp config get DB_NAME --allow-root)
+
+    cd_dir /home/backup/"${date}"/"${domain}"
+
+    sql_files=()
+    for entry in *.{sql,sql.gz}; do
+        if [ -f "${entry}" ]; then
+            sql_files+=("${entry}")
+        fi
+    done
+
+    echo "Chon file database muon khoi phuc"
+    PS3="Nhap vao lua chon cua ban [0 = Thoat]: "
+    select opt in "${sql_files[@]}"
+    do
+        sql=$opt
+        break
+    done
+
+    if [[ ${sql} == *"sql.gz"* ]]; then
+        gzip < "${sql}" | mysql -uadmin -p"${mysql_pwd}" "${db_name}"
+    else
+        mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${sql}"
     fi
+
+#    if [ -f "/home/backup/${date}/${domain}/${db_name}.sql.gz" ]; then
+#        wp db import --allow-root /home/backup/"${date}"/"${domain}"/"${db_name}".sql.gz
+#    fi
 }
 
 _run(){
     set_var
-    check_is_wordpress "${username}" "${domain}"
+    check_is_wordpress "${user}" "${domain}"
     check_backup_exists "${date}" "${domain}"
 
     if ! check_backup_empty "${date}" "${domain}"; then
@@ -66,17 +91,25 @@ _run(){
         ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
     fi
 
-    if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
-        ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
+    if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql.gz" ]; then
+        ALERT="${RED}Ten mien nay khong co backup.${NC}"
     fi
 
     if [ -z "${ALERT}" ]; then
         _restore_source
         empty_db
         restore_db
-        restart_service
-        clear
-        printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Khoi phuc du lieu thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${ALERT}"

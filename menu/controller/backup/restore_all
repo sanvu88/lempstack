@@ -11,7 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_var(){
@@ -45,7 +45,8 @@ _restore_source(){
 
 _restore_db(){
     cd_dir /home/backup/"${date}"/"${domain}"
-    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql
+#    mysql -uadmin -p"${mysql_pwd}" "${db_name}" < "${db_name}".sql.gz
+    gzip < "${db_name}".sql.gz | mysql -uadmin -p"${mysql_pwd}" "${db_name}"
 }
 
 _run(){
@@ -64,7 +65,7 @@ _run(){
             ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
         fi
 
-        if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql" ]; then
+        if [ ! -f "/home/backup/${date}/${domain}/${db_name}.sql.gz" ]; then
             ALERT="${RED}Ten mien nay khong co backup.${NC}\n"
         fi
 

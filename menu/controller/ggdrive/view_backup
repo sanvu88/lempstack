@@ -12,6 +12,8 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/ipaddress
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 select_date(){

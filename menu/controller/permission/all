@@ -11,6 +11,7 @@
 ######################################################################
 
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 printf "%s\n" "${GREEN}======================${NC}"
@@ -20,7 +21,7 @@ printf "%s\n" "${GREEN}======================${NC}"
 #https://www.cyberciti.biz/faq/linux-unix-shell-check-if-directory-empty/
 if [ "$(ls -A "${USER_DIR}")" ]; then
     clear
-    echo "Dang phan quyen cho cac domain:"
+    echo "Dang phan quyen cho cac domain. Vui long doi..."
     sleep 1
     cd_dir "/var/hostvn/users"
     for entry in .*.conf; do

@@ -12,6 +12,7 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 _run(){
@@ -22,9 +23,17 @@ _run(){
         prefix=$(< /dev/urandom tr -dc '[:lower:]' | head -c"${1:-6}";echo;)
         wp config set WP_CACHE_KEY_SALT "${username}"_"${prefix}" --allow-root
         chow -R "${username}":"${username}" /home/"${username}"/"${domain}"/public_html
-        restart_service
-        clear
-        printf "%s\n" "${GREEN}Tao WP_CACHE_KEY_SALT thanh cong.${NC}"
+        if nginx -t; then
+            systemctl restart nginx
+            systemctl restart php-fpm.service
+            if [ "${php2_release}" == "yes" ]; then
+                systemctl restart "${php2_version}"-php-fpm
+            fi
+            clear
+            printf "%s\n" "${GREEN}Tao WP_CACHE_KEY_SALT thanh cong.${NC}"
+        else
+            printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+        fi
     else
         clear
         printf "%s\n" "${RED}File wp-config.php khong ton tai.${NC}"
@@ -33,10 +42,15 @@ _run(){
 
 domain=""
 select_domain
-if [[ -z "${domain}" ]]; then
+if [[ -z "${domain}" && -z "${ALERT}" ]]; then
     clear
     printf "%s\n" "${RED}Ban da chon huy thao tac${NC}"
 else
-    _run "$@"
+    if [ -z "${ALERT}" ]; then
+        _run "$@"
+    else
+        clear
+        printf "%s\n" "${ALERT}"
+    fi
 fi
 wp_menu_advanced

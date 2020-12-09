@@ -12,14 +12,22 @@
 
 # shellcheck disable=SC2154
 # shellcheck disable=SC2207
-# shellcheck disable=SC1091
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
-# shellcheck disable=SC1091
 source /var/hostvn/menu/helpers/variable_php
 
 confirm(){
-    prompt_php2="n"
-    read -r -p "Ban co muon thay doi phien ban PHP 2 khong ? (y/n) " prompt_php2
+    while true
+    do
+        read -r -p "Ban co muon thay doi phien ban PHP 2 khong ? (y/n) " prompt_php2
+        echo
+        if [[ "${prompt_php2}" =~ ^([yY])$ || "${prompt_php2}" =~ ^([nN])$ ]];
+        then
+            break
+        else
+            printf "%s\n" "${RED}Gia tri ban nhap khong chinh xac. Vui long nhap lai.${NC}"
+        fi
+    done
 }
 
 set_var(){
@@ -44,16 +52,15 @@ set_var(){
 
 check_duplicate_php(){
     if [[ "${php2_new}" == "${php2_version}" ]]; then
-        ALERT=$(printf "${RED}Phien ban PHP 2 ban muon thay giong phien ban PHP 2 hien tai. Huy cai dat.${NC}\n")
+        ALERT=$(printf "%S\n" "${RED}Phien ban PHP 2 ban muon thay giong phien ban PHP 2 hien tai. Huy cai dat.${NC}")
     fi
 
     if [[ "${php2_new}" == "${php1_version}" ]]; then
-        ALERT=$(printf "${RED}Phien ban PHP 2 ban chon giong phien ban PHP 1. Huy cai dat.${NC}\n")
+        ALERT=$(printf "%S\n" "${RED}Phien ban PHP 2 ban chon giong phien ban PHP 1. Huy cai dat.${NC}")
     fi
 }
 
 select_php_ver(){
-    read -r -p "Ban co muon thay doi phien ban PHP thu 2 khong ? (y/n) " prompt_php2
     if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
         clear
         while true
@@ -78,13 +85,36 @@ select_php_ver(){
     fi
 }
 
+edit_domain_config(){
+    php2_old_config_path="/etc/opt/remi/${php2_version}/php-fpm.d"
+    php2_new_config_path="/etc/opt/remi/${php2_new}/php-fpm.d"
+
+    if [[ ${php2_version} == "php56" ]]; then
+        php2_old_config_path="/opt/remi/php56/root/etc/php-fpm.d"
+    fi
+
+    if [ "${php2_new}" == "php56" ]; then
+        php2_new_config_path="/opt/remi/php56/root/etc/php-fpm.d"
+    fi
+
+    mv "${php2_old_config_path}"/www.conf "${php2_old_config_path}"/www.conf."${DATE}"
+    mv "${php2_old_config_path}"/* "${php2_new_config_path}"
+
+    sed -i "s|remi/${php2_version}|remi/${php2_new}|g" /etc/nginx/conf.d/*.conf
+    sed -i "s|remi/${php2_version}|remi/${php2_new}|g" "${php2_new_config_path}"/*.conf
+
+    if nginx -t; then
+        systemctl reload nginx
+    fi
+}
+
 remove_old_php(){
-    yum -y remove "${php2_new}" "${php2_new}"-php-fpm "${php2_new}"-php-ldap "${php2_new}"-php-zip "${php2_new}"-php-embedded "${php2_new}"-php-cli "${php2_new}"-php-mysql "${php2_new}"-php-common "${php2_new}"-php-gd "${php2_new}"-php-xml "${php2_new}"-php-mbstring \
-    "${php2_new}"-php-mcrypt "${php2_new}"-php-pdo "${php2_new}"-php-soap "${php2_new}"-php-json "${php2_new}"-php-simplexml "${php2_new}"-php-process "${php2_new}"-php-curl "${php2_new}"-php-bcmath "${php2_new}"-php-snmp "${php2_new}"-php-pspell "${php2_new}"-php-gmp \
-    "${php2_new}"-php-intl "${php2_new}"-php-imap "${php2_new}"-php-enchant "${php2_new}"-php-pear "${php2_new}"-php-zlib "${php2_new}"-php-xmlrpc "${php2_new}"-php-devel \
-    "${php2_new}"-php-tidy "${php2_new}"-php-opcache "${php2_new}"-php-cli "${php2_new}"-php-pecl-zip "${php2_new}"-php-dom "${php2_new}"-php-ssh2 "${php2_new}"-php-xmlreader "${php2_new}"-php-date "${php2_new}"-php-exif "${php2_new}"-php-filter "${php2_new}"-php-ftp \
-    "${php2_new}"-php-hash "${php2_new}"-php-iconv "${php2_new}"-php-libxml "${php2_new}"-php-pecl-imagick "${php2_new}"-php-mysqlnd "${php2_new}"-php-openssl "${php2_new}"-php-pcre "${php2_new}"-php-posix "${php2_new}"-php-sockets "${php2_new}"-php-spl \
-    "${php2_new}"-php-tokenizer "${php2_new}"-php-bz2 "${php2_new}"-php-pgsql "${php2_new}"-php-sqlite3 "${php2_new}"-php-fileinfo
+    yum -y remove "${php2_version}" "${php2_version}"-php-fpm "${php2_version}"-php-ldap "${php2_version}"-php-zip "${php2_version}"-php-embedded "${php2_version}"-php-cli "${php2_version}"-php-mysql "${php2_version}"-php-common "${php2_version}"-php-gd "${php2_version}"-php-xml "${php2_version}"-php-mbstring \
+    "${php2_version}"-php-mcrypt "${php2_version}"-php-pdo "${php2_version}"-php-soap "${php2_version}"-php-json "${php2_version}"-php-simplexml "${php2_version}"-php-process "${php2_version}"-php-curl "${php2_version}"-php-bcmath "${php2_version}"-php-snmp "${php2_version}"-php-pspell "${php2_version}"-php-gmp \
+    "${php2_version}"-php-intl "${php2_version}"-php-imap "${php2_version}"-php-enchant "${php2_version}"-php-pear "${php2_version}"-php-zlib "${php2_version}"-php-xmlrpc "${php2_version}"-php-devel \
+    "${php2_version}"-php-tidy "${php2_version}"-php-opcache "${php2_version}"-php-cli "${php2_version}"-php-pecl-zip "${php2_version}"-php-dom "${php2_version}"-php-ssh2 "${php2_version}"-php-xmlreader "${php2_version}"-php-date "${php2_version}"-php-exif "${php2_version}"-php-filter "${php2_version}"-php-ftp \
+    "${php2_version}"-php-hash "${php2_version}"-php-iconv "${php2_version}"-php-libxml "${php2_version}"-php-pecl-imagick "${php2_version}"-php-mysqlnd "${php2_version}"-php-openssl "${php2_version}"-php-pcre "${php2_version}"-php-posix "${php2_version}"-php-sockets "${php2_version}"-php-spl \
+    "${php2_version}"-php-tokenizer "${php2_version}"-php-bz2 "${php2_version}"-php-pgsql "${php2_version}"-php-sqlite3 "${php2_version}"-php-fileinfo
 }
 
 install_php_2(){
@@ -176,9 +206,9 @@ php2_global_config(){
     www2_config_file="/etc/opt/remi/${php2_new}/php-fpm.d/www.conf"
 
     if [[ ${php2_new} == "php56" ]]; then
-        php2_fpm_config_file="/opt/remi/${php2_new}/root/etc/php-fpm.conf"
+        php2_fpm_config_file="/opt/remi/php56/root/etc/php-fpm.conf"
         php2_fpm_config_path="/opt/remi/php56/root/etc/php-fpm.d"
-        www2_config_file="/opt/remi/${php2_new}/root/etc/php-fpm.d"
+        www2_config_file="/opt/remi/php56/root/etc/php-fpm.d"
     fi
 
     if [[ -f "${php2_fpm_config_file}" ]]; then
@@ -219,15 +249,10 @@ listen.group = nginx
 listen.mode = 0660
 user = nginx
 group = nginx
-pm = dynamic
+pm = ondemand
 pm.max_children = ${PM_MAX_CHILDREN}
-pm.start_servers = ${PM_START_SERVERS}
-pm.min_spare_servers =  ${PM_MIN_SPARE_SERVER}
-pm.max_spare_servers = ${PM_MAX_SPARE_SERVER}
+pm.process_idle_timeout = 20
 pm.max_requests = ${PM_MAX_REQUEST}
-request_terminate_timeout = 300
-rlimit_files = 65536
-rlimit_core = 0
 ;slowlog = /opt/remi/${php2_new}/root/var/log/php-fpm/www-slow.log
 chdir = /
 php_admin_value[error_log] = /opt/remi/${php2_new}/root/var/log/php-fpm/www-error.log
@@ -331,6 +356,7 @@ _run(){
             php2_global_config
             hostvn_custom_ini_2
             php_opcache_2
+            edit_domain_config
             systemctl restart "${php2_new}"-php-fpm
             systemctl enable "${php2_new}"-php-fpm
             write_info
@@ -347,10 +373,18 @@ _run(){
 }
 
 ALERT=""
-confirm
-if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
-    _run
+prompt_php2=""
+php2_new=""
+
+if [ ! -d "/opt/remi" ]; then
+    clear
 else
-    printf "%s\n" "${GREEN}Ban da huy thay doi phien ban PHP 2.${NC}"
+    confirm
+    if [[ "${prompt_php2}" =~ ^([yY])$ ]]; then
+        _run
+    else
+        printf "%s\n" "${GREEN}Ban da huy thay doi phien ban PHP 2.${NC}"
+    fi
 fi
+
 menu_php

@@ -17,7 +17,7 @@ SCRIPT_LINK="https://scripts.hostvn.net"
 
 OS_VER=$(rpm -E %centos)
 RAM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-LOW_RAM='470000'
+LOW_RAM='400000'
 
 # Control Panel path
 CPANEL="/usr/local/cpanel/cpanel"
@@ -146,6 +146,10 @@ install_requirement(){
 create_swap(){
     swap="$(swapon -s)"
     if [[ -z "${swap}" && ${RAM_TOTAL} -le 2099152 ]]; then
+        read -r -p "Ban co muon tao swap hay khong ? (y/n)" confirm_swap
+    fi
+
+    if [[ $confirm_swap == "y" || $confirm_swap == "Y" ]]; then
         fallocate -l 1G /swapfile
         chmod 600 /swapfile
         mkswap /swapfile

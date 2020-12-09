@@ -48,7 +48,7 @@ do
             ;;
         3)
             clear
-            printf "%s\n" "${RED}Hien thi 20 dong log moi nhat...${NC}"
+            printf "%s\n" "${RED}Hien thi 10 dong log moi nhat...${NC}"
             echo ""
             tail /var/log/mysql/mysqld.log
             printf "%s\n" "${RED}Vi tri file log: /var/log/mysql/mysqld.log${NC}"

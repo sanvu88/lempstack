@@ -11,10 +11,10 @@
 ######################################################################
 
 # shellcheck disable=SC2154
-# shellcheck disable=SC1091
 source /var/hostvn/hostvn.conf
 source /var/hostvn/menu/helpers/menu
 source /var/hostvn/menu/helpers/variable_common
+source /var/hostvn/ipaddress
 # shellcheck source=/var/hostvn/menu/lang/*
 source /var/hostvn/menu/lang/"${lang}"
 
@@ -27,7 +27,6 @@ printf "%s==================================================%s\n" "${GREEN}" "${
 printf "%sIP VPS: %s%s\n" "${GREEN}" "${IPADDRESS}" "${NC}"
 printf "%sphpMyAdmin: %s%s\n" "${GREEN}" "http://${IPADDRESS}:${admin_port}/phpmyadmin" "${NC}"
 printf "%sCSF GUI: %s%s\n" "${GREEN}" "https://${IPADDRESS}:${csf_port}" "${NC}"
-printf "%sPhim tat: Ctrl + C hoac nhap 0 đe thoat            %s\n" "${GREEN}" "${NC}"
 printf "%s==================================================%s\n" "${GREEN}" "${NC}"
 
 while [ "${CHOICE}" != "0" ]
@@ -38,13 +37,14 @@ do
     printf "%s4. Quan ly LEMP (Nginx - MariaDB - PHP - FTP - Log)%s\n" "${GREEN}" "${NC}"
     printf "%s5. Quan ly CSF Firewall%s\n" "${GREEN}" "${NC}"
     printf "%s6. Phan quyen Chown/Chmod%s\n" "${GREEN}" "${NC}"
-    printf "%s7. Quan ly WordPress%s\n" "${GREEN}" "${NC}"
+    printf "%s7. Quan ly WordPress %s\n" "${GREEN}" "${NC}"
     printf "%s8. Sao luu/Khoi phuc du lieu%s\n" "${GREEN}" "${NC}"
     printf "%s9. Admin Tool%s\n" "${GREEN}" "${NC}"
-    printf "%s10. Quan ly VPS%s\n" "${GREEN}" "${NC}"
+    printf "%s10. Quan ly VPS %s\n" "${GREEN}" "${NC}"
     printf "%s11. Xem thong tin tai khoan%s\n" "${GREEN}" "${NC}"
-    printf "%s12. Quan ly Cronjob%s\n" "${GREEN}" "${NC}"
-    printf "%s13. Cap nhat HOSTVN Scripts%s\n" "${GREEN}" "${NC}"
+    printf "%s12. Quan ly Cronjob/Auto Backup%s\n" "${GREEN}" "${NC}"
+    printf "%s13. Cong cu%s\n" "${GREEN}" "${NC}"
+    printf "%s14. Cap nhat HOSTVN Scripts %s\n" "${GREEN}" "${NC}"
     printf "%s==================================================%s\n" "${GREEN}" "${NC}"
     read -r -p " Nhap vao lua chon cua ban [0 = Thoat] " CHOICE
     if [ -z "${CHOICE}" ]
@@ -65,7 +65,8 @@ do
         10) clear; menu_vps;;
         11) clear; menu_account ;;
         12) clear; menu_cronjob ;;
-        13) update_script;;
+        13) clear; menu_tools ;;
+        14) update_script;;
         0) clear; printf "%s\n" "${GREEN}Bye Bye... Cam on ban da su dung ${AUTHOR} Script${NC}";;
         *) clear; printf "%s\n" "${GREEN}Lua chon cua ban khong chinh xac. Vui long chon lai.${NC}";;
     esac

@@ -1,0 +1,145 @@
+#!/bin/bash
+
+######################################################################
+#           Auto Install & Optimize LEMP Stack on CentOS 7, 8        #
+#                                                                    #
+#                Author: Sanvv - HOSTVN Technical                    #
+#                  Website: https://hostvn.vn                        #
+#                                                                    #
+#              Please do not remove copyright. Thank!                #
+#  Please do not copy under any circumstance for commercial reason!  #
+######################################################################
+
+source /var/hostvn/menu/validate/rule
+source /var/hostvn/menu/helpers/function
+
+_run(){
+    php1_version=$(grep -w "php1_version" "${FILE_INFO}" | cut -f2 -d'=')
+    php2_release=$(grep -w "php2_release" "${FILE_INFO}" | cut -f2 -d'=')
+    php2_version=$(grep -w "php2_version" "${FILE_INFO}" | cut -f2 -d'=')
+    cd_dir /tmp
+
+    check_ioncube_php1=$(grep "ioncube_loader_lin" "/etc/php.d/00-hostvn-custom.ini")
+
+    if [ -z "${check_ioncube_php1}" ]; then
+        if [[  ! -f "/tmp/ioncube_loaders_lin_x86-64.tar.gz" && ! -d "/tmp/ioncube" ]]; then
+            wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+            tar -xvf ioncube_loaders_lin_x86-64.tar.gz
+        fi
+
+        if [ "${php1_version}" == "php56" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_5.6.so /usr/lib64/php/modules/ioncube_loader_lin_5.6.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_5.6.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_5.6.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        elif [ "${php1_version}" == "php70" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_7.0.so /usr/lib64/php/modules/ioncube_loader_lin_7.0.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_7.0.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_7.0.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        elif [ "${php1_version}" == "php71" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_7.1.so /usr/lib64/php/modules/ioncube_loader_lin_7.1.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_7.1.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_7.1.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        elif [ "${php1_version}" == "php72" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_7.2.so /usr/lib64/php/modules/ioncube_loader_lin_7.2.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_7.2.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_7.2.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        elif [ "${php1_version}" == "php73" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_7.3.so /usr/lib64/php/modules/ioncube_loader_lin_7.3.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_7.3.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_7.3.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        elif [ "${php1_version}" == "php74" ]; then
+            cp /tmp/ioncube/ioncube_loader_lin_7.4.so /usr/lib64/php/modules/ioncube_loader_lin_7.4.so
+            if [ -f "/usr/lib64/php/modules/ioncube_loader_lin_7.4.so" ]; then
+                echo "zend_extension=ioncube_loader_lin_7.4.so" >> /etc/php.d/00-hostvn-custom.ini
+            fi
+        fi
+
+        check_ioncube_php1=$(grep "ioncube_loader_lin" "/etc/php.d/00-hostvn-custom.ini")
+    fi
+    
+    if [ "${php2_release}" == "yes" ]; then
+        php2_ini_path="/etc/opt/remi/${php2_version}/php.d"
+        php2_module_dir="/opt/remi/${php2_version}/root/usr/lib64/php/modules"
+        if [[ ${php2_version} == "php56" ]]; then
+            php2_ini_path="/opt/remi/${php2_version}/root/etc/php.d"
+        fi
+
+        check_ioncube_php2=$(grep "ioncube_loader_lin" "${php2_ini_path}/00-hostvn-custom.ini")
+
+        if [ -z "${check_ioncube_php2}" ]; then
+            if [[  ! -f "/tmp/ioncube_loaders_lin_x86-64.tar.gz" && ! -d "/tmp/ioncube" ]]; then
+                wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+                tar -xvf ioncube_loaders_lin_x86-64.tar.gz
+            fi
+
+            if [ "${php2_version}" == "php56" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_5.6.so "${php2_module_dir}"/ioncube_loader_lin_5.6.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_5.6.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_5.6.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            elif [ "${php2_version}" == "php70" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_7.0.so "${php2_module_dir}"/ioncube_loader_lin_7.0.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_7.0.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_7.0.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            elif [ "${php2_version}" == "php71" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_7.1.so "${php2_module_dir}"/ioncube_loader_lin_7.1.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_7.1.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_7.1.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            elif [ "${php2_version}" == "php72" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_7.2.so "${php2_module_dir}"/ioncube_loader_lin_7.2.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_7.2.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_7.2.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            elif [ "${php2_version}" == "php73" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_7.3.so "${php2_module_dir}"/ioncube_loader_lin_7.3.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_7.3.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_7.3.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            elif [ "${php2_version}" == "php74" ]; then
+                cp /tmp/ioncube/ioncube_loader_lin_7.4.so "${php2_module_dir}"/ioncube_loader_lin_7.4.so
+                if [ -f "${php2_module_dir}/ioncube_loader_lin_7.4.so" ]; then
+                    echo "zend_extension=ioncube_loader_lin_7.4.so" >> "${php2_ini_path}"/00-hostvn-custom.ini
+                fi
+            fi
+
+            check_ioncube_php2=$(grep "ioncube_loader_lin" "${php2_ini_path}/00-hostvn-custom.ini")
+        fi
+    fi
+
+    rm -rf /tmp/ioncube_loaders_lin_x86-64.tar.gz /tmp/ioncube
+
+    if [ -n "${check_ioncube_php1}" ]; then
+        systemctl restart php-fpm
+        clear
+        echo
+        printf "%s\n" "${GREEN}Cai dat ionCube cho PHP mac dinh thanh cong.${NC}"
+        echo
+    else
+        clear
+        echo
+        printf "%s\n" "${RED}Cai dat ionCube cho PHP mac dinh that bai.${NC}"
+        echo
+    fi
+
+    if [ -n "${check_ioncube_php2}" ]; then
+        systemctl restart "${php2_version}"-php-fpm
+        echo
+        printf "%s\n" "${GREEN}Cai dat ionCube cho PHP 2 thanh cong.${NC}"
+        echo
+    elif [[ "${php2_release}" == "yes" && -z "${check_ioncube_php2}" ]]; then
+        clear
+        echo
+        printf "%s\n" "${RED}Cai dat ionCube cho PHP 2 that bai.${NC}"
+        echo
+    fi
+}
+
+_run
+menu_php

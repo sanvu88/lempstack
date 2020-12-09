@@ -11,15 +11,16 @@
 ######################################################################
 
 # shellcheck disable=SC2154
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 set_php_ini_path(){
     PHP1_INI_PATH="/etc/php.d"
 
     if [ "${php2_release}" == "yes" ]; then
-        PHP2_INI_PATH="/etc/opt/remi/${PHP_VERSION_2}/php.d"
+        PHP2_INI_PATH="/etc/opt/remi/${php2_version}/php.d"
         if [[ ${php2_version} == "php56" ]]; then
-            PHP2_INI_PATH="/opt/remi/${PHP_VERSION_2}/root/etc/php.d"
+            PHP2_INI_PATH="/opt/remi/${php2_version}/root/etc/php.d"
         fi
     fi
 }
@@ -60,9 +61,17 @@ _run(){
     if [ "${php2_release}" == "yes" ]; then
         change_opcache_php2
     fi
-    restart_service
-    clear
-    printf "%s\n" "${GREEN}${noti}${NC}"
+    if nginx -t; then
+        systemctl restart nginx
+        systemctl restart php-fpm.service
+        if [ "${php2_release}" == "yes" ]; then
+            systemctl restart "${php2_version}"-php-fpm
+        fi
+        clear
+        printf "%s\n" "${GREEN}${noti}${NC}"
+    else
+        printf "%s\n" "${RED}Cau hinh Nginx khong chinh xac. Vui long kiem tra lai${NC}"
+    fi
 }
 
 _run

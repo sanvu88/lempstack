@@ -10,6 +10,7 @@
 #  Please do not copy under any circumstance for commercial reason!  #
 ######################################################################
 
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/variable_php
 
 confirm(){

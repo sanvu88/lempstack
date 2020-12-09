@@ -11,6 +11,7 @@
 ######################################################################
 
 source /var/hostvn/menu/helpers/variable_php
+source /var/hostvn/menu/validate/rule
 source /var/hostvn/menu/helpers/function
 
 confirm(){
@@ -63,6 +64,8 @@ _run(){
     if [ ! -f "/etc/sysconfig/memcached" ]; then
         set_var
         install
+        clear
+        echo "Dang cai dat Memcached Admin. Vui long doi ..."
         inst_phpmemcachedadmin
         clear
         printf "%s\n" "${GREEN}Cai dat Memcached thanh cong.${NC}"
